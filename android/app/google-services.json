@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1059318428832",
+    "project_id": "monedo-e7849",
+    "storage_bucket": "monedo-e7849.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1059318428832:android:5d47be3dc6877c644805c5",
+        "android_client_info": {
+          "package_name": "com.example.monedo"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyARREEdznH0bkGfNU2O6kVy7FkMRfngbng"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
