@@ -1,7 +1,7 @@
 // ============================================================
 // about_screen.dart
 // Pantalla de información del creador de Monedo.
-// Si quieres cambiar tu info personal, hazlo aquí.
+// Para cambiar información personal, se hace aquí.
 // ============================================================
 
 import 'package:flutter/material.dart';
@@ -141,7 +141,7 @@ class AboutScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Sobre Monede',
+                  'Sobre Monedo',
                   style: TextStyle(
                     color: AppTheme.textPrimary,
                     fontSize: 18,

@@ -1,7 +1,7 @@
 // ============================================================
 // app_theme.dart
 // Define los colores, fuentes y estilos globales de Monedo.
-// Aquí puedes cambiar el diseño visual de toda la app.
+// Aquí se pueden cambiar: Colore principales, paleta de colores.
 // ============================================================
 
 import 'package:flutter/material.dart';

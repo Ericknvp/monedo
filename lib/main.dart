@@ -13,7 +13,7 @@ import 'screens/login_screen.dart';
 import 'screens/dashboard_screen.dart';
 
 void main() async {
-  // Asegura que Flutter esté inicializado antes de Firebase
+  // Este método segura que Flutter esté inicializado antes de Firebase
   WidgetsFlutterBinding.ensureInitialized();
 
   // Inicializa Firebase con la configuración generada
