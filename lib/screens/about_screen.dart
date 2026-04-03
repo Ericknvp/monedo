@@ -141,7 +141,7 @@ class AboutScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Sobre Monede',
+                  'Sobre Monedo',
                   style: TextStyle(
                     color: AppTheme.textPrimary,
                     fontSize: 18,
