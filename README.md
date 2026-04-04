@@ -38,6 +38,9 @@ Este proyecto fue desarrollado como parte de mi proceso de aprendizaje en desarr
    flutter run
    ```
 
+## 📲 Descargar APK
+
+[Descargar Monedo v1.0](https://github.com/Ericknvp/monedo/releases/tag/v1.0)
 
 ##  Aprendizaje
 
