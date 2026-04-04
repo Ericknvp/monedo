@@ -38,11 +38,6 @@ Este proyecto fue desarrollado como parte de mi proceso de aprendizaje en desarr
    flutter run
    ```
 
-##  APK
-
-Puedes descargar la aplicación aquí:
-
-
 
 ##  Aprendizaje
 
