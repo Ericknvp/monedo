@@ -1,5 +1,5 @@
 // ============================================================
-// about_screen.dartee
+// about_screen.dart
 // Pantalla de información del creador de Monedo.
 // Para cambiar información personal, se hace aquí.
 // ============================================================
