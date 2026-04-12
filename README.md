@@ -85,3 +85,6 @@ static const Color income         = Color(0xFF10B981);
 static const Color expense        = Color(0xFFEF4444);
 static const Color textPrimary    = Color(0xFFFFFFFF);
 static const Color textSecondary  = Color(0xFF9CA3AF);
+
+
+
