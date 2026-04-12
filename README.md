@@ -87,4 +87,37 @@ static const Color textPrimary    = Color(0xFFFFFFFF);
 static const Color textSecondary  = Color(0xFF9CA3AF);
 
 
+Changelog
+v1.2.0 — Abril 2026
+Nuevas funcionalidades
 
+Metas de ahorro — crea metas con nombre y monto objetivo, registra abonos y el saldo se descuenta automáticamente del balance. Muestra porcentaje de progreso visual.
+Formato de moneda — los montos ahora muestran separador de miles con comas (ej: $69,308)
+Confirmación al salir — diálogo de confirmación antes de cerrar sesión para evitar salidas accidentales
+Confirmación al eliminar movimientos en el dashboard.
+Nueva categoría — se agregó "Ocio" a la lista de categorías de gastos
+
+v1.1.0
+Correcciones
+
+Corregido error de setState() called after dispose() en el dashboard
+Corregido conflicto de nombre entre Transaction de Firestore y el modelo propio, renombrado a TransactionModel
+Corregido CardTheme → CardThemeData para compatibilidad con Flutter 3.x
+Simplificadas las consultas de Firestore para evitar necesidad de índices compuestos
+
+v1.0.0 — Abril 2026
+Lanzamiento inicial
+
+Registro e inicio de sesión con correo y contraseña
+Nombres de usuario únicos
+Dashboard con balance actual, ingresos y gastos del mes
+Registro de ingresos y gastos con categoría, fecha y nota opcional
+Edición y eliminación de movimientos
+Filtros por Todos, Ingresos y Gastos
+Estadísticas mensuales con selector de mes
+Gráfica de torta de gastos por categoría
+Estadísticas semanales
+Pantalla "Acerca de" con info del creador
+Diseño responsive — funciona en Android y Web
+Base de datos en Firebase Firestore
+Autenticación con Firebase Auth
