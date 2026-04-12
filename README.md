@@ -56,3 +56,17 @@ Este proyecto me permitió fortalecer conocimientos en:
 Erick Narváez
 Instagram: Ericknvp
 Correo: narvaezvegaerick@gmail.com
+
+
+Paleta de colores de borrador:
+static const Color primaryPurple  = Color(0xFFD97706);
+static const Color darkPurple     = Color(0xFF92400E);
+static const Color lightPurple    = Color(0xFFFDE68A);
+static const Color accentPurple   = Color(0xFFF59E0B);
+static const Color backgroundDark = Color(0xFF0A0A0A);
+static const Color cardDark       = Color(0xFF141414);
+static const Color cardMedium     = Color(0xFF1C1C1C);
+static const Color income         = Color(0xFF10B981);
+static const Color expense        = Color(0xFFEF4444);
+static const Color textPrimary    = Color(0xFFFFFFFF);
+static const Color textSecondary  = Color(0xFF9CA3AF);
