@@ -57,6 +57,20 @@ Erick Narváez
 Instagram: Ericknvp
 Correo: narvaezvegaerick@gmail.com
 
+Paleta original:
+
+static const Color primaryPurple = Color(0xFF7C3AED);     
+static const Color darkPurple = Color(0xFF4C1D95);       
+static const Color lightPurple = Color(0xFFDDD6FE);       
+static const Color accentPurple = Color(0xFFA78BFA);     
+static const Color backgroundDark = Color(0xFF0F0F1A);
+static const Color cardDark = Color(0xFF1A1A2E);        
+static const Color cardMedium = Color(0xFF16213E);      
+static const Color income = Color(0xFF10B981);     
+static const Color expense = Color(0xFFEF4444);      
+static const Color textPrimary = Color(0xFFFFFFFF);       
+static const Color textSecondary = Color(0xFF9CA3AF);    
+
 
 Paleta de colores de borrador:
 static const Color primaryPurple  = Color(0xFFD97706);
