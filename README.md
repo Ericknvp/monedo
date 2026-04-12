@@ -73,6 +73,7 @@ static const Color textSecondary = Color(0xFF9CA3AF);
 
 
 Paleta de colores de borrador:
+
 static const Color primaryPurple  = Color(0xFFD97706);
 static const Color darkPurple     = Color(0xFF92400E);
 static const Color lightPurple    = Color(0xFFFDE68A);
