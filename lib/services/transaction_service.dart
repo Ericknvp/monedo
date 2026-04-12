@@ -1,8 +1,3 @@
-// ============================================================
-// transaction_service.dart
-// Maneja todas las operaciones de movimientos en Firestore:
-// agregar, obtener, editar y eliminar transacciones.
-// ============================================================
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/transaction.dart';
@@ -30,7 +25,6 @@ class TransactionService {
           doc.id,
         );
       }).toList();
-      // Ordenar en memoria por fecha descendente
       list.sort((a, b) => b.date.compareTo(a.date));
       return list;
     });
@@ -75,7 +69,7 @@ class TransactionService {
       if (t.isIncome) {
         balance += t.amount;
       } else {
-        balance -= t.amount;
+        balance -= t.amount; // Incluye ahorros (categoría 'Ahorro')
       }
     }
     return balance;
@@ -88,7 +82,7 @@ class TransactionService {
         .fold(0.0, (sum, t) => sum + t.amount);
   }
 
-  // ---- Calcula el total de gastos ----
+  // ---- Calcula el total de gastos (incluye ahorros) ----
   double calculateExpenses(List<TransactionModel> transactions) {
     return transactions
         .where((t) => !t.isIncome)

@@ -16,7 +16,6 @@ void main() async {
   // Este método segura que Flutter esté inicializado antes de Firebase
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Inicializa Firebase con la configuración generada
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
@@ -31,14 +30,13 @@ class MonedoApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Monedo',
-      debugShowCheckedModeBanner: false, // Quita el banner de debug
+      debugShowCheckedModeBanner: false,
       theme: AppTheme.darkTheme,
       home: const AuthWrapper(),
     );
   }
 }
 
-// ---- Decide si mostrar login o dashboard según la sesión ----
 class AuthWrapper extends StatelessWidget {
   const AuthWrapper({super.key});
 
@@ -61,12 +59,10 @@ class AuthWrapper extends StatelessWidget {
           );
         }
 
-        // Si hay sesión activa, va al dashboard
         if (snapshot.hasData) {
           return const DashboardScreen();
         }
 
-        // Si no hay sesión, va al login
         return const LoginScreen();
       },
     );

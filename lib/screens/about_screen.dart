@@ -1,7 +1,7 @@
 // ============================================================
 // about_screen.dart
 // Pantalla de información del creador de Monedo.
-// Para cambiar información personal, se hace aquí.
+//
 // ============================================================
 
 import 'package:flutter/material.dart';
@@ -42,7 +42,7 @@ class AboutScreen extends StatelessWidget {
             ),
           ),
           const Text(
-            'v1.0.0',
+            'v1.2.0',
             style: TextStyle(
               color: AppTheme.textSecondary,
               fontSize: 14,
@@ -58,7 +58,7 @@ class AboutScreen extends StatelessWidget {
           ),
           const SizedBox(height: 40),
 
-          // ---- Tarjeta del creador ----
+          // ---- Tarjeta  ----
           Container(
             width: double.infinity,
             padding: const EdgeInsets.all(24),
@@ -101,7 +101,7 @@ class AboutScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 const Text(
-                  'Erick Narváez',
+                  'Erick Narváez Vega',
                   style: TextStyle(
                     color: AppTheme.textPrimary,
                     fontSize: 22,

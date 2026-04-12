@@ -1,8 +1,3 @@
-// ============================================================
-// add_transaction_screen.dart
-// Pantalla para agregar o editar un movimiento (ingreso o gasto).
-// Si se pasa una transacción existente, entra en modo edición.
-// ============================================================
 
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -40,7 +35,9 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
     'Hogar',
     'Trabajo',
     'Inversión',
-    'Otros',
+    'Ahorro',
+    'Ocio',
+    'Otros'
   ];
 
   @override
@@ -219,7 +216,6 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
             ),
             const SizedBox(height: 24),
 
-            // ---- Campo de título ----
             TextField(
               controller: _titleController,
               style: const TextStyle(color: AppTheme.textPrimary),
@@ -231,7 +227,6 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
             ),
             const SizedBox(height: 16),
 
-            // ---- Campo de monto ----
             TextField(
               controller: _amountController,
               keyboardType:
@@ -245,7 +240,6 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
             ),
             const SizedBox(height: 16),
 
-            // ---- Selector de categoría ----
             DropdownButtonFormField<String>(
               value: _selectedCategory,
               dropdownColor: AppTheme.cardDark,
@@ -264,7 +258,6 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
             ),
             const SizedBox(height: 16),
 
-            // ---- Selector de fecha ----
             GestureDetector(
               onTap: _selectDate,
               child: Container(
@@ -290,7 +283,6 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
             ),
             const SizedBox(height: 16),
 
-            // ---- Campo de nota opcional ----
             TextField(
               controller: _noteController,
               style: const TextStyle(color: AppTheme.textPrimary),
@@ -303,7 +295,6 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
             ),
             const SizedBox(height: 32),
 
-            // ---- Botón guardar ----
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
@@ -312,9 +303,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                     ? const CircularProgressIndicator(
                     color: AppTheme.textPrimary)
                     : Text(
-                  isEditing
-                      ? 'Guardar cambios'
-                      : 'Agregar movimiento',
+                  isEditing ? 'Guardar cambios' : 'Agregar movimiento',
                   style: const TextStyle(fontSize: 16),
                 ),
               ),

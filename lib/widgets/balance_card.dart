@@ -1,11 +1,7 @@
-// ============================================================
-// balance_card.dart
-// Tarjeta principal que muestra el balance, ingresos y gastos.
-// Se usa en el dashboard principal de Monedo.
-// ============================================================
 
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
+import '../utils/currency_formatter.dart';
 
 class BalanceCard extends StatelessWidget {
   final double balance;
@@ -48,10 +44,10 @@ class BalanceCard extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            '\$${balance.toStringAsFixed(2)}',
+            CurrencyFormatter.format(balance),
             style: const TextStyle(
               color: AppTheme.textPrimary,
-              fontSize: 40,
+              fontSize: 36,
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -88,7 +84,6 @@ class BalanceCard extends StatelessWidget {
     );
   }
 
-  // ---- Construye una estadística de ingreso o gasto ----
   Widget _buildStat({
     required IconData icon,
     required String label,
@@ -115,10 +110,10 @@ class BalanceCard extends StatelessWidget {
           ),
           const SizedBox(height: 4),
           Text(
-            '\$${amount.toStringAsFixed(2)}',
+            CurrencyFormatter.format(amount),
             style: const TextStyle(
               color: AppTheme.textPrimary,
-              fontSize: 18,
+              fontSize: 16,
               fontWeight: FontWeight.bold,
             ),
           ),

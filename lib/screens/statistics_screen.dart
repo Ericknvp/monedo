@@ -1,9 +1,3 @@
-// ============================================================
-// statistics_screen.dart
-// Pantalla de estadísticas de Monedo.
-// Muestra gráficas de gastos por categoría, resumen mensual
-// y estadísticas semanales. Puedes cambiar el mes a analizar.
-// ============================================================
 
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -11,6 +5,7 @@ import 'package:fl_chart/fl_chart.dart';
 import '../services/transaction_service.dart';
 import '../models/transaction.dart';
 import '../theme/app_theme.dart';
+import '../utils/currency_formatter.dart';
 
 class StatisticsScreen extends StatefulWidget {
   const StatisticsScreen({super.key});
@@ -103,7 +98,6 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
           ),
           const SizedBox(height: 20),
 
-          // ---- Estadísticas del mes seleccionado ----
           StreamBuilder<List<TransactionModel>>(
             stream: _transactionService.getTransactionsByMonth(
                 userId, _selectedYear, _selectedMonth),
@@ -214,7 +208,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                                   ),
                                   const SizedBox(width: 4),
                                   Text(
-                                    '${cat.key}: \$${cat.value.toStringAsFixed(0)}',
+                                    '${cat.key}: ${CurrencyFormatter.format(cat.value)}',
                                     style: const TextStyle(
                                       color: AppTheme.textSecondary,
                                       fontSize: 12,
@@ -250,7 +244,6 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
 
           const SizedBox(height: 24),
 
-          // ---- Estadísticas semanales ----
           const Text(
             'Esta semana',
             style: TextStyle(
@@ -316,10 +309,10 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
           ),
           const SizedBox(height: 8),
           Text(
-            '\$${amount.toStringAsFixed(2)}',
+            CurrencyFormatter.format(amount),
             style: TextStyle(
               color: color,
-              fontSize: 20,
+              fontSize: 18,
               fontWeight: FontWeight.bold,
             ),
           ),

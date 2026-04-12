@@ -1,7 +1,7 @@
 name: monedo
 description: App de finanzas personales - Monedo
 publish_to: 'none'
-version: 1.0.0+1
+version: 1.2.0+2
 
 environment:
   sdk: '>=3.0.0 <4.0.0'
@@ -21,6 +21,8 @@ dependencies:
   crypto: ^3.0.3
   # Iconos
   cupertino_icons: ^1.0.2
+  excel: ^4.0.6
+  path_provider: ^2.1.5
 
 dev_dependencies:
   flutter_test:

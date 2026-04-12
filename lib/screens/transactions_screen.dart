@@ -1,14 +1,10 @@
-// ============================================================
-// transactions_screen.dart
-// Pantalla que muestra todos los movimientos del usuario.
-// Permite editar y eliminar cada movimiento.
-// ============================================================
 
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../services/transaction_service.dart';
 import '../models/transaction.dart';
 import '../theme/app_theme.dart';
+import '../utils/currency_formatter.dart';
 import '../widgets/transaction_tile.dart';
 import 'add_transaction_screen.dart';
 
@@ -32,7 +28,8 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
         // ---- Filtros ----
         Container(
           color: AppTheme.cardDark,
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          padding:
+          const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           child: Row(
             children: ['Todos', 'Ingresos', 'Gastos'].map((filter) {
               final isSelected = _filter == filter;
@@ -124,29 +121,32 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                     onDelete: () async {
                       final confirm = await showDialog<bool>(
                         context: context,
-                        builder: (context) => AlertDialog(
+                        builder: (ctx) => AlertDialog(
                           backgroundColor: AppTheme.cardDark,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
                           title: const Text(
                             '¿Eliminar movimiento?',
                             style: TextStyle(
                                 color: AppTheme.textPrimary),
                           ),
-                          content: const Text(
-                            'Esta acción no se puede deshacer.',
-                            style: TextStyle(
+                          content: Text(
+                            'Se eliminará "${t.title}" (${CurrencyFormatter.format(t.amount)}). Esta acción no se puede deshacer.',
+                            style: const TextStyle(
                                 color: AppTheme.textSecondary),
                           ),
                           actions: [
                             TextButton(
                               onPressed: () =>
-                                  Navigator.pop(context, false),
+                                  Navigator.pop(ctx, false),
                               child: const Text('Cancelar',
                                   style: TextStyle(
                                       color: AppTheme.textSecondary)),
                             ),
                             TextButton(
                               onPressed: () =>
-                                  Navigator.pop(context, true),
+                                  Navigator.pop(ctx, true),
                               child: const Text('Eliminar',
                                   style: TextStyle(
                                       color: AppTheme.expense)),
@@ -155,8 +155,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                         ),
                       );
                       if (confirm == true) {
-                        await _transactionService
-                            .deleteTransaction(t.id);
+                        await _transactionService.deleteTransaction(t.id);
                       }
                     },
                   );

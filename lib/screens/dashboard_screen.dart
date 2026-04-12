@@ -1,8 +1,3 @@
-// ============================================================
-// dashboard_screen.dart
-// Pantalla principal de Monedo. Muestra el balance actual,
-// ingresos, gastos del mes y los últimos movimientos.
-// ============================================================
 
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -11,11 +6,13 @@ import '../services/transaction_service.dart';
 import '../models/transaction.dart';
 import '../models/user_model.dart';
 import '../theme/app_theme.dart';
+import '../utils/currency_formatter.dart';
 import '../widgets/balance_card.dart';
 import '../widgets/transaction_tile.dart';
 import 'add_transaction_screen.dart';
 import 'transactions_screen.dart';
 import 'statistics_screen.dart';
+import 'goals_screen.dart';
 import 'about_screen.dart';
 import 'login_screen.dart';
 
@@ -38,7 +35,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
     _loadUser();
   }
 
-  // ---- Carga los datos del usuario actual ----
   Future<void> _loadUser() async {
     final user = await _authService.getCurrentUserData();
     if (mounted) {
@@ -46,7 +42,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
   }
 
-  // ---- Cierra la sesión del usuario ----
   Future<void> _logout() async {
     await _authService.logout();
     if (mounted) {
@@ -66,6 +61,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       _buildHome(userId, now),
       const TransactionsScreen(),
       const StatisticsScreen(),
+      const GoalsScreen(),
       const AboutScreen(),
     ];
 
@@ -90,7 +86,45 @@ class _DashboardScreenState extends State<DashboardScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.logout, color: AppTheme.textSecondary),
-            onPressed: _logout,
+            onPressed: () async {
+              final confirm = await showDialog<bool>(
+                context: context,
+                builder: (ctx) => AlertDialog(
+                  backgroundColor: AppTheme.cardDark,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  title: const Text(
+                    '¿Cerrar sesión?',
+                    style: TextStyle(color: AppTheme.textPrimary),
+                  ),
+                  content: const Text(
+                    '¿Seguro que quieres salir de tu cuenta?',
+                    style: TextStyle(color: AppTheme.textSecondary),
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(ctx, false),
+                      child: const Text(
+                        'Cancelar',
+                        style: TextStyle(color: AppTheme.textSecondary),
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: () => Navigator.pop(ctx, true),
+                      child: const Text(
+                        'Salir',
+                        style: TextStyle(color: AppTheme.expense),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+
+              if (confirm == true) {
+                _logout();
+              }
+            },
             tooltip: 'Cerrar sesión',
           ),
         ],
@@ -113,6 +147,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         backgroundColor: AppTheme.cardDark,
         indicatorColor: AppTheme.primaryPurple,
         selectedIndex: _selectedIndex,
+        labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
         onDestinationSelected: (index) {
           setState(() => _selectedIndex = index);
         },
@@ -125,7 +160,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           NavigationDestination(
             icon: Icon(Icons.list_outlined, color: AppTheme.textSecondary),
             selectedIcon: Icon(Icons.list, color: AppTheme.textPrimary),
-            label: 'Movimientos',
+            label: 'Gastos',
           ),
           NavigationDestination(
             icon: Icon(Icons.bar_chart_outlined,
@@ -135,18 +170,21 @@ class _DashboardScreenState extends State<DashboardScreen> {
             label: 'Estadísticas',
           ),
           NavigationDestination(
+            icon: Icon(Icons.flag_outlined, color: AppTheme.textSecondary),
+            selectedIcon: Icon(Icons.flag, color: AppTheme.textPrimary),
+            label: 'Metas',
+          ),
+          NavigationDestination(
             icon:
             Icon(Icons.person_outlined, color: AppTheme.textSecondary),
-            selectedIcon:
-            Icon(Icons.person, color: AppTheme.textPrimary),
-            label: 'Acerca de',
+            selectedIcon: Icon(Icons.person, color: AppTheme.textPrimary),
+            label: 'Info',
           ),
         ],
       ),
     );
   }
 
-  // ---- Construye la pantalla de inicio ----
   Widget _buildHome(String userId, DateTime now) {
     return StreamBuilder<List<TransactionModel>>(
       stream: _transactionService.getTransactionsByMonth(
@@ -164,7 +202,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Hola, ${_currentUser?.username ?? 'Usuario'} 👋',
+                'Hola, ${_currentUser?.username ?? 'Usuario'}! 👋',
                 style: const TextStyle(
                   color: AppTheme.textSecondary,
                   fontSize: 16,
@@ -205,8 +243,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       const SizedBox(height: 16),
                       const Text(
                         'No hay movimientos este mes',
-                        style:
-                        TextStyle(color: AppTheme.textSecondary),
+                        style: TextStyle(color: AppTheme.textSecondary),
                       ),
                     ],
                   ),
@@ -222,8 +259,45 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     ),
                   ),
                   onDelete: () async {
-                    await _transactionService
-                        .deleteTransaction(t.id);
+                    final confirm = await showDialog<bool>(
+                      context: context,
+                      builder: (ctx) => AlertDialog(
+                        backgroundColor: AppTheme.cardDark,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        title: const Text(
+                          '¿Eliminar movimiento?',
+                          style:
+                          TextStyle(color: AppTheme.textPrimary),
+                        ),
+                        content: Text(
+                          'Se eliminará "${t.title}" (${CurrencyFormatter.format(t.amount)}). Esta acción no se puede deshacer.',
+                          style: const TextStyle(
+                              color: AppTheme.textSecondary),
+                        ),
+                        actions: [
+                          TextButton(
+                            onPressed: () =>
+                                Navigator.pop(ctx, false),
+                            child: const Text('Cancelar',
+                                style: TextStyle(
+                                    color: AppTheme.textSecondary)),
+                          ),
+                          TextButton(
+                            onPressed: () =>
+                                Navigator.pop(ctx, true),
+                            child: const Text('Eliminar',
+                                style: TextStyle(
+                                    color: AppTheme.expense)),
+                          ),
+                        ],
+                      ),
+                    );
+                    if (confirm == true) {
+                      await _transactionService
+                          .deleteTransaction(t.id);
+                    }
                   },
                 )),
             ],

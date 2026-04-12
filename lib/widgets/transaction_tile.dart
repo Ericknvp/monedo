@@ -1,12 +1,8 @@
-// ============================================================
-// transaction_tile.dart
-// Widget que muestra un movimiento individual en la lista.
-// Tiene botones para editar y eliminar el movimiento.
-// ============================================================
 
 import 'package:flutter/material.dart';
 import '../models/transaction.dart';
 import '../theme/app_theme.dart';
+import '../utils/currency_formatter.dart';
 
 class TransactionTile extends StatelessWidget {
   final TransactionModel transaction;
@@ -20,7 +16,6 @@ class TransactionTile extends StatelessWidget {
     required this.onDelete,
   });
 
-  // ---- Iconos por categoría ----
   IconData _getCategoryIcon(String category) {
     switch (category) {
       case 'Alimentación':
@@ -41,6 +36,10 @@ class TransactionTile extends StatelessWidget {
         return Icons.work_outlined;
       case 'Inversión':
         return Icons.trending_up_outlined;
+      case 'Ahorro':
+        return Icons.savings_outlined;
+      case 'Ocio':
+        return Icons.celebration_outlined;
       default:
         return Icons.attach_money;
     }
@@ -50,7 +49,6 @@ class TransactionTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final color =
     transaction.isIncome ? AppTheme.income : AppTheme.expense;
-    final sign = transaction.isIncome ? '+' : '-';
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -123,10 +121,11 @@ class TransactionTile extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Text(
-                '$sign\$${transaction.amount.toStringAsFixed(2)}',
+                CurrencyFormatter.formatWithSign(
+                    transaction.amount, transaction.isIncome),
                 style: TextStyle(
                   color: color,
-                  fontSize: 16,
+                  fontSize: 15,
                   fontWeight: FontWeight.bold,
                 ),
               ),
