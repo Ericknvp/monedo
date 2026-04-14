@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../services/auth_service.dart';
@@ -163,10 +162,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
             label: 'Gastos',
           ),
           NavigationDestination(
-            icon: Icon(Icons.bar_chart_outlined,
-                color: AppTheme.textSecondary),
-            selectedIcon:
-            Icon(Icons.bar_chart, color: AppTheme.textPrimary),
+            icon: Icon(Icons.bar_chart_outlined, color: AppTheme.textSecondary),
+            selectedIcon: Icon(Icons.bar_chart, color: AppTheme.textPrimary),
             label: 'Estadísticas',
           ),
           NavigationDestination(
@@ -175,8 +172,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             label: 'Metas',
           ),
           NavigationDestination(
-            icon:
-            Icon(Icons.person_outlined, color: AppTheme.textSecondary),
+            icon: Icon(Icons.person_outlined, color: AppTheme.textSecondary),
             selectedIcon: Icon(Icons.person, color: AppTheme.textPrimary),
             label: 'Info',
           ),
@@ -187,121 +183,125 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Widget _buildHome(String userId, DateTime now) {
     return StreamBuilder<List<TransactionModel>>(
-      stream: _transactionService.getTransactionsByMonth(
-          userId, now.year, now.month),
-      builder: (context, snapshot) {
-        final transactions = snapshot.data ?? [];
-        final balance = _transactionService.calculateBalance(transactions);
-        final income = _transactionService.calculateIncome(transactions);
-        final expenses =
-        _transactionService.calculateExpenses(transactions);
+      // Stream 1: TODAS las transacciones históricas (para el balance total)
+      stream: _transactionService.getTransactions(userId),
+      builder: (context, allSnapshot) {
+        final allTransactions = allSnapshot.data ?? [];
+        final totalBalance = _transactionService.calculateBalance(allTransactions);
 
-        return SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Hola, ${_currentUser?.username ?? 'Usuario'}! 👋',
-                style: const TextStyle(
-                  color: AppTheme.textSecondary,
-                  fontSize: 16,
-                ),
-              ),
-              const SizedBox(height: 4),
-              const Text(
-                'Tu resumen del mes',
-                style: TextStyle(
-                  color: AppTheme.textPrimary,
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 20),
-              BalanceCard(
-                balance: balance,
-                income: income,
-                expenses: expenses,
-              ),
-              const SizedBox(height: 24),
-              const Text(
-                'Últimos movimientos',
-                style: TextStyle(
-                  color: AppTheme.textPrimary,
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 12),
-              if (transactions.isEmpty)
-                Center(
-                  child: Column(
-                    children: [
-                      const SizedBox(height: 32),
-                      Icon(Icons.receipt_long_outlined,
-                          size: 64, color: AppTheme.textSecondary),
-                      const SizedBox(height: 16),
-                      const Text(
-                        'No hay movimientos este mes',
-                        style: TextStyle(color: AppTheme.textSecondary),
-                      ),
-                    ],
-                  ),
-                )
-              else
-                ...transactions.take(5).map((t) => TransactionTile(
-                  transaction: t,
-                  onEdit: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) =>
-                          AddTransactionScreen(transaction: t),
+        // Stream 2: Solo las del mes actual (para ingresos/gastos del mes)
+        return StreamBuilder<List<TransactionModel>>(
+          stream: _transactionService.getTransactionsByMonth(
+              userId, now.year, now.month),
+          builder: (context, monthSnapshot) {
+            final monthTransactions = monthSnapshot.data ?? [];
+            final monthIncome = _transactionService.calculateIncome(monthTransactions);
+            final monthExpenses = _transactionService.calculateExpenses(monthTransactions);
+
+            return SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Hola, ${_currentUser?.username ?? 'Usuario'}! 👋',
+                    style: const TextStyle(
+                      color: AppTheme.textSecondary,
+                      fontSize: 16,
                     ),
                   ),
-                  onDelete: () async {
-                    final confirm = await showDialog<bool>(
-                      context: context,
-                      builder: (ctx) => AlertDialog(
-                        backgroundColor: AppTheme.cardDark,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        title: const Text(
-                          '¿Eliminar movimiento?',
-                          style:
-                          TextStyle(color: AppTheme.textPrimary),
-                        ),
-                        content: Text(
-                          'Se eliminará "${t.title}" (${CurrencyFormatter.format(t.amount)}). Esta acción no se puede deshacer.',
-                          style: const TextStyle(
-                              color: AppTheme.textSecondary),
-                        ),
-                        actions: [
-                          TextButton(
-                            onPressed: () =>
-                                Navigator.pop(ctx, false),
-                            child: const Text('Cancelar',
-                                style: TextStyle(
-                                    color: AppTheme.textSecondary)),
-                          ),
-                          TextButton(
-                            onPressed: () =>
-                                Navigator.pop(ctx, true),
-                            child: const Text('Eliminar',
-                                style: TextStyle(
-                                    color: AppTheme.expense)),
+                  const SizedBox(height: 4),
+                  const Text(
+                    'Tu resumen del mes',
+                    style: TextStyle(
+                      color: AppTheme.textPrimary,
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  BalanceCard(
+                    balance: totalBalance,    // balance acumulado total
+                    income: monthIncome,      // ingresos del mes
+                    expenses: monthExpenses,  // gastos del mes
+                  ),
+                  const SizedBox(height: 24),
+                  const Text(
+                    'Últimos movimientos',
+                    style: TextStyle(
+                      color: AppTheme.textPrimary,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  if (monthTransactions.isEmpty)
+                    Center(
+                      child: Column(
+                        children: [
+                          const SizedBox(height: 32),
+                          Icon(Icons.receipt_long_outlined,
+                              size: 64, color: AppTheme.textSecondary),
+                          const SizedBox(height: 16),
+                          const Text(
+                            'No hay movimientos este mes',
+                            style: TextStyle(color: AppTheme.textSecondary),
                           ),
                         ],
                       ),
-                    );
-                    if (confirm == true) {
-                      await _transactionService
-                          .deleteTransaction(t.id);
-                    }
-                  },
-                )),
-            ],
-          ),
+                    )
+                  else
+                    ...monthTransactions.take(5).map((t) => TransactionTile(
+                      transaction: t,
+                      onEdit: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) =>
+                              AddTransactionScreen(transaction: t),
+                        ),
+                      ),
+                      onDelete: () async {
+                        final confirm = await showDialog<bool>(
+                          context: context,
+                          builder: (ctx) => AlertDialog(
+                            backgroundColor: AppTheme.cardDark,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            title: const Text(
+                              '¿Eliminar movimiento?',
+                              style: TextStyle(color: AppTheme.textPrimary),
+                            ),
+                            content: Text(
+                              'Se eliminará "${t.title}" (${CurrencyFormatter.format(t.amount)}). Esta acción no se puede deshacer.',
+                              style: const TextStyle(
+                                  color: AppTheme.textSecondary),
+                            ),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(ctx, false),
+                                child: const Text('Cancelar',
+                                    style: TextStyle(
+                                        color: AppTheme.textSecondary)),
+                              ),
+                              TextButton(
+                                onPressed: () => Navigator.pop(ctx, true),
+                                child: const Text('Eliminar',
+                                    style:
+                                    TextStyle(color: AppTheme.expense)),
+                              ),
+                            ],
+                          ),
+                        );
+                        if (confirm == true) {
+                          await _transactionService.deleteTransaction(t.id);
+                        }
+                      },
+                    )),
+                ],
+              ),
+            );
+          },
         );
       },
     );
