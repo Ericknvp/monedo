@@ -42,7 +42,7 @@ class AboutScreen extends StatelessWidget {
             ),
           ),
           const Text(
-            'v1.2.0',
+            'v1.2.1',
             style: TextStyle(
               color: AppTheme.textSecondary,
               fontSize: 14,
