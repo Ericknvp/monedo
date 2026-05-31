@@ -1,6 +1,6 @@
-
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../services/goal_service.dart';
 import '../models/goal.dart';
 import '../theme/app_theme.dart';
@@ -13,88 +13,255 @@ class GoalsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final userId = FirebaseAuth.instance.currentUser?.uid ?? '';
     final goalService = GoalService();
+    final isDesktop = MediaQuery.of(context).size.width >= 900;
 
-    return Scaffold(
-      backgroundColor: AppTheme.backgroundDark,
-      body: StreamBuilder<List<GoalModel>>(
-        stream: goalService.getGoals(userId),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(
-              child: CircularProgressIndicator(color: AppTheme.primaryPurple),
-            );
-          }
-
-          final goals = snapshot.data ?? [];
-
-          if (goals.isEmpty) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.flag_outlined,
-                      size: 72, color: AppTheme.textSecondary),
-                  const SizedBox(height: 16),
-                  const Text(
-                    'Aún no tienes metas',
-                    style: TextStyle(
-                      color: AppTheme.textPrimary,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  const Text(
-                    'Crea tu primera meta de ahorro',
-                    style: TextStyle(
-                        color: AppTheme.textSecondary, fontSize: 14),
-                  ),
-                  const SizedBox(height: 24),
-                  ElevatedButton.icon(
-                    onPressed: () =>
-                        _showGoalSheet(context, userId, goalService),
-                    icon: const Icon(Icons.add),
-                    label: const Text('Nueva meta'),
-                  ),
-                ],
-              ),
-            );
-          }
-
-          return ListView.builder(
-            padding: const EdgeInsets.all(16),
-            itemCount: goals.length,
-            itemBuilder: (context, index) {
-              return _GoalCard(
-                goal: goals[index],
-                goalService: goalService,
-                userId: userId,
-              );
-            },
+    return StreamBuilder<List<GoalModel>>(
+      stream: goalService.getGoals(userId),
+      builder: (context, snap) {
+        if (snap.connectionState == ConnectionState.waiting) {
+          return const Center(
+            child: CircularProgressIndicator(color: AppTheme.secondary),
           );
-        },
-      ),
-      floatingActionButton: Builder(
-        builder: (ctx) => FloatingActionButton(
-          backgroundColor: AppTheme.primaryPurple,
-          onPressed: () => _showGoalSheet(ctx, userId, goalService),
-          child: const Icon(Icons.add, color: AppTheme.textPrimary),
-        ),
+        }
+
+        final goals = snap.data ?? [];
+
+        return Scaffold(
+          backgroundColor: AppTheme.background,
+          body: goals.isEmpty
+              ? _buildEmptyState(context, userId, goalService)
+              : _buildGoalsList(context, goals, userId, goalService, isDesktop),
+          floatingActionButton: goals.isNotEmpty
+              ? FloatingActionButton.extended(
+                  backgroundColor: AppTheme.secondary,
+                  foregroundColor: Colors.white,
+                  onPressed: () =>
+                      _showGoalSheet(context, userId, goalService),
+                  icon: const Icon(Icons.add_circle_outline_rounded),
+                  label: Text(
+                    'Crear meta',
+                    style: GoogleFonts.beVietnamPro(fontWeight: FontWeight.w600),
+                  ),
+                )
+              : null,
+        );
+      },
+    );
+  }
+
+  Widget _buildEmptyState(
+      BuildContext context, String userId, GoalService goalService) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            width: 80,
+            height: 80,
+            decoration: BoxDecoration(
+              color: AppTheme.surfaceContainerHigh,
+              borderRadius: BorderRadius.circular(100),
+            ),
+            child: const Icon(Icons.savings_outlined,
+                size: 40, color: AppTheme.outlineVariant),
+          ),
+          const SizedBox(height: 20),
+          Text(
+            'Sin metas aún',
+            style: GoogleFonts.plusJakartaSans(
+              color: AppTheme.primary,
+              fontSize: 20,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Crea tu primera meta de ahorro',
+            style: GoogleFonts.beVietnamPro(
+                color: AppTheme.onSurfaceVariant, fontSize: 14),
+          ),
+          const SizedBox(height: 28),
+          ElevatedButton.icon(
+            onPressed: () => _showGoalSheet(context, userId, goalService),
+            icon: const Icon(Icons.add_circle_outline_rounded, size: 18),
+            label: const Text('Crear meta'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppTheme.secondary,
+              foregroundColor: Colors.white,
+              shape: const StadiumBorder(),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 28, vertical: 14),
+              elevation: 0,
+            ),
+          ),
+        ],
       ),
     );
   }
 
-  // ---- Abre el sheet para crear o editar meta ----
+  Widget _buildGoalsList(
+    BuildContext context,
+    List<GoalModel> goals,
+    String userId,
+    GoalService goalService,
+    bool isDesktop,
+  ) {
+    return SingleChildScrollView(
+      padding: EdgeInsets.all(isDesktop ? 40 : 20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (isDesktop) ...[
+            Row(
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Metas de ahorro 🎯',
+                      style: GoogleFonts.plusJakartaSans(
+                        color: AppTheme.primary,
+                        fontSize: 28,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: -0.56,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Pequeños pasos llevan a grandes destinos.',
+                      style: GoogleFonts.beVietnamPro(
+                          color: AppTheme.onSurfaceVariant, fontSize: 14),
+                    ),
+                  ],
+                ),
+                const Spacer(),
+                ElevatedButton.icon(
+                  onPressed: () =>
+                      _showGoalSheet(context, userId, goalService),
+                  icon: const Icon(Icons.add_circle_outline_rounded, size: 18),
+                  label: const Text('Crear meta'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppTheme.secondary,
+                    foregroundColor: Colors.white,
+                    shape: const StadiumBorder(),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 24, vertical: 14),
+                    elevation: 0,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 32),
+          ],
+          isDesktop
+              ? _buildDesktopGrid(context, goals, userId, goalService)
+              : _buildMobileList(context, goals, userId, goalService),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDesktopGrid(
+    BuildContext context,
+    List<GoalModel> goals,
+    String userId,
+    GoalService goalService,
+  ) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final columns = constraints.maxWidth >= 1200 ? 3 : 2;
+        return Wrap(
+          spacing: 24,
+          runSpacing: 24,
+          children: [
+            ...goals.map((g) => SizedBox(
+                  width: (constraints.maxWidth - (columns - 1) * 24) / columns,
+                  child: _GoalCard(
+                    goal: g,
+                    goalService: goalService,
+                    userId: userId,
+                    onEdit: () =>
+                        _showGoalSheet(context, userId, goalService, existing: g),
+                  ),
+                )),
+            SizedBox(
+              width: (constraints.maxWidth - (columns - 1) * 24) / columns,
+              height: 200,
+              child: GestureDetector(
+                onTap: () => _showGoalSheet(context, userId, goalService),
+                child: Container(
+                  decoration: BoxDecoration(
+                    border: Border.all(
+                        color: AppTheme.outlineVariant,
+                        width: 2,
+                        style: BorderStyle.solid),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Container(
+                        width: 56,
+                        height: 56,
+                        decoration: BoxDecoration(
+                          color: AppTheme.surfaceContainerHigh,
+                          borderRadius: BorderRadius.circular(100),
+                        ),
+                        child: const Icon(Icons.add_circle_outline_rounded,
+                            size: 28, color: AppTheme.outlineVariant),
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        'Agregar meta',
+                        style: GoogleFonts.plusJakartaSans(
+                          color: AppTheme.onSurfaceVariant,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildMobileList(
+    BuildContext context,
+    List<GoalModel> goals,
+    String userId,
+    GoalService goalService,
+  ) {
+    return Column(
+      children: goals
+          .map((g) => Padding(
+                padding: const EdgeInsets.only(bottom: 16),
+                child: _GoalCard(
+                  goal: g,
+                  goalService: goalService,
+                  userId: userId,
+                  onEdit: () =>
+                      _showGoalSheet(context, userId, goalService, existing: g),
+                ),
+              ))
+          .toList(),
+    );
+  }
+
   static void _showGoalSheet(
-      BuildContext context,
-      String userId,
-      GoalService goalService, {
-        GoalModel? existing,
-      }) {
+    BuildContext context,
+    String userId,
+    GoalService goalService, {
+    GoalModel? existing,
+  }) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: AppTheme.cardDark,
+      backgroundColor: AppTheme.surfaceContainerLowest,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
@@ -107,316 +274,314 @@ class GoalsScreen extends StatelessWidget {
   }
 }
 
-// ============================================================
-// Tarjeta de meta individual
-// ============================================================
-class _GoalCard extends StatelessWidget {
+// ── Goal Card ─────────────────────────────────────────────────
+class _GoalCard extends StatefulWidget {
   final GoalModel goal;
   final GoalService goalService;
   final String userId;
+  final VoidCallback onEdit;
 
   const _GoalCard({
     required this.goal,
     required this.goalService,
     required this.userId,
+    required this.onEdit,
   });
 
   @override
-  Widget build(BuildContext context) {
-    final percent = goal.progressPercent;
-    final color = goal.isCompleted ? AppTheme.income : AppTheme.primaryPurple;
+  State<_GoalCard> createState() => _GoalCardState();
+}
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      decoration: BoxDecoration(
-        color: AppTheme.cardDark,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: color.withOpacity(0.3)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // ---- Imagen ----
-          if (goal.imageUrl != null && goal.imageUrl!.isNotEmpty)
+class _GoalCardState extends State<_GoalCard> {
+  bool _hovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final g = widget.goal;
+    final percent = g.progressPercent;
+    final isComplete = g.isCompleted;
+    final accentColor = isComplete ? AppTheme.secondary : AppTheme.primary;
+
+    return MouseRegion(
+      onEnter: (_) => setState(() => _hovered = true),
+      onExit: (_) => setState(() => _hovered = false),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        decoration: BoxDecoration(
+          color: AppTheme.surfaceContainerLowest,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: AppTheme.primary
+                  .withOpacity(_hovered ? 0.08 : 0.04),
+              blurRadius: _hovered ? 40 : 20,
+              offset: const Offset(0, _hovered ? 16 : 8),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Banner
             ClipRRect(
               borderRadius:
-              const BorderRadius.vertical(top: Radius.circular(20)),
-              child: Image.network(
-                goal.imageUrl!,
-                height: 160,
-                width: double.infinity,
-                fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => _imagePlaceholder(),
-              ),
-            )
-          else
-            _imagePlaceholder(rounded: true),
-
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // ---- Título + badge + botones ----
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        goal.title,
-                        style: const TextStyle(
-                          color: AppTheme.textPrimary,
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                    if (goal.isCompleted)
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 10, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: AppTheme.income.withOpacity(0.2),
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: const Text(
-                          '✅ Completada',
-                          style: TextStyle(
-                            color: AppTheme.income,
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    // ---- Botón editar ----
-                    IconButton(
-                      onPressed: () => GoalsScreen._showGoalSheet(
-                        context,
-                        userId,
-                        goalService,
-                        existing: goal,
-                      ),
-                      icon: const Icon(Icons.edit_outlined,
-                          color: AppTheme.accentPurple, size: 20),
-                      tooltip: 'Editar meta',
-                      padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints(),
-                    ),
-                    const SizedBox(width: 8),
-                    // ---- Botón eliminar ----
-                    IconButton(
-                      onPressed: () => _confirmDelete(context),
-                      icon: const Icon(Icons.delete_outline,
-                          color: AppTheme.expense, size: 20),
-                      tooltip: 'Eliminar meta',
-                      padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints(),
-                    ),
-                  ],
-                ),
-
-                if (goal.note != null && goal.note!.isNotEmpty) ...[
-                  const SizedBox(height: 4),
-                  Text(
-                    goal.note!,
-                    style: const TextStyle(
-                        color: AppTheme.textSecondary, fontSize: 13),
-                  ),
-                ],
-                const SizedBox(height: 16),
-
-                // ---- Montos ----
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text('Ahorrado',
-                            style: TextStyle(
-                                color: AppTheme.textSecondary,
-                                fontSize: 12)),
-                        Text(
-                          CurrencyFormatter.format(goal.savedAmount),
-                          style: TextStyle(
-                            color: color,
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        const Text('Meta',
-                            style: TextStyle(
-                                color: AppTheme.textSecondary,
-                                fontSize: 12)),
-                        Text(
-                          CurrencyFormatter.format(goal.targetAmount),
-                          style: const TextStyle(
-                            color: AppTheme.textPrimary,
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-
-                // ---- Barra de progreso ----
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
-                  child: LinearProgressIndicator(
-                    value: percent,
-                    backgroundColor: color.withOpacity(0.15),
-                    valueColor: AlwaysStoppedAnimation<Color>(color),
-                    minHeight: 10,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      '${(percent * 100).toStringAsFixed(1)}% completado',
-                      style: TextStyle(
-                        color: color,
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    Text(
-                      'Falta: ${CurrencyFormatter.format(goal.remaining)}',
-                      style: const TextStyle(
-                        color: AppTheme.textSecondary,
-                        fontSize: 12,
-                      ),
-                    ),
-                  ],
-                ),
-
-                // ---- Botón ahorrar ----
-                if (!goal.isCompleted) ...[
-                  const SizedBox(height: 16),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton.icon(
-                      onPressed: () => _showAddSavingsDialog(context),
-                      icon: const Icon(Icons.add, size: 18),
-                      label: const Text('Agregar ahorro'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppTheme.primaryPurple,
-                        foregroundColor: AppTheme.textPrimary,
-                        padding: const EdgeInsets.symmetric(vertical: 10),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ],
+                  const BorderRadius.vertical(top: Radius.circular(20)),
+              child: g.imageUrl != null && g.imageUrl!.isNotEmpty
+                  ? Image.network(
+                      g.imageUrl!,
+                      height: 140,
+                      width: double.infinity,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => _banner(accentColor),
+                    )
+                  : _banner(accentColor),
             ),
-          ),
-        ],
+
+            Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          g.title,
+                          style: GoogleFonts.plusJakartaSans(
+                            color: AppTheme.primary,
+                            fontSize: 17,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                      if (isComplete)
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 10, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: AppTheme.secondaryContainer.withOpacity(0.5),
+                            borderRadius: BorderRadius.circular(100),
+                          ),
+                          child: Text(
+                            '✅ Completada',
+                            style: GoogleFonts.beVietnamPro(
+                              color: AppTheme.onSecondaryContainer,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                      IconButton(
+                        onPressed: widget.onEdit,
+                        icon: const Icon(Icons.edit_outlined,
+                            color: AppTheme.onSurfaceVariant, size: 18),
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
+                      ),
+                      const SizedBox(width: 8),
+                      IconButton(
+                        onPressed: () => _confirmDelete(context),
+                        icon: Icon(Icons.delete_outline,
+                            color: AppTheme.errorRed, size: 18),
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
+                      ),
+                    ],
+                  ),
+                  if (g.note != null && g.note!.isNotEmpty) ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      g.note!,
+                      style: GoogleFonts.beVietnamPro(
+                          color: AppTheme.onSurfaceVariant,
+                          fontSize: 12,
+                          fontStyle: FontStyle.italic),
+                    ),
+                  ],
+                  const SizedBox(height: 16),
+
+                  // Amounts
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Ahorrado',
+                              style: GoogleFonts.beVietnamPro(
+                                  color: AppTheme.onSurfaceVariant,
+                                  fontSize: 11)),
+                          Text(
+                            CurrencyFormatter.format(g.savedAmount),
+                            style: GoogleFonts.plusJakartaSans(
+                              color: accentColor,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ],
+                      ),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Text('Meta',
+                              style: GoogleFonts.beVietnamPro(
+                                  color: AppTheme.onSurfaceVariant,
+                                  fontSize: 11)),
+                          Text(
+                            CurrencyFormatter.format(g.targetAmount),
+                            style: GoogleFonts.plusJakartaSans(
+                              color: AppTheme.primary,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 14),
+
+                  // Progress bar
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(100),
+                    child: LinearProgressIndicator(
+                      value: percent,
+                      backgroundColor: accentColor.withOpacity(0.1),
+                      valueColor:
+                          AlwaysStoppedAnimation<Color>(accentColor),
+                      minHeight: 8,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        '${(percent * 100).toStringAsFixed(1)}% completado',
+                        style: GoogleFonts.beVietnamPro(
+                          color: accentColor,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      Text(
+                        'Falta: ${CurrencyFormatter.format(g.remaining)}',
+                        style: GoogleFonts.beVietnamPro(
+                            color: AppTheme.onSurfaceVariant, fontSize: 11),
+                      ),
+                    ],
+                  ),
+
+                  // Add savings button
+                  if (!isComplete) ...[
+                    const SizedBox(height: 16),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: () => _showAddSavings(context),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppTheme.secondaryFixed,
+                          foregroundColor: AppTheme.onSecondaryFixed,
+                          shape: const StadiumBorder(),
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          elevation: 0,
+                        ),
+                        child: Text(
+                          'Agregar ahorro',
+                          style: GoogleFonts.beVietnamPro(
+                              fontWeight: FontWeight.w700, fontSize: 14),
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _imagePlaceholder({bool rounded = false}) {
+  Widget _banner(Color color) {
     return Container(
-      height: 80,
+      height: 100,
       decoration: BoxDecoration(
-        gradient: AppTheme.primaryGradient,
-        borderRadius: rounded
-            ? const BorderRadius.vertical(top: Radius.circular(20))
-            : null,
+        gradient: LinearGradient(
+          colors: [AppTheme.primaryContainer, color],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
       ),
       child: const Center(
-        child: Icon(Icons.flag, color: Colors.white54, size: 36),
+        child: Icon(Icons.savings_rounded,
+            color: Colors.white54, size: 36),
       ),
     );
   }
 
-  void _showAddSavingsDialog(BuildContext context) {
-    final controller = TextEditingController();
-    final formKey = GlobalKey<FormState>();
-
+  void _showAddSavings(BuildContext context) {
+    final ctrl = TextEditingController();
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: AppTheme.cardDark,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text('Agregar ahorro',
-            style: TextStyle(color: AppTheme.textPrimary)),
-        content: Form(
-          key: formKey,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Meta: ${goal.title}',
-                style: const TextStyle(
-                    color: AppTheme.textSecondary, fontSize: 13),
+        backgroundColor: AppTheme.surfaceContainerLowest,
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Text('Agregar ahorro',
+            style: GoogleFonts.plusJakartaSans(
+                color: AppTheme.primary, fontWeight: FontWeight.w700)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              'Meta: ${widget.goal.title}  •  Falta: ${CurrencyFormatter.format(widget.goal.remaining)}',
+              style: GoogleFonts.beVietnamPro(
+                  color: AppTheme.onSurfaceVariant, fontSize: 13),
+            ),
+            const SizedBox(height: 20),
+            TextField(
+              controller: ctrl,
+              keyboardType:
+                  const TextInputType.numberWithOptions(decimal: true),
+              style: GoogleFonts.beVietnamPro(color: AppTheme.primary),
+              decoration: InputDecoration(
+                labelText: 'Monto a ahorrar',
+                labelStyle: GoogleFonts.beVietnamPro(
+                    color: AppTheme.onSurfaceVariant),
               ),
-              Text(
-                'Falta: ${CurrencyFormatter.format(goal.remaining)}',
-                style: const TextStyle(
-                    color: AppTheme.accentPurple, fontSize: 13),
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: controller,
-                keyboardType:
-                const TextInputType.numberWithOptions(decimal: true),
-                style: const TextStyle(color: AppTheme.textPrimary),
-                decoration: const InputDecoration(
-                  labelText: 'Monto a ahorrar',
-                  prefixIcon: Icon(Icons.attach_money,
-                      color: AppTheme.accentPurple),
-                ),
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return 'Ingresa un monto';
-                  }
-                  final amount = double.tryParse(value.trim());
-                  if (amount == null || amount <= 0) {
-                    return 'Monto inválido';
-                  }
-                  return null;
-                },
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancelar',
-                style: TextStyle(color: AppTheme.textSecondary)),
+            child: Text('Cancelar',
+                style: TextStyle(color: AppTheme.onSurfaceVariant)),
           ),
           ElevatedButton(
             onPressed: () async {
-              if (formKey.currentState!.validate()) {
-                final amount = double.parse(controller.text.trim());
-                await goalService.addSavingsToGoal(
-                    goal: goal, amount: amount);
+              final amount = double.tryParse(ctrl.text.trim());
+              if (amount != null && amount > 0) {
+                await widget.goalService.addSavingsToGoal(
+                    goal: widget.goal, amount: amount);
                 if (ctx.mounted) Navigator.pop(ctx);
                 if (context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text(
                           '${CurrencyFormatter.format(amount)} ahorrado 🎯'),
-                      backgroundColor: AppTheme.income,
+                      backgroundColor: AppTheme.secondary,
                     ),
                   );
                 }
               }
             },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppTheme.secondary,
+              shape: const StadiumBorder(),
+            ),
             child: const Text('Ahorrar'),
           ),
         ],
@@ -428,41 +593,42 @@ class _GoalCard extends StatelessWidget {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: AppTheme.cardDark,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text('¿Eliminar meta?',
-            style: TextStyle(color: AppTheme.textPrimary)),
+        backgroundColor: AppTheme.surfaceContainerLowest,
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text('¿Eliminar meta?',
+            style: GoogleFonts.plusJakartaSans(
+                color: AppTheme.primary, fontWeight: FontWeight.w600)),
         content: Text(
-          'Se eliminará "${goal.title}". El dinero ahorrado no se devolverá al balance.',
-          style: const TextStyle(color: AppTheme.textSecondary),
+          'Se eliminará "${widget.goal.title}". El dinero ahorrado no se devolverá al balance.',
+          style: GoogleFonts.beVietnamPro(color: AppTheme.onSurfaceVariant),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Cancelar',
-                style: TextStyle(color: AppTheme.textSecondary)),
+            child: Text('Cancelar',
+                style: TextStyle(color: AppTheme.onSurfaceVariant)),
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Eliminar',
-                style: TextStyle(color: AppTheme.expense)),
+            child: Text('Eliminar',
+                style: TextStyle(
+                    color: AppTheme.errorRed, fontWeight: FontWeight.w600)),
           ),
         ],
       ),
     );
     if (confirm == true) {
-      await goalService.deleteGoal(goal.id);
+      await widget.goalService.deleteGoal(widget.goal.id);
     }
   }
 }
 
-// ============================================================
-// Sheet para crear O editar una meta
-// ============================================================
+// ── Goal Sheet ────────────────────────────────────────────────
 class _GoalSheet extends StatefulWidget {
   final String userId;
   final GoalService goalService;
-  final GoalModel? existing; // null = crear, not null = editar
+  final GoalModel? existing;
 
   const _GoalSheet({
     required this.userId,
@@ -475,10 +641,10 @@ class _GoalSheet extends StatefulWidget {
 }
 
 class _GoalSheetState extends State<_GoalSheet> {
-  late final TextEditingController _titleController;
-  late final TextEditingController _targetController;
-  late final TextEditingController _imageController;
-  late final TextEditingController _noteController;
+  late final TextEditingController _titleCtrl;
+  late final TextEditingController _targetCtrl;
+  late final TextEditingController _imageCtrl;
+  late final TextEditingController _noteCtrl;
   bool _isLoading = false;
 
   bool get _isEditing => widget.existing != null;
@@ -487,80 +653,63 @@ class _GoalSheetState extends State<_GoalSheet> {
   void initState() {
     super.initState();
     final g = widget.existing;
-    _titleController = TextEditingController(text: g?.title ?? '');
-    _targetController = TextEditingController(
+    _titleCtrl = TextEditingController(text: g?.title ?? '');
+    _targetCtrl = TextEditingController(
         text: g != null ? g.targetAmount.toStringAsFixed(0) : '');
-    _imageController = TextEditingController(text: g?.imageUrl ?? '');
-    _noteController = TextEditingController(text: g?.note ?? '');
+    _imageCtrl = TextEditingController(text: g?.imageUrl ?? '');
+    _noteCtrl = TextEditingController(text: g?.note ?? '');
   }
 
   Future<void> _save() async {
-    if (_titleController.text.trim().isEmpty ||
-        _targetController.text.trim().isEmpty) {
+    if (_titleCtrl.text.trim().isEmpty || _targetCtrl.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Por favor completa los campos obligatorios'),
-          backgroundColor: AppTheme.expense,
+          backgroundColor: AppTheme.errorRed,
         ),
       );
       return;
     }
-
-    final target = double.tryParse(_targetController.text.trim());
+    final target = double.tryParse(_targetCtrl.text.trim());
     if (target == null || target <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('El precio de la meta debe ser mayor a 0'),
-          backgroundColor: AppTheme.expense,
+          content: Text('El monto debe ser mayor a 0'),
+          backgroundColor: AppTheme.errorRed,
         ),
       );
       return;
     }
-
     setState(() => _isLoading = true);
-
     if (_isEditing) {
-      // ---- Modo edición: conserva savedAmount y createdAt ----
-      final updated = widget.existing!.copyWith(
-        title: _titleController.text.trim(),
+      await widget.goalService.updateGoal(widget.existing!.copyWith(
+        title: _titleCtrl.text.trim(),
         targetAmount: target,
-        imageUrl: _imageController.text.trim().isEmpty
-            ? null
-            : _imageController.text.trim(),
-        note: _noteController.text.trim().isEmpty
-            ? null
-            : _noteController.text.trim(),
-      );
-      await widget.goalService.updateGoal(updated);
+        imageUrl: _imageCtrl.text.trim().isEmpty ? null : _imageCtrl.text.trim(),
+        note: _noteCtrl.text.trim().isEmpty ? null : _noteCtrl.text.trim(),
+      ));
     } else {
-      // ---- Modo creación ----
-      final goal = GoalModel(
+      await widget.goalService.addGoal(GoalModel(
         id: '',
         userId: widget.userId,
-        title: _titleController.text.trim(),
+        title: _titleCtrl.text.trim(),
         targetAmount: target,
         savedAmount: 0,
-        imageUrl: _imageController.text.trim().isEmpty
-            ? null
-            : _imageController.text.trim(),
-        note: _noteController.text.trim().isEmpty
-            ? null
-            : _noteController.text.trim(),
+        imageUrl: _imageCtrl.text.trim().isEmpty ? null : _imageCtrl.text.trim(),
+        note: _noteCtrl.text.trim().isEmpty ? null : _noteCtrl.text.trim(),
         createdAt: DateTime.now(),
-      );
-      await widget.goalService.addGoal(goal);
+      ));
     }
-
     setState(() => _isLoading = false);
     if (mounted) Navigator.pop(context);
   }
 
   @override
   void dispose() {
-    _titleController.dispose();
-    _targetController.dispose();
-    _imageController.dispose();
-    _noteController.dispose();
+    _titleCtrl.dispose();
+    _targetCtrl.dispose();
+    _imageCtrl.dispose();
+    _noteCtrl.dispose();
     super.dispose();
   }
 
@@ -568,104 +717,92 @@ class _GoalSheetState extends State<_GoalSheet> {
   Widget build(BuildContext context) {
     return Padding(
       padding: EdgeInsets.only(
-        left: 24,
-        right: 24,
-        top: 24,
-        bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+        left: 28, right: 28, top: 28,
+        bottom: MediaQuery.of(context).viewInsets.bottom + 28,
       ),
       child: SingleChildScrollView(
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ---- Handle ----
             Center(
               child: Container(
                 width: 40,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: AppTheme.textSecondary.withOpacity(0.4),
+                  color: AppTheme.outlineVariant,
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
             ),
             const SizedBox(height: 20),
-
             Text(
               _isEditing ? '✏️ Editar meta' : '🎯 Nueva meta de ahorro',
-              style: const TextStyle(
-                color: AppTheme.textPrimary,
+              style: GoogleFonts.plusJakartaSans(
+                color: AppTheme.primary,
                 fontSize: 20,
-                fontWeight: FontWeight.bold,
+                fontWeight: FontWeight.w700,
               ),
             ),
             const SizedBox(height: 24),
-
-            TextField(
-              controller: _titleController,
-              style: const TextStyle(color: AppTheme.textPrimary),
-              decoration: const InputDecoration(
-                labelText: 'Nombre de la meta',
-                prefixIcon:
-                Icon(Icons.flag_outlined, color: AppTheme.accentPurple),
-                hintText: 'Ej: Moto, Viaje, Computador...',
-              ),
-            ),
-            const SizedBox(height: 16),
-
-            TextField(
-              controller: _targetController,
-              keyboardType:
-              const TextInputType.numberWithOptions(decimal: true),
-              style: const TextStyle(color: AppTheme.textPrimary),
-              decoration: const InputDecoration(
-                labelText: 'Precio de la meta',
-                prefixIcon: Icon(Icons.attach_money,
-                    color: AppTheme.accentPurple),
-                hintText: 'Ej: 7000000',
-              ),
-            ),
-            const SizedBox(height: 16),
-
-            TextField(
-              controller: _imageController,
-              style: const TextStyle(color: AppTheme.textPrimary),
-              decoration: const InputDecoration(
-                labelText: 'URL de imagen (opcional)',
-                prefixIcon:
-                Icon(Icons.image_outlined, color: AppTheme.accentPurple),
-                hintText: 'https://...',
-              ),
-            ),
-            const SizedBox(height: 16),
-
-            TextField(
-              controller: _noteController,
-              style: const TextStyle(color: AppTheme.textPrimary),
-              maxLines: 2,
-              decoration: const InputDecoration(
-                labelText: 'Nota (opcional)',
-                prefixIcon: Icon(Icons.note_outlined,
-                    color: AppTheme.accentPurple),
-              ),
-            ),
+            _field(_titleCtrl, 'Nombre de la meta',
+                hint: 'Ej: Moto, Viaje, Computador...'),
+            const SizedBox(height: 20),
+            _field(_targetCtrl, 'Precio de la meta',
+                keyboardType:
+                    const TextInputType.numberWithOptions(decimal: true),
+                hint: 'Ej: 7000000'),
+            const SizedBox(height: 20),
+            _field(_imageCtrl, 'URL de imagen (opcional)',
+                hint: 'https://...'),
+            const SizedBox(height: 20),
+            _field(_noteCtrl, 'Nota (opcional)', maxLines: 2),
             const SizedBox(height: 28),
-
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: _isLoading ? null : _save,
-                child: _isLoading
-                    ? const CircularProgressIndicator(
-                    color: AppTheme.textPrimary)
-                    : Text(
-                  _isEditing ? 'Guardar cambios' : 'Crear meta',
-                  style: const TextStyle(fontSize: 16),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppTheme.secondary,
+                  foregroundColor: Colors.white,
+                  shape: const StadiumBorder(),
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  elevation: 0,
                 ),
+                child: _isLoading
+                    ? const CircularProgressIndicator(color: Colors.white)
+                    : Text(
+                        _isEditing ? 'Guardar cambios' : 'Crear meta',
+                        style: GoogleFonts.plusJakartaSans(
+                            fontSize: 15, fontWeight: FontWeight.w600),
+                      ),
               ),
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _field(
+    TextEditingController ctrl,
+    String label, {
+    String? hint,
+    int maxLines = 1,
+    TextInputType? keyboardType,
+  }) {
+    return TextField(
+      controller: ctrl,
+      maxLines: maxLines,
+      keyboardType: keyboardType,
+      style: GoogleFonts.beVietnamPro(color: AppTheme.primary, fontSize: 15),
+      decoration: InputDecoration(
+        labelText: label,
+        hintText: hint,
+        labelStyle: GoogleFonts.beVietnamPro(
+            color: AppTheme.onSurfaceVariant, fontSize: 13),
+        hintStyle: GoogleFonts.beVietnamPro(
+            color: AppTheme.outlineVariant, fontSize: 14),
       ),
     );
   }
