@@ -253,7 +253,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Widget _sidebarItem(IconData icon, String label, int index) {
     final isSelected = _selectedIndex == index;
-    return GestureDetector(
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      child: GestureDetector(
       onTap: () => setState(() => _selectedIndex = index),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 180),
@@ -282,7 +284,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ],
         ),
       ),
-    );
+    ));
   }
 
   Widget _buildDesktopHeader(String userId) {
