@@ -109,18 +109,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Container(
-                  padding: const EdgeInsets.all(4),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Image.asset(
-                    'assets/newmonedodesign/newlogo.png',
-                    width: 72,
-                    height: 72,
-                    fit: BoxFit.contain,
-                  ),
+                Image.asset(
+                  'assets/newmonedodesign/newlogo.png',
+                  width: 80,
+                  height: 80,
+                  fit: BoxFit.contain,
                 ),
                 const SizedBox(height: 32),
                 Text(
@@ -242,18 +235,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    child: Image.asset(
-                      'assets/newmonedodesign/newlogo.png',
-                      width: 40,
-                      height: 40,
-                      fit: BoxFit.contain,
-                    ),
+                  Image.asset(
+                    'assets/newmonedodesign/newlogo.png',
+                    width: 80,
+                    height: 80,
+                    fit: BoxFit.contain,
                   ),
                   const SizedBox(height: 8),
                   Text(
