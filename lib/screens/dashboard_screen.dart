@@ -330,12 +330,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ],
           ),
           const Spacer(),
-          IconButton(
-            icon: const Icon(Icons.notifications_none_rounded,
-                color: AppTheme.onSurfaceVariant),
-            onPressed: () {},
-          ),
-          const SizedBox(width: 8),
           ElevatedButton.icon(
             onPressed: () => Navigator.push(
               context,
