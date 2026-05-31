@@ -857,20 +857,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
       appBar: AppBar(
         backgroundColor: AppTheme.primary,
         elevation: 0,
-        title: Row(
-          children: [
-            const Icon(Icons.account_balance_wallet_rounded,
-                color: AppTheme.secondaryFixed, size: 26),
-            const SizedBox(width: 8),
-            Text(
-              'Monedo',
-              style: GoogleFonts.plusJakartaSans(
-                color: Colors.white,
-                fontSize: 20,
-                fontWeight: FontWeight.w800,
-              ),
-            ),
-          ],
+        title: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Image.asset(
+            'assets/newmonedodesign/newlogo.png',
+            height: 24,
+            fit: BoxFit.contain,
+          ),
         ),
         actions: [
           IconButton(
