@@ -52,6 +52,8 @@ class _TransactionTileState extends State<TransactionTile> {
     final iconColor =
         isIncome ? AppTheme.onSecondaryContainer : AppTheme.primary;
 
+    final isDesktop = MediaQuery.of(context).size.width >= 900;
+
     return MouseRegion(
       onEnter: (_) => setState(() => _hovered = true),
       onExit: (_) => setState(() => _hovered = false),
@@ -172,7 +174,7 @@ class _TransactionTileState extends State<TransactionTile> {
                 ),
                 const SizedBox(height: 6),
                 AnimatedOpacity(
-                  opacity: _hovered ? 1.0 : 0.0,
+                  opacity: (!isDesktop || _hovered) ? 1.0 : 0.0,
                   duration: const Duration(milliseconds: 180),
                   child: Row(
                     children: [
