@@ -109,20 +109,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  children: [
-                    const Icon(Icons.account_balance_wallet_rounded,
-                        size: 52, color: AppTheme.secondaryFixed),
-                    const SizedBox(width: 14),
-                    Text(
-                      'Monedo',
-                      style: GoogleFonts.plusJakartaSans(
-                        fontSize: 36,
-                        fontWeight: FontWeight.w800,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ],
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 16, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: Image.asset(
+                    'assets/newmonedodesign/newlogo.png',
+                    height: 36,
+                    fit: BoxFit.contain,
+                  ),
                 ),
                 const SizedBox(height: 32),
                 Text(
@@ -244,9 +242,20 @@ class _RegisterScreenState extends State<RegisterScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(Icons.account_balance_wallet_rounded,
-                      size: 56, color: AppTheme.secondaryFixed),
-                  const SizedBox(height: 12),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 10),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: Image.asset(
+                      'assets/newmonedodesign/newlogo.png',
+                      height: 32,
+                      fit: BoxFit.contain,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
                   Text(
                     'Crear cuenta',
                     style: GoogleFonts.plusJakartaSans(

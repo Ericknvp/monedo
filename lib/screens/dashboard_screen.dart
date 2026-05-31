@@ -40,10 +40,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
   late final Future<List<_MonthData>> _chartFuture;
 
   static const _sectionTitles = [
-    'Vista general ✨',
-    'Movimientos 💸',
-    'Estadísticas 📊',
-    'Metas de ahorro 🎯',
+    'Vista general',
+    'Movimientos',
+    'Estadísticas',
+    'Metas de ahorro',
     'Acerca de',
   ];
 
@@ -171,21 +171,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
         children: [
           // Brand
           Padding(
-            padding: const EdgeInsets.fromLTRB(28, 32, 28, 28),
-            child: Row(
-              children: [
-                const Icon(Icons.account_balance_wallet_rounded,
-                    color: AppTheme.secondaryFixed, size: 32),
-                const SizedBox(width: 10),
-                Text(
-                  'Monedo',
-                  style: GoogleFonts.plusJakartaSans(
-                    color: Colors.white,
-                    fontSize: 22,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-              ],
+            padding: const EdgeInsets.fromLTRB(20, 28, 20, 24),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Image.asset(
+                'assets/newmonedodesign/newlogo.png',
+                height: 30,
+                fit: BoxFit.contain,
+              ),
             ),
           ),
 
@@ -276,14 +273,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
           children: [
             Icon(
               icon,
-              color: isSelected ? AppTheme.primary : AppTheme.onPrimaryFixedVariant,
+              color: isSelected ? AppTheme.primary : Colors.white60,
               size: 20,
             ),
             const SizedBox(width: 14),
             Text(
               label,
               style: GoogleFonts.beVietnamPro(
-                color: isSelected ? AppTheme.primary : AppTheme.onPrimaryFixedVariant,
+                color: isSelected ? AppTheme.primary : Colors.white60,
                 fontSize: 14,
                 fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
               ),

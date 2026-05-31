@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;family=Be+Vietnam+Pro:wght@400;500;600&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@100..900&amp;family=Plus+Jakarta+Sans:wght@100..900&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .organic-blob {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            z-index: -1;
+            opacity: 0.15;
+        }
+        .donut-segment {
+            transition: stroke-dasharray 0.5s ease, stroke-dashoffset 0.5s ease;
+        }
+    </style>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "secondary-fixed": "#96f6c8",
+                    "on-surface-variant": "#42484c",
+                    "on-secondary-fixed": "#002114",
+                    "surface-variant": "#e5e2e1",
+                    "secondary-container": "#96f6c8",
+                    "on-secondary-fixed-variant": "#005137",
+                    "primary": "#001f2d",
+                    "secondary": "#006c4b",
+                    "surface-container-highest": "#e5e2e1",
+                    "on-secondary": "#ffffff",
+                    "primary-container": "#0c3547",
+                    "surface-container-low": "#f6f3f2",
+                    "on-background": "#1c1b1b",
+                    "surface-tint": "#3f6376",
+                    "outline-variant": "#c1c7cc",
+                    "on-secondary-container": "#00734f",
+                    "on-tertiary-fixed": "#1a1c1b",
+                    "inverse-on-surface": "#f3f0ef",
+                    "on-surface": "#1c1b1b",
+                    "inverse-primary": "#a7cce2",
+                    "surface-container": "#f0edec",
+                    "on-primary-fixed-variant": "#264b5e",
+                    "tertiary": "#1b1d1c",
+                    "error-container": "#ffdad6",
+                    "on-primary": "#ffffff",
+                    "on-error-container": "#93000a",
+                    "on-error": "#ffffff",
+                    "background": "#fcf9f8",
+                    "on-primary-container": "#7a9eb3",
+                    "tertiary-container": "#303231",
+                    "on-tertiary-container": "#999a98",
+                    "on-tertiary": "#ffffff",
+                    "tertiary-fixed-dim": "#c6c7c5",
+                    "secondary-fixed-dim": "#7ad9ad",
+                    "surface": "#fcf9f8",
+                    "surface-container-high": "#ebe7e7",
+                    "surface-dim": "#dcd9d9",
+                    "outline": "#72787c",
+                    "primary-fixed-dim": "#a7cce2",
+                    "error": "#ba1a1a",
+                    "primary-fixed": "#c3e8ff",
+                    "surface-bright": "#fcf9f8",
+                    "on-primary-fixed": "#001e2c",
+                    "surface-container-lowest": "#ffffff",
+                    "inverse-surface": "#313030",
+                    "tertiary-fixed": "#e2e3e1",
+                    "on-tertiary-fixed-variant": "#454746"
+            },
+            "borderRadius": {
+                    "DEFAULT": "1rem",
+                    "lg": "2rem",
+                    "xl": "3rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "sidebar-width": "280px",
+                    "container-margin": "40px",
+                    "section-gap": "64px",
+                    "gutter": "24px",
+                    "card-padding": "32px"
+            },
+            "fontFamily": {
+                    "headline-md": ["Plus Jakarta Sans"],
+                    "label-md": ["Be Vietnam Pro"],
+                    "body-lg": ["Be Vietnam Pro"],
+                    "display-lg-mobile": ["Plus Jakarta Sans"],
+                    "body-md": ["Be Vietnam Pro"],
+                    "label-sm": ["Be Vietnam Pro"],
+                    "display-lg": ["Plus Jakarta Sans"]
+            },
+            "fontSize": {
+                    "headline-md": ["24px", {"lineHeight": "1.3", "fontWeight": "600"}],
+                    "label-md": ["14px", {"lineHeight": "1.4", "letterSpacing": "0.01em", "fontWeight": "600"}],
+                    "body-lg": ["18px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                    "display-lg-mobile": ["32px", {"lineHeight": "1.2", "fontWeight": "700"}],
+                    "body-md": ["16px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                    "label-sm": ["12px", {"lineHeight": "1.4", "fontWeight": "500"}],
+                    "display-lg": ["48px", {"lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "700"}]
+            }
+          },
+        },
+      }
+    </script>
+</head>
+<body class="bg-background text-on-background min-h-screen overflow-x-hidden font-body-md text-body-md">
+<!-- Sidebar (Desktop) -->
+<aside class="w-sidebar-width h-full fixed left-0 top-0 bg-primary dark:bg-primary-container shadow-sm flex flex-col py-8 px-4 z-50 hidden md:flex">
+<div class="mb-12 px-6">
+<h1 class="font-headline-md text-headline-md font-bold text-on-primary">Monedo</h1>
+<p class="font-body-md text-body-md text-on-primary-fixed-variant">Personal Finance</p>
+</div>
+<nav class="flex flex-col gap-2 flex-grow">
+<a class="text-on-primary-fixed-variant hover:text-on-primary px-6 py-3 flex items-center gap-4 transition-all duration-300 hover:bg-primary-container/50 rounded-full" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-label-md text-label-md">Overview</span>
+</a>
+<a class="text-on-primary-fixed-variant hover:text-on-primary px-6 py-3 flex items-center gap-4 transition-all duration-300 hover:bg-primary-container/50 rounded-full" href="#">
+<span class="material-symbols-outlined">receipt_long</span>
+<span class="font-label-md text-label-md">Transactions</span>
+</a>
+<a class="bg-surface-container-lowest text-primary rounded-full px-6 py-3 flex items-center gap-4 transition-all duration-300 scale-95" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">analytics</span>
+<span class="font-label-md text-label-md">Budgets</span>
+</a>
+<a class="text-on-primary-fixed-variant hover:text-on-primary px-6 py-3 flex items-center gap-4 transition-all duration-300 hover:bg-primary-container/50 rounded-full" href="#">
+<span class="material-symbols-outlined">savings</span>
+<span class="font-label-md text-label-md">Savings</span>
+</a>
+</nav>
+<div class="mt-auto px-6 pt-8 border-t border-primary-container">
+<a class="text-on-primary-fixed-variant hover:text-on-primary px-6 py-3 flex items-center gap-4 transition-all duration-300 hover:bg-primary-container/50 rounded-full" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-label-md text-label-md">Settings</span>
+</a>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="md:ml-sidebar-width min-h-screen px-container-margin py-8 relative">
+<!-- Organic Blobs Background -->
+<div class="organic-blob w-96 h-96 bg-secondary-fixed -top-20 -right-20"></div>
+<div class="organic-blob w-[500px] h-[500px] bg-primary-fixed-dim bottom-0 -left-40"></div>
+<!-- Top Header Component -->
+<header class="flex justify-between items-center w-full mb-12">
+<div>
+<h2 class="font-headline-md text-headline-md font-bold text-primary">Spending Stats 📊</h2>
+<p class="text-on-surface-variant font-label-md text-label-md">Your financial flow at a glance</p>
+</div>
+<div class="flex items-center gap-6">
+<div class="hidden sm:flex gap-4">
+<button class="material-symbols-outlined text-on-surface-variant hover:opacity-80 transition-all active:scale-95">notifications</button>
+<button class="material-symbols-outlined text-on-surface-variant hover:opacity-80 transition-all active:scale-95">help_outline</button>
+</div>
+<button class="bg-secondary text-on-secondary px-8 py-3 rounded-full font-label-md text-label-md hover:opacity-90 active:scale-95 transition-all shadow-sm flex items-center gap-2">
+<span class="material-symbols-outlined">add</span>
+                    Add Transaction
+                </button>
+</div>
+</header>
+<!-- Month Navigation (Physical Dial Style) -->
+<div class="flex justify-center mb-section-gap">
+<div class="bg-surface-container border border-outline-variant/30 rounded-full p-1.5 flex items-center shadow-inner">
+<button class="px-6 py-2 rounded-full text-on-surface-variant hover:bg-surface-variant/50 transition-all font-label-md text-label-md">March</button>
+<button class="px-6 py-2 rounded-full text-on-surface-variant hover:bg-surface-variant/50 transition-all font-label-md text-label-md">April</button>
+<button class="px-8 py-2.5 rounded-full bg-primary text-on-primary shadow-lg transition-all font-label-md text-label-md">May 2024</button>
+<button class="px-6 py-2 rounded-full text-on-surface-variant hover:bg-surface-variant/50 transition-all font-label-md text-label-md">June</button>
+<button class="px-6 py-2 rounded-full text-on-surface-variant hover:bg-surface-variant/50 transition-all font-label-md text-label-md">July</button>
+</div>
+</div>
+<!-- Dashboard Layout: Bento Style -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-gutter items-start">
+<!-- Center Donut Chart Container -->
+<div class="lg:col-span-8 bg-surface-container-lowest rounded-lg p-card-padding shadow-[0_4px_20px_rgba(0,31,45,0.05)] relative overflow-hidden group">
+<div class="flex justify-between items-center mb-8">
+<h3 class="font-headline-md text-headline-md text-primary">Expense Distribution</h3>
+<div class="flex gap-2">
+<button class="p-2 rounded-full hover:bg-surface-container transition-colors"><span class="material-symbols-outlined text-on-surface-variant">more_vert</span></button>
+</div>
+</div>
+<div class="flex flex-col items-center justify-center py-12 relative">
+<!-- SVG Donut Chart -->
+<div class="relative w-64 h-64 md:w-80 md:h-80">
+<svg class="transform -rotate-90 w-full h-full" viewbox="0 0 100 100">
+<!-- Background track -->
+<circle cx="50" cy="50" fill="transparent" r="40" stroke="var(--tw-surface-container)" stroke-width="12"></circle>
+<!-- Housing (40%) -->
+<circle class="donut-segment" cx="50" cy="50" fill="transparent" r="40" stroke="#001f2d" stroke-dasharray="100.5 151.3" stroke-dashoffset="0" stroke-width="12"></circle>
+<!-- Food (25%) -->
+<circle class="donut-segment" cx="50" cy="50" fill="transparent" r="40" stroke="#006c4b" stroke-dasharray="62.8 188.5" stroke-dashoffset="-100.5" stroke-width="12"></circle>
+<!-- Leisure (20%) -->
+<circle class="donut-segment" cx="50" cy="50" fill="transparent" r="40" stroke="#3f6376" stroke-dasharray="50.2 201.1" stroke-dashoffset="-163.3" stroke-width="12"></circle>
+<!-- Others (15%) -->
+<circle class="donut-segment" cx="50" cy="50" fill="transparent" r="40" stroke="#96f6c8" stroke-dasharray="37.7 213.6" stroke-dashoffset="-213.5" stroke-width="12"></circle>
+</svg>
+<!-- Middle Hole Text -->
+<div class="absolute inset-0 flex flex-col items-center justify-center text-center">
+<span class="text-on-surface-variant font-label-md text-label-sm uppercase tracking-widest">Total Spent</span>
+<span class="text-primary font-display-lg text-headline-md md:text-display-lg leading-tight">$3,100</span>
+</div>
+</div>
+<!-- Category Legend -->
+<div class="mt-12 grid grid-cols-2 md:grid-cols-4 gap-8 w-full max-w-2xl">
+<div class="flex items-center gap-3">
+<div class="w-3 h-3 rounded-full bg-primary"></div>
+<div>
+<p class="font-label-md text-label-md text-primary leading-none">Housing</p>
+<p class="text-on-surface-variant text-label-sm">$1,240 (40%)</p>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<div class="w-3 h-3 rounded-full bg-secondary"></div>
+<div>
+<p class="font-label-md text-label-md text-primary leading-none">Food &amp; Drink</p>
+<p class="text-on-surface-variant text-label-sm">$775 (25%)</p>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<div class="w-3 h-3 rounded-full bg-surface-tint"></div>
+<div>
+<p class="font-label-md text-label-md text-primary leading-none">Leisure</p>
+<p class="text-on-surface-variant text-label-sm">$620 (20%)</p>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<div class="w-3 h-3 rounded-full bg-secondary-fixed"></div>
+<div>
+<p class="font-label-md text-label-md text-primary leading-none">Others</p>
+<p class="text-on-surface-variant text-label-sm">$465 (15%)</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Sidebar Stats Cards -->
+<div class="lg:col-span-4 flex flex-col gap-gutter">
+<!-- Top Spending Category -->
+<div class="bg-surface-container-low rounded-lg p-card-padding shadow-sm hover:shadow-md transition-shadow">
+<div class="flex items-center justify-between mb-6">
+<span class="material-symbols-outlined text-primary bg-primary-fixed p-3 rounded-2xl">trending_up</span>
+<span class="bg-error-container text-on-error-container px-3 py-1 rounded-full text-label-sm font-label-md">+12% vs Apr</span>
+</div>
+<h4 class="text-on-surface-variant font-label-md text-label-md mb-1">Top Spending Category</h4>
+<p class="font-headline-md text-headline-md text-primary mb-4">Housing &amp; Rent</p>
+<div class="w-full bg-outline-variant/30 h-2 rounded-full overflow-hidden">
+<div class="bg-primary h-full w-[40%] rounded-full"></div>
+</div>
+<p class="mt-4 text-label-sm text-on-surface-variant">Allocated: $1,500.00</p>
+</div>
+<!-- Budget Status -->
+<div class="bg-secondary-container rounded-lg p-card-padding shadow-sm hover:shadow-md transition-shadow border border-secondary-fixed">
+<div class="flex items-center justify-between mb-6">
+<span class="material-symbols-outlined text-on-secondary-container bg-white/50 p-3 rounded-2xl">account_balance_wallet</span>
+<span class="text-on-secondary-fixed-variant font-label-md text-label-sm">Safe to spend</span>
+</div>
+<h4 class="text-on-secondary-fixed-variant font-label-md text-label-md mb-1">Budget Status</h4>
+<p class="font-headline-md text-headline-md text-on-secondary-fixed mb-4">Under Budget</p>
+<div class="flex items-baseline gap-1">
+<span class="text-on-secondary-fixed font-bold text-headline-md">$400</span>
+<span class="text-on-secondary-fixed-variant text-label-sm">remaining of $3,500</span>
+</div>
+</div>
+<!-- Featured Graphic -->
+<div class="rounded-lg overflow-hidden h-48 relative group cursor-pointer shadow-sm">
+<img alt="Financial Growth" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" data-alt="A clean, minimalist high-key photograph of a small green sprout growing out of a stack of metal coins on a white textured background. The lighting is soft and airy, creating an empathetic and calm financial atmosphere with natural emerald and deep petroleum blue tones in the shadows. The composition is artistic and modern, symbolizing organic financial growth and personal stability." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDxqXTY-JEJV1IN8V8-9So4haUSVvrcc0XTeWEnD0-SrCyxMoZAbj6viPwz29CnTXWLEQ9bioVDgSZ0nIHTZ1qMh7EPdC1QmiZA1DZ0RF23ng9y-QnbGfCyPjNneixsHclXNHfMURECVJmMu0MkN--pCEJEshiWc7gtNiObTHpNancjFlcKtvb67RkdSthCFMspveMNiYDv4SX-S4-WDfZ1QISWRcGw1OlDQqzwUSaBlBuXlZGe4UPQRWf_NPOLeEpggNhfAEzwEsY"/>
+<div class="absolute inset-0 bg-gradient-to-t from-primary/80 to-transparent flex items-end p-6">
+<p class="text-on-primary font-label-md text-label-md">Expert Tip: You've saved 15% more than last month!</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Floating Mobile Action Button (Conditional Suppression logic applied but FAB is relevant for dashboard context) -->
+<button class="fixed bottom-24 right-6 md:bottom-12 md:right-12 bg-secondary text-on-secondary w-16 h-16 rounded-full flex items-center justify-center shadow-xl active:scale-90 transition-all z-40 md:hidden">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">add</span>
+</button>
+</main>
+<!-- Bottom Navigation Bar (Mobile) -->
+<nav class="fixed bottom-0 w-full flex justify-around items-center px-4 py-3 bg-surface-container dark:bg-surface-container-highest rounded-t-lg z-50 md:hidden shadow-lg">
+<a class="flex flex-col items-center justify-center text-on-surface-variant p-2 active:scale-90 duration-200" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="font-label-sm text-label-sm">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-secondary-container text-on-secondary-container rounded-xl p-2 active:scale-90 duration-200" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">analytics</span>
+<span class="font-label-sm text-label-sm">Activity</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant p-2 active:scale-90 duration-200" href="#">
+<span class="material-symbols-outlined">add_circle</span>
+<span class="font-label-sm text-label-sm">Add</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant p-2 active:scale-90 duration-200" href="#">
+<span class="material-symbols-outlined">stars</span>
+<span class="font-label-sm text-label-sm">Goals</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant p-2 active:scale-90 duration-200" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="font-label-sm text-label-sm">Profile</span>
+</a>
+</nav>
+<script>
+        // Simple micro-interaction for the month selector
+        const monthButtons = document.querySelectorAll('.month-selector button');
+        monthButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                monthButtons.forEach(b => {
+                    b.classList.remove('bg-primary', 'text-on-primary', 'shadow-lg');
+                    b.classList.add('text-on-surface-variant');
+                });
+                btn.classList.add('bg-primary', 'text-on-primary', 'shadow-lg');
+                btn.classList.remove('text-on-surface-variant');
+            });
+        });
+
+        // Add a subtle parallax effect to the blobs
+        document.addEventListener('mousemove', (e) => {
+            const blobs = document.querySelectorAll('.organic-blob');
+            const x = e.clientX / window.innerWidth;
+            const y = e.clientY / window.innerHeight;
+            
+            blobs.forEach((blob, index) => {
+                const speed = (index + 1) * 20;
+                blob.style.transform = `translate(${x * speed}px, ${y * speed}px)`;
+            });
+        });
+    </script>
+</body></html>

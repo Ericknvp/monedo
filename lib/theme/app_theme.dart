@@ -134,7 +134,7 @@ class AppTheme {
       ),
       contentPadding: const EdgeInsets.symmetric(vertical: 16),
     ),
-    cardTheme: CardTheme(
+    cardTheme: CardThemeData(
       color: surfaceContainerLowest,
       elevation: 0,
       surfaceTintColor: Colors.transparent,
@@ -150,7 +150,7 @@ class AppTheme {
         ),
       ),
     ),
-    dialogTheme: DialogTheme(
+    dialogTheme: DialogThemeData(
       backgroundColor: surfaceContainerLowest,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
     ),

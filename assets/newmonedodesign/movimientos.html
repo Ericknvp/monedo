@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Monedo | Transactions</title>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600&amp;family=Plus+Jakarta+Sans:wght@600;700;800&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "secondary-fixed": "#96f6c8",
+                        "on-surface-variant": "#42484c",
+                        "on-secondary-fixed": "#002114",
+                        "surface-variant": "#e5e2e1",
+                        "secondary-container": "#96f6c8",
+                        "on-secondary-fixed-variant": "#005137",
+                        "primary": "#001f2d",
+                        "secondary": "#006c4b",
+                        "surface-container-highest": "#e5e2e1",
+                        "on-secondary": "#ffffff",
+                        "primary-container": "#0c3547",
+                        "surface-container-low": "#f6f3f2",
+                        "on-background": "#1c1b1b",
+                        "surface-tint": "#3f6376",
+                        "outline-variant": "#c1c7cc",
+                        "on-secondary-container": "#00734f",
+                        "on-tertiary-fixed": "#1a1c1b",
+                        "inverse-on-surface": "#f3f0ef",
+                        "on-surface": "#1c1b1b",
+                        "inverse-primary": "#a7cce2",
+                        "surface-container": "#f0edec",
+                        "on-primary-fixed-variant": "#264b5e",
+                        "tertiary": "#1b1d1c",
+                        "error-container": "#ffdad6",
+                        "on-primary": "#ffffff",
+                        "on-error-container": "#93000a",
+                        "on-error": "#ffffff",
+                        "background": "#fcf9f8",
+                        "on-primary-container": "#7a9eb3",
+                        "tertiary-container": "#303231",
+                        "on-tertiary-container": "#999a98",
+                        "on-tertiary": "#ffffff",
+                        "tertiary-fixed-dim": "#c6c7c5",
+                        "secondary-fixed-dim": "#7ad9ad",
+                        "surface": "#fcf9f8",
+                        "surface-container-high": "#ebe7e7",
+                        "surface-dim": "#dcd9d9",
+                        "outline": "#72787c",
+                        "primary-fixed-dim": "#a7cce2",
+                        "error": "#ba1a1a",
+                        "primary-fixed": "#c3e8ff",
+                        "surface-bright": "#fcf9f8",
+                        "on-primary-fixed": "#001e2c",
+                        "surface-container-lowest": "#ffffff",
+                        "inverse-surface": "#313030",
+                        "tertiary-fixed": "#e2e3e1",
+                        "on-tertiary-fixed-variant": "#454746"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "1rem",
+                        "lg": "2rem",
+                        "xl": "3rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "sidebar-width": "280px",
+                        "container-margin": "40px",
+                        "section-gap": "64px",
+                        "gutter": "24px",
+                        "card-padding": "32px"
+                    },
+                    "fontFamily": {
+                        "headline-md": ["Plus Jakarta Sans"],
+                        "label-md": ["Be Vietnam Pro"],
+                        "body-lg": ["Be Vietnam Pro"],
+                        "display-lg-mobile": ["Plus Jakarta Sans"],
+                        "body-md": ["Be Vietnam Pro"],
+                        "label-sm": ["Be Vietnam Pro"],
+                        "display-lg": ["Plus Jakarta Sans"]
+                    },
+                    "fontSize": {
+                        "headline-md": ["24px", { "lineHeight": "1.3", "fontWeight": "600" }],
+                        "label-md": ["14px", { "lineHeight": "1.4", "letterSpacing": "0.01em", "fontWeight": "600" }],
+                        "body-lg": ["18px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "display-lg-mobile": ["32px", { "lineHeight": "1.2", "fontWeight": "700" }],
+                        "body-md": ["16px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "label-sm": ["12px", { "lineHeight": "1.4", "fontWeight": "500" }],
+                        "display-lg": ["48px", { "lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "700" }]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .transaction-card:hover .action-buttons {
+            opacity: 1;
+            transform: translateX(0);
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #e5e2e1;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md overflow-x-hidden selection:bg-secondary-fixed">
+<!-- Desktop SideNavBar -->
+<aside class="hidden md:flex flex-col h-screen py-8 px-4 w-sidebar-width fixed left-0 top-0 bg-primary shadow-sm z-50">
+<div class="mb-12 px-6">
+<h1 class="font-headline-md text-headline-md font-bold text-on-primary">Monedo</h1>
+<p class="font-body-md text-on-primary-fixed-variant opacity-70">Personal Finance</p>
+</div>
+<nav class="flex flex-col gap-2 flex-grow">
+<!-- Overview -->
+<a class="text-on-primary-fixed-variant hover:text-on-primary px-6 py-3 flex items-center gap-3 transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span class="font-label-md text-label-md">Overview</span>
+</a>
+<!-- Transactions (ACTIVE) -->
+<a class="bg-surface-container-lowest text-primary rounded-full px-6 py-3 flex items-center gap-3 transition-all duration-300 shadow-sm scale-100" href="#">
+<span class="material-symbols-outlined" data-icon="receipt_long">receipt_long</span>
+<span class="font-label-md text-label-md">Transactions</span>
+</a>
+<!-- Budgets -->
+<a class="text-on-primary-fixed-variant hover:text-on-primary px-6 py-3 flex items-center gap-3 transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="account_balance_wallet">account_balance_wallet</span>
+<span class="font-label-md text-label-md">Budgets</span>
+</a>
+<!-- Savings -->
+<a class="text-on-primary-fixed-variant hover:text-on-primary px-6 py-3 flex items-center gap-3 transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="savings">savings</span>
+<span class="font-label-md text-label-md">Savings</span>
+</a>
+<!-- Settings -->
+<a class="text-on-primary-fixed-variant hover:text-on-primary px-6 py-3 flex items-center gap-3 transition-all mt-auto" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="font-label-md text-label-md">Settings</span>
+</a>
+</nav>
+<div class="mt-8 px-6 pt-6 border-t border-on-primary-fixed-variant/20 flex items-center gap-3">
+<img alt="User Profile" class="w-10 h-10 rounded-full object-cover" data-alt="A professional headshot of a friendly man with a warm smile, set against a soft-focus office background. The lighting is bright and natural, reflecting the calm and trustworthy aesthetic of a premium financial application. The overall tone is professional and human-centric." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBT9rYZMFwEwwuvornKUT3yH3SA323ZWNa1qfXTMiplSnq0RPWgmmTN_UiMdou9nfvlQDurkr2f9eUWuHjiXEaRdHLgodIICMqwqhkRuwn6qxszR-PzjLdEWLDBQzanYzPefeJ4xsS7VLXtrQct-MLv7TRkRGmIdmuc1gjwjXXZa8y50BBtmZ3ph9kAXK7ovoHPO1nEORAiQHLOrn_xsi4F3FRLH8jaDCmao8wXRoRa7_DNDkuzbayGWznSg-DVV--PPzEjHaP9msw"/>
+<div>
+<p class="font-label-md text-on-primary text-sm">Alex Rivera</p>
+<p class="font-label-sm text-on-primary-fixed-variant text-xs">Premium Member</p>
+</div>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="md:ml-sidebar-width min-h-screen pb-32 md:pb-12">
+<!-- TopAppBar (Sticky) -->
+<header class="flex justify-between items-center w-full px-container-margin py-8 sticky top-0 bg-background/80 backdrop-blur-md z-40">
+<div class="flex flex-col">
+<h2 class="font-headline-md text-headline-md font-bold text-primary">Transactions 💸</h2>
+<p class="font-body-md text-on-surface-variant">Managing your cash flow with ease</p>
+</div>
+<div class="flex items-center gap-4">
+<button class="hidden md:flex material-symbols-outlined p-2 text-on-surface-variant hover:bg-surface-container rounded-full transition-all" data-icon="search">search</button>
+<button class="hidden md:flex material-symbols-outlined p-2 text-on-surface-variant hover:bg-surface-container rounded-full transition-all" data-icon="notifications">notifications</button>
+<button class="bg-on-secondary-container text-on-secondary px-8 py-3 rounded-full font-label-md text-label-md flex items-center gap-2 hover:opacity-90 active:scale-95 transition-all shadow-lg shadow-secondary-container/20">
+<span class="material-symbols-outlined text-[20px]" data-icon="add">add</span>
+                    Add Transaction
+                </button>
+</div>
+</header>
+<!-- Content Section -->
+<section class="px-container-margin">
+<!-- Filter Pills -->
+<div class="flex gap-3 overflow-x-auto pb-4 custom-scrollbar no-scrollbar items-center">
+<button class="bg-primary text-on-primary px-6 py-2 rounded-full font-label-md text-label-md shadow-md whitespace-nowrap">All Items</button>
+<button class="bg-surface-container text-on-surface-variant px-6 py-2 rounded-full font-label-md text-label-md hover:bg-surface-container-high transition-all whitespace-nowrap">Expenses</button>
+<button class="bg-surface-container text-on-surface-variant px-6 py-2 rounded-full font-label-md text-label-md hover:bg-surface-container-high transition-all whitespace-nowrap">Income</button>
+<button class="bg-surface-container text-on-surface-variant px-6 py-2 rounded-full font-label-md text-label-md hover:bg-surface-container-high transition-all whitespace-nowrap">Subscribed</button>
+<div class="h-6 w-[1px] bg-outline-variant mx-2"></div>
+<button class="flex items-center gap-1 bg-surface-container text-on-surface-variant px-6 py-2 rounded-full font-label-md text-label-md hover:bg-surface-container-high transition-all whitespace-nowrap">
+<span class="material-symbols-outlined text-[18px]" data-icon="calendar_today">calendar_today</span>
+                    Last 30 Days
+                </button>
+</div>
+<!-- Transaction List -->
+<div class="mt-8 flex flex-col gap-4">
+<!-- Transaction Item 1 -->
+<div class="transaction-card group bg-surface-container-low p-6 rounded-lg flex items-center justify-between transition-all hover:bg-white hover:shadow-xl hover:shadow-primary/5 cursor-pointer border border-transparent hover:border-surface-variant">
+<div class="flex items-center gap-6">
+<div class="w-14 h-14 bg-surface-container-highest rounded-2xl flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[28px]" data-icon="shopping_bag">shopping_bag</span>
+</div>
+<div>
+<h4 class="font-headline-md text-lg text-primary">Organic Groceries Store</h4>
+<p class="font-body-md text-on-surface-variant text-sm italic">Weekly supply for the family</p>
+</div>
+</div>
+<div class="flex items-center gap-8">
+<div class="hidden md:flex flex-col items-end">
+<span class="px-4 py-1 rounded-full bg-primary-container text-on-primary-container text-xs font-label-md uppercase tracking-wider">Expense</span>
+<span class="text-xs text-on-surface-variant mt-1">Oct 12, 10:30 AM</span>
+</div>
+<div class="flex flex-col items-end min-w-[100px]">
+<span class="font-headline-md text-xl text-primary">-$142.50</span>
+<!-- Hover Actions -->
+<div class="action-buttons opacity-0 translate-x-4 transition-all duration-300 flex gap-2">
+<button class="p-2 text-on-surface-variant hover:text-primary hover:bg-surface-container rounded-full transition-all">
+<span class="material-symbols-outlined text-[20px]" data-icon="edit">edit</span>
+</button>
+<button class="p-2 text-on-surface-variant hover:text-error hover:bg-error-container rounded-full transition-all">
+<span class="material-symbols-outlined text-[20px]" data-icon="delete">delete</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Transaction Item 2 -->
+<div class="transaction-card group bg-surface-container-low p-6 rounded-lg flex items-center justify-between transition-all hover:bg-white hover:shadow-xl hover:shadow-primary/5 cursor-pointer border border-transparent hover:border-surface-variant">
+<div class="flex items-center gap-6">
+<div class="w-14 h-14 bg-secondary-container/30 rounded-2xl flex items-center justify-center text-on-secondary-container">
+<span class="material-symbols-outlined text-[28px]" data-icon="work">work</span>
+</div>
+<div>
+<h4 class="font-headline-md text-lg text-primary">Design Project: Echo App</h4>
+<p class="font-body-md text-on-surface-variant text-sm italic">Milestone payment - UX Research</p>
+</div>
+</div>
+<div class="flex items-center gap-8">
+<div class="hidden md:flex flex-col items-end">
+<span class="px-4 py-1 rounded-full bg-secondary-container text-on-secondary-container text-xs font-label-md uppercase tracking-wider">Income</span>
+<span class="text-xs text-on-surface-variant mt-1">Oct 11, 2:15 PM</span>
+</div>
+<div class="flex flex-col items-end min-w-[100px]">
+<span class="font-headline-md text-xl text-on-secondary-container">+$2,800.00</span>
+<div class="action-buttons opacity-0 translate-x-4 transition-all duration-300 flex gap-2">
+<button class="p-2 text-on-surface-variant hover:text-primary hover:bg-surface-container rounded-full transition-all">
+<span class="material-symbols-outlined text-[20px]" data-icon="edit">edit</span>
+</button>
+<button class="p-2 text-on-surface-variant hover:text-error hover:bg-error-container rounded-full transition-all">
+<span class="material-symbols-outlined text-[20px]" data-icon="delete">delete</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Transaction Item 3 -->
+<div class="transaction-card group bg-surface-container-low p-6 rounded-lg flex items-center justify-between transition-all hover:bg-white hover:shadow-xl hover:shadow-primary/5 cursor-pointer border border-transparent hover:border-surface-variant">
+<div class="flex items-center gap-6">
+<div class="w-14 h-14 bg-surface-container-highest rounded-2xl flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[28px]" data-icon="movie">movie</span>
+</div>
+<div>
+<h4 class="font-headline-md text-lg text-primary">StreamMax Subscription</h4>
+<p class="font-body-md text-on-surface-variant text-sm italic">Monthly premium plan renewal</p>
+</div>
+</div>
+<div class="flex items-center gap-8">
+<div class="hidden md:flex flex-col items-end">
+<span class="px-4 py-1 rounded-full bg-primary-container text-on-primary-container text-xs font-label-md uppercase tracking-wider">Expense</span>
+<span class="text-xs text-on-surface-variant mt-1">Oct 10, 8:00 AM</span>
+</div>
+<div class="flex flex-col items-end min-w-[100px]">
+<span class="font-headline-md text-xl text-primary">-$15.99</span>
+<div class="action-buttons opacity-0 translate-x-4 transition-all duration-300 flex gap-2">
+<button class="p-2 text-on-surface-variant hover:text-primary hover:bg-surface-container rounded-full transition-all">
+<span class="material-symbols-outlined text-[20px]" data-icon="edit">edit</span>
+</button>
+<button class="p-2 text-on-surface-variant hover:text-error hover:bg-error-container rounded-full transition-all">
+<span class="material-symbols-outlined text-[20px]" data-icon="delete">delete</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Transaction Item 4 -->
+<div class="transaction-card group bg-surface-container-low p-6 rounded-lg flex items-center justify-between transition-all hover:bg-white hover:shadow-xl hover:shadow-primary/5 cursor-pointer border border-transparent hover:border-surface-variant">
+<div class="flex items-center gap-6">
+<div class="w-14 h-14 bg-surface-container-highest rounded-2xl flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[28px]" data-icon="directions_car">directions_car</span>
+</div>
+<div>
+<h4 class="font-headline-md text-lg text-primary">City Center Parking</h4>
+<p class="font-body-md text-on-surface-variant text-sm italic">Short stay parking fees</p>
+</div>
+</div>
+<div class="flex items-center gap-8">
+<div class="hidden md:flex flex-col items-end">
+<span class="px-4 py-1 rounded-full bg-primary-container text-on-primary-container text-xs font-label-md uppercase tracking-wider">Expense</span>
+<span class="text-xs text-on-surface-variant mt-1">Oct 09, 6:45 PM</span>
+</div>
+<div class="flex flex-col items-end min-w-[100px]">
+<span class="font-headline-md text-xl text-primary">-$8.00</span>
+<div class="action-buttons opacity-0 translate-x-4 transition-all duration-300 flex gap-2">
+<button class="p-2 text-on-surface-variant hover:text-primary hover:bg-surface-container rounded-full transition-all">
+<span class="material-symbols-outlined text-[20px]" data-icon="edit">edit</span>
+</button>
+<button class="p-2 text-on-surface-variant hover:text-error hover:bg-error-container rounded-full transition-all">
+<span class="material-symbols-outlined text-[20px]" data-icon="delete">delete</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Asymmetric Bento-style Summary Cards -->
+<div class="mt-section-gap grid grid-cols-1 md:grid-cols-3 gap-gutter">
+<div class="md:col-span-2 bg-surface-container-low rounded-lg p-card-padding relative overflow-hidden group">
+<div class="relative z-10">
+<h3 class="font-headline-md text-2xl text-primary mb-2">Spending Insight</h3>
+<p class="text-on-surface-variant max-w-md">You've spent 12% less on groceries this month compared to your usual average. Keep it up!</p>
+<button class="mt-6 flex items-center gap-2 text-primary font-label-md">
+                            View details
+                            <span class="material-symbols-outlined text-sm" data-icon="arrow_forward">arrow_forward</span>
+</button>
+</div>
+<!-- Background Blobs -->
+<div class="absolute top-0 right-0 w-64 h-64 bg-secondary-fixed/20 rounded-full blur-3xl -mr-20 -mt-20 group-hover:scale-110 transition-transform duration-700"></div>
+</div>
+<div class="bg-primary text-on-primary rounded-lg p-card-padding flex flex-col justify-between overflow-hidden relative group">
+<span class="material-symbols-outlined text-secondary-fixed text-4xl mb-8" data-icon="rocket_launch">rocket_launch</span>
+<div>
+<h3 class="font-headline-md text-2xl mb-1">Savings Goal</h3>
+<p class="text-on-primary-fixed-variant opacity-80 text-sm">Vacation to Bali</p>
+<div class="mt-4 w-full h-2 bg-primary-container rounded-full overflow-hidden">
+<div class="h-full bg-secondary-fixed w-[75%] rounded-full shadow-[0_0_15px_rgba(150,246,200,0.4)]"></div>
+</div>
+<p class="mt-2 text-xs text-right opacity-60">75% Complete</p>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- BottomNavBar (Mobile Only) -->
+<nav class="fixed bottom-0 w-full flex justify-around items-center px-4 py-3 md:hidden bg-surface-container shadow-[0_-4px_20px_rgba(0,31,45,0.05)] rounded-t-lg z-50">
+<a class="flex flex-col items-center justify-center text-on-surface-variant p-2 active:scale-90 duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="home">home</span>
+<span class="font-label-sm text-[10px]">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-secondary-container text-on-secondary-container rounded-xl p-2 active:scale-90 duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="analytics" style="font-variation-settings: 'FILL' 1;">analytics</span>
+<span class="font-label-sm text-[10px]">Activity</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant p-2 active:scale-90 duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="add_circle">add_circle</span>
+<span class="font-label-sm text-[10px]">Add</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant p-2 active:scale-90 duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="stars">stars</span>
+<span class="font-label-sm text-[10px]">Goals</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant p-2 active:scale-90 duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+<span class="font-label-sm text-[10px]">Profile</span>
+</a>
+</nav>
+<!-- Floating Action Button for Mobile -->
+<button class="md:hidden fixed bottom-24 right-6 w-14 h-14 bg-on-secondary-container text-on-secondary rounded-full shadow-2xl flex items-center justify-center active:scale-90 transition-transform z-40">
+<span class="material-symbols-outlined text-2xl" data-icon="add">add</span>
+</button>
+<script>
+        // Micro-interactions
+        document.querySelectorAll('.transaction-card').forEach(card => {
+            card.addEventListener('mouseenter', () => {
+                // Potential for adding subtle haptic vibration or sound effect
+            });
+        });
+
+        // Search bar activation for mobile (simple toggle logic)
+        const filterButtons = document.querySelectorAll('.filter-pill');
+        filterButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                filterButtons.forEach(b => b.classList.replace('bg-primary', 'bg-surface-container'));
+                btn.classList.replace('bg-surface-container', 'bg-primary');
+            });
+        });
+    </script>
+</body></html>

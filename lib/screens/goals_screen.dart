@@ -315,7 +315,7 @@ class _GoalCardState extends State<_GoalCard> {
               color: AppTheme.primary
                   .withOpacity(_hovered ? 0.08 : 0.04),
               blurRadius: _hovered ? 40 : 20,
-              offset: const Offset(0, _hovered ? 16 : 8),
+              offset: Offset(0, _hovered ? 16 : 8),
             ),
           ],
         ),
