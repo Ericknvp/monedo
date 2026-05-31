@@ -99,15 +99,15 @@ class _LoginScreenState extends State<LoginScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 16, vertical: 10),
+                  padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(14),
                   ),
                   child: Image.asset(
                     'assets/newmonedodesign/newlogo.png',
-                    height: 36,
+                    width: 44,
+                    height: 44,
                     fit: BoxFit.contain,
                   ),
                 ),
@@ -272,15 +272,15 @@ class _LoginScreenState extends State<LoginScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 16, vertical: 10),
+                    padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(14),
                     ),
                     child: Image.asset(
                       'assets/newmonedodesign/newlogo.png',
-                      height: 32,
+                      width: 40,
+                      height: 40,
                       fit: BoxFit.contain,
                     ),
                   ),
