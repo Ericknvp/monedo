@@ -33,7 +33,7 @@ class AboutScreen extends StatelessWidget {
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Image.asset(
-                    'assets/newmonedodesign/newlogo.png',
+                    'assets/newmonedodesign/newlogomonedo.png',
                     width: 64,
                     height: 64,
                     fit: BoxFit.contain,

@@ -99,7 +99,7 @@ class _LoginScreenState extends State<LoginScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Image.asset(
-                  'assets/newmonedodesign/newlogo.png',
+                  'assets/newmonedodesign/newlogomonedo.png',
                   width: 120,
                   height: 120,
                   fit: BoxFit.contain,
@@ -265,7 +265,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Image.asset(
-                    'assets/newmonedodesign/newlogo.png',
+                    'assets/newmonedodesign/newlogomonedo.png',
                     width: 100,
                     height: 100,
                     fit: BoxFit.contain,

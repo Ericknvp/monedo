@@ -175,7 +175,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             child: Row(
               children: [
                 Image.asset(
-                  'assets/newmonedodesign/newlogo.png',
+                  'assets/newmonedodesign/newlogomonedo.png',
                   width: 48,
                   height: 48,
                   fit: BoxFit.contain,
@@ -869,7 +869,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         elevation: 0,
         title: Container(
           child: Image.asset(
-            'assets/newmonedodesign/newlogo.png',
+            'assets/newmonedodesign/newlogomonedo.png',
             width: 48,
             height: 48,
             fit: BoxFit.contain,

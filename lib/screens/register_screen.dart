@@ -110,7 +110,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Image.asset(
-                  'assets/newmonedodesign/newlogo.png',
+                  'assets/newmonedodesign/newlogomonedo.png',
                   width: 120,
                   height: 120,
                   fit: BoxFit.contain,
@@ -236,7 +236,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Image.asset(
-                    'assets/newmonedodesign/newlogo.png',
+                    'assets/newmonedodesign/newlogomonedo.png',
                     width: 80,
                     height: 80,
                     fit: BoxFit.contain,
