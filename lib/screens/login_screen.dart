@@ -113,7 +113,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 const SizedBox(height: 32),
                 Text(
-                  'Your money,\nfinally makes sense.',
+                  'Tu dinero,\npor fin tiene sentido.',
                   style: GoogleFonts.plusJakartaSans(
                     fontSize: 42,
                     fontWeight: FontWeight.w700,
