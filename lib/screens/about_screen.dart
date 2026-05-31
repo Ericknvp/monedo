@@ -26,19 +26,19 @@ class AboutScreen extends StatelessWidget {
 
               // Logo
               Container(
-                padding: const EdgeInsets.all(18),
+                padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
                   color: AppTheme.primaryContainer,
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Image.asset(
                   'assets/newmonedodesign/newlogo.png',
-                  width: 52,
-                  height: 52,
+                  width: 56,
+                  height: 56,
                   fit: BoxFit.contain,
                 ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 16),
 
               Text(
                 'Monedo',
@@ -49,7 +49,7 @@ class AboutScreen extends StatelessWidget {
                 ),
               ),
               Text(
-                'v1.2.1',
+                'v2.0',
                 style: GoogleFonts.beVietnamPro(
                     color: AppTheme.onSurfaceVariant, fontSize: 14),
               ),
@@ -101,70 +101,77 @@ class AboutScreen extends StatelessWidget {
                   ],
                 ),
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 40),
 
-              // Creator card
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(28),
-                decoration: BoxDecoration(
-                  color: AppTheme.surfaceContainerLowest,
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: AppTheme.surfaceVariant),
-                ),
-                child: Column(
-                  children: [
-                    Container(
-                      width: 72,
-                      height: 72,
-                      decoration: BoxDecoration(
-                        color: AppTheme.primaryContainer,
-                        shape: BoxShape.circle,
-                      ),
-                      child: Center(
-                        child: Text(
-                          'E',
-                          style: GoogleFonts.plusJakartaSans(
-                            color: Colors.white,
-                            fontSize: 32,
-                            fontWeight: FontWeight.w800,
+              // Footer
+              const Divider(color: AppTheme.surfaceVariant),
+              const SizedBox(height: 20),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Hecho por Erick Narváez Vega',
+                    style: GoogleFonts.beVietnamPro(
+                      color: AppTheme.onSurfaceVariant,
+                      fontSize: 13,
+                    ),
+                  ),
+                  InkWell(
+                    onTap: () => _launch('https://ericknvp-dev.vercel.app'),
+                    borderRadius: BorderRadius.circular(8),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.language_rounded,
+                              color: AppTheme.secondary, size: 16),
+                          const SizedBox(width: 6),
+                          Text(
+                            'Portafolio',
+                            style: GoogleFonts.beVietnamPro(
+                              color: AppTheme.secondary,
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                              decoration: TextDecoration.underline,
+                              decorationColor: AppTheme.secondary,
+                            ),
                           ),
-                        ),
+                        ],
                       ),
                     ),
-                    const SizedBox(height: 14),
-                    Text(
-                      'Creado por',
-                      style: GoogleFonts.beVietnamPro(
-                          color: AppTheme.onSurfaceVariant, fontSize: 13),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Erick Narváez Vega',
-                      style: GoogleFonts.plusJakartaSans(
-                        color: AppTheme.primary,
-                        fontSize: 22,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-                    _linkRow(
-                      Icons.language_rounded,
-                      'Portafolio',
-                      'ericknvp-dev.vercel.app',
-                      () => _launch('https://ericknvp-dev.vercel.app'),
-                    ),
-                    const SizedBox(height: 14),
-                    _linkRow(
-                      Icons.code_rounded,
-                      'Repositorio',
-                      'github.com/Ericknvp/monedo',
-                      () => _launch('https://github.com/Ericknvp/monedo'),
-                    ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-              const SizedBox(height: 32),
+              const SizedBox(height: 8),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  InkWell(
+                    onTap: () => _launch('https://github.com/Ericknvp/monedo'),
+                    borderRadius: BorderRadius.circular(8),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.code_rounded,
+                              color: AppTheme.onSurfaceVariant, size: 14),
+                          const SizedBox(width: 6),
+                          Text(
+                            'Ver repositorio en GitHub',
+                            style: GoogleFonts.beVietnamPro(
+                              color: AppTheme.onSurfaceVariant,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 24),
             ],
           ),
         ),
@@ -185,44 +192,6 @@ class AboutScreen extends StatelessWidget {
           ),
         ),
       ],
-    );
-  }
-
-  Widget _linkRow(IconData icon, String label, String display, VoidCallback onTap) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(10),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: AppTheme.secondaryContainer.withOpacity(0.3),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Icon(icon, color: AppTheme.secondary, size: 20),
-          ),
-          const SizedBox(width: 14),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(label,
-                  style: GoogleFonts.beVietnamPro(
-                      color: AppTheme.onSurfaceVariant, fontSize: 12)),
-              Text(
-                display,
-                style: GoogleFonts.beVietnamPro(
-                  color: AppTheme.secondary,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  decoration: TextDecoration.underline,
-                  decorationColor: AppTheme.secondary,
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
     );
   }
 }
