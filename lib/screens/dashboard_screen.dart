@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fl_chart/fl_chart.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../services/auth_service.dart';
 import '../services/transaction_service.dart';
@@ -175,10 +174,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
             padding: const EdgeInsets.fromLTRB(20, 28, 20, 24),
             child: Row(
               children: [
-                SvgPicture.asset(
-                  'assets/newmonedodesign/newlogomonedo.svg',
-                  width: 48,
-                  height: 48,
+                Image.asset(
+                  'assets/newmonedodesign/newlogomonedo.png',
+                  width: 36,
+                  height: 36,
+                  fit: BoxFit.contain,
                 ),
                 const SizedBox(width: 4),
                 Text(
