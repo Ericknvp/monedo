@@ -196,15 +196,18 @@ class _TransactionTileState extends State<TransactionTile> {
 
   Widget _actionBtn(
       IconData icon, Color color, Color bg, VoidCallback onTap) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(6),
-        decoration: BoxDecoration(
-          color: bg,
-          borderRadius: BorderRadius.circular(100),
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.all(6),
+          decoration: BoxDecoration(
+            color: bg,
+            borderRadius: BorderRadius.circular(100),
+          ),
+          child: Icon(icon, color: color, size: 16),
         ),
-        child: Icon(icon, color: color, size: 16),
       ),
     );
   }
