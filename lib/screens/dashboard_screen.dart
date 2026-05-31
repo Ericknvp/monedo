@@ -868,10 +868,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
         backgroundColor: AppTheme.primary,
         elevation: 0,
         title: Container(
-          child: SvgPicture.asset(
-            'assets/newmonedodesign/newlogomonedo.svg',
-            width: 48,
-            height: 48,
+          child: Image.asset(
+            'assets/newmonedodesign/newlogomonedo.png',
+            width: 32,
+            height: 32,
+            fit: BoxFit.contain,
           ),
         ),
         actions: [
