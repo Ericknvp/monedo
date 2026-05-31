@@ -273,16 +273,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
           children: [
             Icon(
               icon,
-              color: isSelected ? AppTheme.primary : Colors.white60,
+              color: isSelected ? AppTheme.primary : Colors.white,
               size: 20,
             ),
             const SizedBox(width: 14),
             Text(
               label,
               style: GoogleFonts.beVietnamPro(
-                color: isSelected ? AppTheme.primary : Colors.white60,
+                color: isSelected ? AppTheme.primary : Colors.white,
                 fontSize: 14,
-                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w400,
               ),
             ),
           ],
