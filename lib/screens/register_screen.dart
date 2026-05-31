@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../services/auth_service.dart';
 import '../theme/app_theme.dart';
@@ -109,11 +110,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Image.asset(
-                  'assets/newmonedodesign/newlogomonedo.png',
+                SvgPicture.asset(
+                  'assets/newmonedodesign/newlogomonedo.svg',
                   width: 120,
                   height: 120,
-                  fit: BoxFit.contain,
                 ),
                 const SizedBox(height: 32),
                 Text(
@@ -235,11 +235,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Image.asset(
-                    'assets/newmonedodesign/newlogomonedo.png',
+                  SvgPicture.asset(
+                    'assets/newmonedodesign/newlogomonedo.svg',
                     width: 80,
                     height: 80,
-                    fit: BoxFit.contain,
                   ),
                   const SizedBox(height: 8),
                   Text(
