@@ -100,11 +100,11 @@ class _LoginScreenState extends State<LoginScreen> {
               children: [
                 Image.asset(
                   'assets/newmonedodesign/newlogo.png',
-                  width: 80,
-                  height: 80,
+                  width: 120,
+                  height: 120,
                   fit: BoxFit.contain,
                 ),
-                const SizedBox(height: 32),
+                const SizedBox(height: 16),
                 Text(
                   'Tu dinero,\npor fin tiene sentido.',
                   style: GoogleFonts.plusJakartaSans(
@@ -266,8 +266,8 @@ class _LoginScreenState extends State<LoginScreen> {
                 children: [
                   Image.asset(
                     'assets/newmonedodesign/newlogo.png',
-                    width: 80,
-                    height: 80,
+                    width: 100,
+                    height: 100,
                     fit: BoxFit.contain,
                   ),
                   const SizedBox(height: 6),

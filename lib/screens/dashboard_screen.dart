@@ -174,8 +174,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
             padding: const EdgeInsets.fromLTRB(20, 28, 20, 24),
             child: Image.asset(
               'assets/newmonedodesign/newlogo.png',
-              width: 48,
-              height: 48,
+              width: 64,
+              height: 64,
               fit: BoxFit.contain,
             ),
           ),
@@ -856,8 +856,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
         title: Container(
           child: Image.asset(
             'assets/newmonedodesign/newlogo.png',
-            width: 38,
-            height: 38,
+            width: 48,
+            height: 48,
             fit: BoxFit.contain,
           ),
         ),

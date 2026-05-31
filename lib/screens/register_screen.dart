@@ -111,8 +111,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
               children: [
                 Image.asset(
                   'assets/newmonedodesign/newlogo.png',
-                  width: 80,
-                  height: 80,
+                  width: 120,
+                  height: 120,
                   fit: BoxFit.contain,
                 ),
                 const SizedBox(height: 32),
