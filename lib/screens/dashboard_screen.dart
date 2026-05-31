@@ -930,7 +930,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Hola, ${_currentUser?.username ?? 'Usuario'}! 👋',
+                    'Hola, ${_currentUser?.username ?? 'Usuario'}',
                     style: GoogleFonts.beVietnamPro(
                         color: AppTheme.onSurfaceVariant, fontSize: 15),
                   ),
