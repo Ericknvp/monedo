@@ -142,13 +142,21 @@ class AppTheme {
     ),
     navigationBarTheme: NavigationBarThemeData(
       backgroundColor: surfaceContainer,
-      indicatorColor: secondaryContainer,
-      labelTextStyle: WidgetStateProperty.all(
-        GoogleFonts.beVietnamPro(
+      indicatorColor: secondary,
+      iconTheme: WidgetStateProperty.resolveWith((states) {
+        if (states.contains(WidgetState.selected)) {
+          return const IconThemeData(color: onSecondary);
+        }
+        return const IconThemeData(color: onSurfaceVariant);
+      }),
+      labelTextStyle: WidgetStateProperty.resolveWith((states) {
+        final selected = states.contains(WidgetState.selected);
+        return GoogleFonts.beVietnamPro(
           fontSize: 10,
-          fontWeight: FontWeight.w500,
-        ),
-      ),
+          fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+          color: selected ? secondary : onSurfaceVariant,
+        );
+      }),
     ),
     dialogTheme: DialogThemeData(
       backgroundColor: surfaceContainerLowest,

@@ -867,13 +867,26 @@ class _DashboardScreenState extends State<DashboardScreen> {
       appBar: AppBar(
         backgroundColor: AppTheme.primary,
         elevation: 0,
-        title: Container(
-          child: Image.asset(
-            'assets/images/logomonedo_new.png',
-            width: 32,
-            height: 32,
-            fit: BoxFit.contain,
-          ),
+        title: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Image.asset(
+              'assets/images/logomonedo_new.png',
+              width: 32,
+              height: 32,
+              fit: BoxFit.contain,
+            ),
+            const SizedBox(width: 8),
+            Text(
+              'Monedo',
+              style: GoogleFonts.plusJakartaSans(
+                color: Colors.white,
+                fontSize: 20,
+                fontWeight: FontWeight.w800,
+                letterSpacing: -0.4,
+              ),
+            ),
+          ],
         ),
         actions: [
           IconButton(
@@ -901,7 +914,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           : null,
       bottomNavigationBar: NavigationBar(
         backgroundColor: AppTheme.surfaceContainer,
-        indicatorColor: AppTheme.secondaryContainer,
+        indicatorColor: AppTheme.secondary,
         selectedIndex: _selectedIndex,
         labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
         onDestinationSelected: (i) => setState(() => _selectedIndex = i),
