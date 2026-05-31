@@ -18,6 +18,8 @@ class TransactionsScreen extends StatefulWidget {
 class _TransactionsScreenState extends State<TransactionsScreen> {
   final _txService = TransactionService();
   String _filter = 'Todos';
+  int _currentPage = 0;
+  static const _pageSize = 10;
 
   static const _filters = ['Todos', 'Ingresos', 'Gastos'];
 
@@ -32,8 +34,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                 color: AppTheme.primary, fontWeight: FontWeight.w600)),
         content: Text(
           'Se eliminará "${t.title}" (${CurrencyFormatter.format(t.amount)}). Esta acción no se puede deshacer.',
-          style:
-              GoogleFonts.beVietnamPro(color: AppTheme.onSurfaceVariant),
+          style: GoogleFonts.beVietnamPro(color: AppTheme.onSurfaceVariant),
         ),
         actions: [
           TextButton(
@@ -53,6 +54,13 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
     if (confirm == true) await _txService.deleteTransaction(t.id);
   }
 
+  void _setFilter(String f) {
+    setState(() {
+      _filter = f;
+      _currentPage = 0;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final userId = FirebaseAuth.instance.currentUser?.uid ?? '';
@@ -66,13 +74,16 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
           );
         }
 
-        var transactions = snapshot.data ?? [];
-
+        var all = snapshot.data ?? [];
         if (_filter == 'Ingresos') {
-          transactions = transactions.where((t) => t.isIncome).toList();
+          all = all.where((t) => t.isIncome).toList();
         } else if (_filter == 'Gastos') {
-          transactions = transactions.where((t) => !t.isIncome).toList();
+          all = all.where((t) => !t.isIncome).toList();
         }
+
+        final totalPages = (all.length / _pageSize).ceil().clamp(1, 9999);
+        final safePage = _currentPage.clamp(0, totalPages - 1);
+        final pageItems = all.skip(safePage * _pageSize).take(_pageSize).toList();
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -87,7 +98,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                   return Padding(
                     padding: const EdgeInsets.only(right: 8),
                     child: GestureDetector(
-                      onTap: () => setState(() => _filter = f),
+                      onTap: () => _setFilter(f),
                       child: AnimatedContainer(
                         duration: const Duration(milliseconds: 180),
                         padding: const EdgeInsets.symmetric(
@@ -119,7 +130,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
 
             // Transaction list
             Expanded(
-              child: transactions.isEmpty
+              child: all.isEmpty
                   ? Center(
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -139,17 +150,16 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                           Text(
                             'Agrega tu primer movimiento',
                             style: GoogleFonts.beVietnamPro(
-                                color: AppTheme.outlineVariant,
-                                fontSize: 13),
+                                color: AppTheme.outlineVariant, fontSize: 13),
                           ),
                         ],
                       ),
                     )
                   : ListView.builder(
-                      padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
-                      itemCount: transactions.length,
+                      padding: const EdgeInsets.fromLTRB(24, 8, 24, 8),
+                      itemCount: pageItems.length,
                       itemBuilder: (ctx, i) {
-                        final t = transactions[i];
+                        final t = pageItems[i];
                         return TransactionTile(
                           transaction: t,
                           onEdit: () => Navigator.push(
@@ -164,9 +174,119 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                       },
                     ),
             ),
+
+            // Pagination bar
+            if (all.isNotEmpty)
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                decoration: const BoxDecoration(
+                  color: AppTheme.background,
+                  border: Border(top: BorderSide(color: AppTheme.surfaceVariant)),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      '${safePage * _pageSize + 1}–${(safePage * _pageSize + pageItems.length)} de ${all.length}',
+                      style: GoogleFonts.beVietnamPro(
+                        color: AppTheme.onSurfaceVariant,
+                        fontSize: 13,
+                      ),
+                    ),
+                    Row(
+                      children: [
+                        _pageBtn(
+                          Icons.chevron_left_rounded,
+                          safePage > 0,
+                          () => setState(() => _currentPage = safePage - 1),
+                        ),
+                        const SizedBox(width: 4),
+                        ...List.generate(totalPages, (i) {
+                          if (totalPages <= 7 ||
+                              i == 0 ||
+                              i == totalPages - 1 ||
+                              (i - safePage).abs() <= 1) {
+                            return _pageNumBtn(i, safePage);
+                          }
+                          if (i == 1 && safePage > 3) {
+                            return _ellipsis();
+                          }
+                          if (i == totalPages - 2 && safePage < totalPages - 4) {
+                            return _ellipsis();
+                          }
+                          return const SizedBox.shrink();
+                        }),
+                        const SizedBox(width: 4),
+                        _pageBtn(
+                          Icons.chevron_right_rounded,
+                          safePage < totalPages - 1,
+                          () => setState(() => _currentPage = safePage + 1),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
           ],
         );
       },
+    );
+  }
+
+  Widget _pageBtn(IconData icon, bool enabled, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: enabled ? onTap : null,
+      child: Container(
+        width: 32,
+        height: 32,
+        decoration: BoxDecoration(
+          color: enabled ? AppTheme.surfaceContainer : Colors.transparent,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Icon(
+          icon,
+          size: 20,
+          color: enabled ? AppTheme.primary : AppTheme.outlineVariant,
+        ),
+      ),
+    );
+  }
+
+  Widget _pageNumBtn(int page, int current) {
+    final isSelected = page == current;
+    return GestureDetector(
+      onTap: () => setState(() => _currentPage = page),
+      child: Container(
+        width: 32,
+        height: 32,
+        margin: const EdgeInsets.symmetric(horizontal: 2),
+        decoration: BoxDecoration(
+          color: isSelected ? AppTheme.primary : Colors.transparent,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Center(
+          child: Text(
+            '${page + 1}',
+            style: GoogleFonts.beVietnamPro(
+              color: isSelected ? Colors.white : AppTheme.onSurfaceVariant,
+              fontSize: 13,
+              fontWeight: isSelected ? FontWeight.w700 : FontWeight.w400,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _ellipsis() {
+    return SizedBox(
+      width: 28,
+      height: 32,
+      child: Center(
+        child: Text('…',
+            style: GoogleFonts.beVietnamPro(
+                color: AppTheme.onSurfaceVariant, fontSize: 13)),
+      ),
     );
   }
 }
