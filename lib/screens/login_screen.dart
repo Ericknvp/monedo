@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../services/auth_service.dart';
 import '../theme/app_theme.dart';
@@ -99,10 +98,11 @@ class _LoginScreenState extends State<LoginScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                SvgPicture.asset(
-                  'assets/newmonedodesign/newlogomonedo.svg',
-                  width: 120,
-                  height: 120,
+                Image.asset(
+                  'assets/newmonedodesign/newlogomonedo.png',
+                  width: 64,
+                  height: 64,
+                  fit: BoxFit.contain,
                 ),
                 const SizedBox(height: 16),
                 Text(
@@ -264,10 +264,11 @@ class _LoginScreenState extends State<LoginScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  SvgPicture.asset(
-                    'assets/newmonedodesign/newlogomonedo.svg',
-                    width: 100,
-                    height: 100,
+                  Image.asset(
+                    'assets/newmonedodesign/newlogomonedo.png',
+                    width: 56,
+                    height: 56,
+                    fit: BoxFit.contain,
                   ),
                   const SizedBox(height: 6),
                   Text(
