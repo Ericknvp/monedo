@@ -26,15 +26,15 @@ class AboutScreen extends StatelessWidget {
 
               // Logo
               Container(
-                padding: const EdgeInsets.all(10),
+                padding: const EdgeInsets.all(4),
                 decoration: BoxDecoration(
                   color: AppTheme.primaryContainer,
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Image.asset(
                   'assets/newmonedodesign/newlogo.png',
-                  width: 56,
-                  height: 56,
+                  width: 64,
+                  height: 64,
                   fit: BoxFit.contain,
                 ),
               ),
@@ -110,7 +110,7 @@ class AboutScreen extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    'Hecho por Erick Narváez Vega',
+                    'Sobre el creador',
                     style: GoogleFonts.beVietnamPro(
                       color: AppTheme.onSurfaceVariant,
                       fontSize: 13,
