@@ -7,8 +7,7 @@ class AboutScreen extends StatelessWidget {
   const AboutScreen({super.key});
 
   Future<void> _launch(String url) async {
-    final uri = Uri.parse(url);
-    if (await canLaunchUrl(uri)) await launchUrl(uri, mode: LaunchMode.externalApplication);
+    await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
   }
 
   @override
@@ -27,7 +26,7 @@ class AboutScreen extends StatelessWidget {
               // Logo
               Center(
                 child: Image.asset(
-                  'assets/newmonedodesign/newlogomonedo.png',
+                  'assets/images/logomonedo_new.png',
                   width: 52,
                   height: 52,
                   fit: BoxFit.contain,
