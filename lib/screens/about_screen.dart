@@ -26,18 +26,11 @@ class AboutScreen extends StatelessWidget {
 
               // Logo
               Center(
-                child: Container(
-                  padding: const EdgeInsets.all(4),
-                  decoration: BoxDecoration(
-                    color: AppTheme.primaryContainer,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Image.asset(
-                    'assets/newmonedodesign/newlogomonedo.png',
-                    width: 52,
-                    height: 52,
-                    fit: BoxFit.contain,
-                  ),
+                child: Image.asset(
+                  'assets/newmonedodesign/newlogomonedo.png',
+                  width: 52,
+                  height: 52,
+                  fit: BoxFit.contain,
                 ),
               ),
               const SizedBox(height: 16),
