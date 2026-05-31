@@ -173,15 +173,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 28, 20, 24),
             child: Container(
-              padding: const EdgeInsets.all(10),
+              padding: const EdgeInsets.all(6),
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(10),
               ),
               child: Image.asset(
                 'assets/newmonedodesign/newlogo.png',
-                width: 36,
-                height: 36,
+                width: 32,
+                height: 32,
                 fit: BoxFit.contain,
               ),
             ),
@@ -859,15 +859,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
         backgroundColor: AppTheme.primary,
         elevation: 0,
         title: Container(
-          padding: const EdgeInsets.all(8),
+          padding: const EdgeInsets.all(6),
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(10),
           ),
           child: Image.asset(
             'assets/newmonedodesign/newlogo.png',
-            width: 30,
-            height: 30,
+            width: 26,
+            height: 26,
             fit: BoxFit.contain,
           ),
         ),
