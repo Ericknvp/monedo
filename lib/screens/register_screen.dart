@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../services/auth_service.dart';
 import '../theme/app_theme.dart';
 import 'dashboard_screen.dart';
@@ -16,7 +17,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
   final _authService = AuthService();
-
   bool _isLoading = false;
   bool _obscurePassword = true;
   bool _obscureConfirm = true;
@@ -29,42 +29,34 @@ class _RegisterScreenState extends State<RegisterScreen> {
       _showError('Por favor completa todos los campos');
       return;
     }
-
     if (_passwordController.text != _confirmPasswordController.text) {
       _showError('Las contraseñas no coinciden');
       return;
     }
-
     if (_passwordController.text.length < 6) {
       _showError('La contraseña debe tener al menos 6 caracteres');
       return;
     }
-
     setState(() => _isLoading = true);
-
     final error = await _authService.register(
       username: _usernameController.text.trim(),
       email: _emailController.text.trim(),
       password: _passwordController.text.trim(),
     );
-
     setState(() => _isLoading = false);
-
     if (error != null) {
       _showError(error);
-    } else {
-      if (mounted) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => const DashboardScreen()),
-        );
-      }
+    } else if (mounted) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const DashboardScreen()),
+      );
     }
   }
 
   void _showError(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message), backgroundColor: AppTheme.expense),
+      SnackBar(content: Text(message), backgroundColor: AppTheme.errorRed),
     );
   }
 
@@ -83,91 +75,85 @@ class _RegisterScreenState extends State<RegisterScreen> {
     return isDesktop ? _buildDesktop() : _buildMobile();
   }
 
-  // ── DESKTOP ───────────────────────────────────────────────────────
+  // ── DESKTOP ───────────────────────────────────────────────────
   Widget _buildDesktop() {
     return Scaffold(
-      backgroundColor: AppTheme.backgroundDark,
       body: Row(
         children: [
-          // Panel izquierdo — branding
-          Expanded(
-            child: Container(
-              decoration: const BoxDecoration(
-                gradient: AppTheme.primaryGradient,
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(60),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.start,
+          Expanded(child: _buildBrandingPanel()),
+          SizedBox(
+            width: 540,
+            child: _buildFormPanel(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBrandingPanel() {
+    return Container(
+      color: AppTheme.primary,
+      child: Stack(
+        children: [
+          Positioned(
+            top: -100, right: -60,
+            child: _blob(500, AppTheme.secondaryFixed, 0.2),
+          ),
+          Positioned(
+            bottom: -80, left: -80,
+            child: _blob(450, AppTheme.secondary, 0.15),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(60),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
                   children: [
-                    Image.asset('assets/images/logomonedo.png', height: 72),
-                    const SizedBox(height: 24),
-                    const Text(
+                    const Icon(Icons.account_balance_wallet_rounded,
+                        size: 52, color: AppTheme.secondaryFixed),
+                    const SizedBox(width: 14),
+                    Text(
                       'Monedo',
-                      style: TextStyle(
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 36,
+                        fontWeight: FontWeight.w800,
                         color: Colors.white,
-                        fontSize: 52,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: -1,
                       ),
                     ),
-                    const SizedBox(height: 12),
-                    const Text(
-                      'Tu dinero, bajo control',
-                      style: TextStyle(
-                        color: Colors.white70,
-                        fontSize: 22,
-                        height: 1.4,
-                      ),
-                    ),
-                    const SizedBox(height: 48),
-                    _buildFeature(Icons.receipt_long_outlined,
-                        'Registra ingresos y gastos fácilmente'),
-                    const SizedBox(height: 16),
-                    _buildFeature(Icons.bar_chart_outlined,
-                        'Visualiza estadísticas por mes'),
-                    const SizedBox(height: 16),
-                    _buildFeature(Icons.flag_outlined,
-                        'Crea y sigue tus metas de ahorro'),
                   ],
                 ),
-              ),
-            ),
-          ),
-
-          // Panel derecho — formulario
-          SizedBox(
-            width: 500,
-            child: Container(
-              color: AppTheme.backgroundDark,
-              padding: const EdgeInsets.symmetric(horizontal: 64),
-              child: Center(
-                child: SingleChildScrollView(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Crear cuenta',
-                        style: TextStyle(
-                          color: AppTheme.textPrimary,
-                          fontSize: 30,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      const Text(
-                        'Únete a Monedo, es gratis',
-                        style: TextStyle(
-                            color: AppTheme.textSecondary, fontSize: 15),
-                      ),
-                      const SizedBox(height: 40),
-                      _buildFormFields(),
-                    ],
+                const SizedBox(height: 32),
+                Text(
+                  'Tu dinero,\nbajo control.',
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 42,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white,
+                    height: 1.2,
+                    letterSpacing: -0.84,
                   ),
                 ),
-              ),
+                const SizedBox(height: 16),
+                Text(
+                  'Únete a miles de personas que ya\ntienen el control de sus finanzas.',
+                  style: GoogleFonts.beVietnamPro(
+                    fontSize: 16,
+                    color: AppTheme.secondaryFixed.withOpacity(0.85),
+                    height: 1.6,
+                  ),
+                ),
+                const SizedBox(height: 48),
+                _buildFeatureItem(Icons.receipt_long_rounded,
+                    'Registra ingresos y gastos'),
+                const SizedBox(height: 16),
+                _buildFeatureItem(Icons.bar_chart_rounded,
+                    'Visualiza estadísticas por mes'),
+                const SizedBox(height: 16),
+                _buildFeatureItem(Icons.savings_rounded,
+                    'Crea y sigue tus metas de ahorro'),
+              ],
             ),
           ),
         ],
@@ -175,24 +161,78 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
   }
 
-  Widget _buildFeature(IconData icon, String text) {
+  Widget _blob(double size, Color color, double opacity) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: color.withOpacity(opacity),
+      ),
+    );
+  }
+
+  Widget _buildFeatureItem(IconData icon, String text) {
     return Row(
       children: [
         Container(
-          padding: const EdgeInsets.all(8),
+          padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.15),
-            borderRadius: BorderRadius.circular(8),
+            color: AppTheme.secondaryFixed.withOpacity(0.15),
+            borderRadius: BorderRadius.circular(10),
           ),
-          child: Icon(icon, color: Colors.white, size: 20),
+          child: Icon(icon, color: AppTheme.secondaryFixed, size: 20),
         ),
         const SizedBox(width: 14),
-        Text(text, style: const TextStyle(color: Colors.white, fontSize: 15)),
+        Text(
+          text,
+          style: GoogleFonts.beVietnamPro(
+            color: Colors.white,
+            fontSize: 15,
+          ),
+        ),
       ],
     );
   }
 
-  // ── MOBILE (sin cambios) ──────────────────────────────────────────
+  Widget _buildFormPanel() {
+    return Container(
+      color: Colors.white,
+      padding: const EdgeInsets.symmetric(horizontal: 56),
+      child: Center(
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Crear cuenta',
+                style: GoogleFonts.plusJakartaSans(
+                  fontSize: 38,
+                  fontWeight: FontWeight.w700,
+                  color: AppTheme.primary,
+                  letterSpacing: -0.76,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Comienza tu camino hacia la claridad financiera.',
+                style: GoogleFonts.beVietnamPro(
+                  fontSize: 16,
+                  color: AppTheme.onSurfaceVariant,
+                  height: 1.5,
+                ),
+              ),
+              const SizedBox(height: 40),
+              _buildFormFields(),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // ── MOBILE ───────────────────────────────────────────────────
   Widget _buildMobile() {
     return Scaffold(
       body: Container(
@@ -200,28 +240,31 @@ class _RegisterScreenState extends State<RegisterScreen> {
         child: SafeArea(
           child: Center(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.all(24),
+              padding: const EdgeInsets.all(28),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Image.asset('assets/images/logomonedo.png', height: 80),
-                  const SizedBox(height: 16),
-                  const Text(
+                  const Icon(Icons.account_balance_wallet_rounded,
+                      size: 56, color: AppTheme.secondaryFixed),
+                  const SizedBox(height: 12),
+                  Text(
                     'Crear cuenta',
-                    style: TextStyle(
-                      color: AppTheme.textPrimary,
+                    style: GoogleFonts.plusJakartaSans(
+                      color: Colors.white,
                       fontSize: 32,
-                      fontWeight: FontWeight.bold,
+                      fontWeight: FontWeight.w800,
                     ),
                   ),
-                  const SizedBox(height: 8),
-                  const Text(
+                  const SizedBox(height: 6),
+                  Text(
                     'Únete a Monedo',
-                    style:
-                        TextStyle(color: AppTheme.textSecondary, fontSize: 16),
+                    style: GoogleFonts.beVietnamPro(
+                      color: AppTheme.secondaryFixed,
+                      fontSize: 16,
+                    ),
                   ),
                   const SizedBox(height: 40),
-                  _buildFormFields(),
+                  _buildMobileFormFields(),
                 ],
               ),
             ),
@@ -231,90 +274,196 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
   }
 
-  // ── CAMPOS COMPARTIDOS ────────────────────────────────────────────
-  Widget _buildFormFields() {
+  Widget _buildMobileFormFields() {
+    inputField(TextEditingController ctrl, String label, IconData icon,
+        {bool obscure = false, bool isConfirm = false, TextInputType? keyboardType}) {
+      return TextField(
+        controller: ctrl,
+        obscureText: obscure
+            ? (isConfirm ? _obscureConfirm : _obscurePassword)
+            : false,
+        keyboardType: keyboardType,
+        style: const TextStyle(color: Colors.white),
+        decoration: InputDecoration(
+          labelText: label,
+          labelStyle:
+              GoogleFonts.beVietnamPro(color: Colors.white60, fontSize: 14),
+          enabledBorder: const UnderlineInputBorder(
+            borderSide: BorderSide(color: Colors.white24, width: 2),
+          ),
+          focusedBorder: const UnderlineInputBorder(
+            borderSide:
+                BorderSide(color: AppTheme.secondaryFixed, width: 2),
+          ),
+          prefixIcon: Icon(icon, color: AppTheme.secondaryFixed),
+          suffixIcon: obscure
+              ? IconButton(
+                  icon: Icon(
+                    (isConfirm ? _obscureConfirm : _obscurePassword)
+                        ? Icons.visibility_outlined
+                        : Icons.visibility_off_outlined,
+                    color: Colors.white54,
+                  ),
+                  onPressed: () => setState(() => isConfirm
+                      ? _obscureConfirm = !_obscureConfirm
+                      : _obscurePassword = !_obscurePassword),
+                )
+              : null,
+        ),
+      );
+    }
+
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        TextField(
-          controller: _usernameController,
-          style: const TextStyle(color: AppTheme.textPrimary),
-          decoration: const InputDecoration(
-            labelText: 'Nombre de usuario',
-            prefixIcon:
-                Icon(Icons.person_outline, color: AppTheme.accentPurple),
-          ),
-        ),
-        const SizedBox(height: 16),
-        TextField(
-          controller: _emailController,
-          keyboardType: TextInputType.emailAddress,
-          style: const TextStyle(color: AppTheme.textPrimary),
-          decoration: const InputDecoration(
-            labelText: 'Correo electrónico',
-            prefixIcon:
-                Icon(Icons.email_outlined, color: AppTheme.accentPurple),
-          ),
-        ),
-        const SizedBox(height: 16),
-        TextField(
-          controller: _passwordController,
-          obscureText: _obscurePassword,
-          style: const TextStyle(color: AppTheme.textPrimary),
-          decoration: InputDecoration(
-            labelText: 'Contraseña',
-            prefixIcon:
-                const Icon(Icons.lock_outlined, color: AppTheme.accentPurple),
-            suffixIcon: IconButton(
-              icon: Icon(
-                _obscurePassword
-                    ? Icons.visibility_outlined
-                    : Icons.visibility_off_outlined,
-                color: AppTheme.textSecondary,
-              ),
-              onPressed: () =>
-                  setState(() => _obscurePassword = !_obscurePassword),
-            ),
-          ),
-        ),
-        const SizedBox(height: 16),
-        TextField(
-          controller: _confirmPasswordController,
-          obscureText: _obscureConfirm,
-          style: const TextStyle(color: AppTheme.textPrimary),
-          decoration: InputDecoration(
-            labelText: 'Confirmar contraseña',
-            prefixIcon:
-                const Icon(Icons.lock_outlined, color: AppTheme.accentPurple),
-            suffixIcon: IconButton(
-              icon: Icon(
-                _obscureConfirm
-                    ? Icons.visibility_outlined
-                    : Icons.visibility_off_outlined,
-                color: AppTheme.textSecondary,
-              ),
-              onPressed: () =>
-                  setState(() => _obscureConfirm = !_obscureConfirm),
-            ),
-          ),
-        ),
-        const SizedBox(height: 32),
+        inputField(_usernameController, 'Nombre de usuario', Icons.person_outline),
+        const SizedBox(height: 20),
+        inputField(_emailController, 'Correo electrónico', Icons.email_outlined,
+            keyboardType: TextInputType.emailAddress),
+        const SizedBox(height: 20),
+        inputField(_passwordController, 'Contraseña', Icons.lock_outlined,
+            obscure: true),
+        const SizedBox(height: 20),
+        inputField(_confirmPasswordController, 'Confirmar contraseña',
+            Icons.lock_outlined,
+            obscure: true, isConfirm: true),
+        const SizedBox(height: 36),
         SizedBox(
           width: double.infinity,
           child: ElevatedButton(
             onPressed: _isLoading ? null : _register,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppTheme.secondary,
+              shape: const StadiumBorder(),
+              padding: const EdgeInsets.symmetric(vertical: 18),
+            ),
             child: _isLoading
-                ? const CircularProgressIndicator(color: AppTheme.textPrimary)
-                : const Text('Crear cuenta', style: TextStyle(fontSize: 16)),
+                ? const CircularProgressIndicator(color: Colors.white)
+                : Text('Crear cuenta',
+                    style: GoogleFonts.plusJakartaSans(
+                        fontSize: 16, fontWeight: FontWeight.w600)),
           ),
         ),
         const SizedBox(height: 16),
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: RichText(
+            text: TextSpan(
+              text: '¿Ya tienes cuenta? ',
+              style: GoogleFonts.beVietnamPro(
+                  color: Colors.white70, fontSize: 14),
+              children: [
+                TextSpan(
+                  text: 'Inicia sesión',
+                  style: GoogleFonts.beVietnamPro(
+                    color: AppTheme.secondaryFixed,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  // ── SHARED FORM (desktop) ─────────────────────────────────────
+  Widget _buildFormFields() {
+    Widget field(TextEditingController ctrl, String label,
+        {bool obscure = false,
+        bool isConfirm = false,
+        TextInputType? keyboardType}) {
+      return TextField(
+        controller: ctrl,
+        obscureText:
+            obscure ? (isConfirm ? _obscureConfirm : _obscurePassword) : false,
+        keyboardType: keyboardType,
+        style: GoogleFonts.beVietnamPro(color: AppTheme.primary, fontSize: 16),
+        decoration: InputDecoration(
+          labelText: label,
+          labelStyle: GoogleFonts.beVietnamPro(
+              color: AppTheme.onSurfaceVariant, fontSize: 14),
+          enabledBorder: const UnderlineInputBorder(
+            borderSide: BorderSide(color: AppTheme.surfaceVariant, width: 2),
+          ),
+          focusedBorder: const UnderlineInputBorder(
+            borderSide: BorderSide(color: AppTheme.secondary, width: 2),
+          ),
+          suffixIcon: obscure
+              ? IconButton(
+                  icon: Icon(
+                    (isConfirm ? _obscureConfirm : _obscurePassword)
+                        ? Icons.visibility_outlined
+                        : Icons.visibility_off_outlined,
+                    color: AppTheme.onSurfaceVariant,
+                  ),
+                  onPressed: () => setState(() => isConfirm
+                      ? _obscureConfirm = !_obscureConfirm
+                      : _obscurePassword = !_obscurePassword),
+                )
+              : null,
+        ),
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        field(_usernameController, 'Nombre de usuario'),
+        const SizedBox(height: 28),
+        field(_emailController, 'Correo electrónico',
+            keyboardType: TextInputType.emailAddress),
+        const SizedBox(height: 28),
+        field(_passwordController, 'Contraseña', obscure: true),
+        const SizedBox(height: 28),
+        field(_confirmPasswordController, 'Confirmar contraseña',
+            obscure: true, isConfirm: true),
+        const SizedBox(height: 40),
+        SizedBox(
+          width: double.infinity,
+          child: ElevatedButton(
+            onPressed: _isLoading ? null : _register,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppTheme.secondary,
+              shape: const StadiumBorder(),
+              padding: const EdgeInsets.symmetric(vertical: 20),
+              elevation: 0,
+            ),
+            child: _isLoading
+                ? const CircularProgressIndicator(color: Colors.white)
+                : Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        'Crear cuenta',
+                        style: GoogleFonts.plusJakartaSans(
+                            fontSize: 16, fontWeight: FontWeight.w600),
+                      ),
+                      const SizedBox(width: 8),
+                      const Icon(Icons.arrow_forward_rounded, size: 20),
+                    ],
+                  ),
+          ),
+        ),
+        const SizedBox(height: 24),
         Center(
           child: TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text(
-              '¿Ya tienes cuenta? Inicia sesión',
-              style: TextStyle(color: AppTheme.accentPurple),
+            child: RichText(
+              text: TextSpan(
+                text: '¿Ya tienes cuenta? ',
+                style: GoogleFonts.beVietnamPro(
+                    color: AppTheme.onSurfaceVariant, fontSize: 14),
+                children: [
+                  TextSpan(
+                    text: 'Inicia sesión',
+                    style: GoogleFonts.beVietnamPro(
+                      color: AppTheme.secondary,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),

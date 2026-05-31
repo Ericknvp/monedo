@@ -31,7 +31,7 @@ class MonedoApp extends StatelessWidget {
     return MaterialApp(
       title: 'Monedo',
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.darkTheme,
+      theme: AppTheme.lightTheme,
       home: const AuthWrapper(),
     );
   }
