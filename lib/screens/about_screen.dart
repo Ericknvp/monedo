@@ -1,9 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../theme/app_theme.dart';
 
 class AboutScreen extends StatelessWidget {
   const AboutScreen({super.key});
+
+  Future<void> _launch(String url) async {
+    final uri = Uri.parse(url);
+    if (await canLaunchUrl(uri)) await launchUrl(uri, mode: LaunchMode.externalApplication);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -20,13 +26,16 @@ class AboutScreen extends StatelessWidget {
 
               // Logo
               Container(
-                padding: const EdgeInsets.all(24),
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
                 decoration: BoxDecoration(
                   color: AppTheme.primaryContainer,
-                  shape: BoxShape.circle,
+                  borderRadius: BorderRadius.circular(20),
                 ),
-                child: const Icon(Icons.account_balance_wallet_rounded,
-                    size: 56, color: AppTheme.secondaryFixed),
+                child: Image.asset(
+                  'assets/newmonedodesign/newlogo.png',
+                  height: 44,
+                  fit: BoxFit.contain,
+                ),
               ),
               const SizedBox(height: 20),
 
@@ -50,6 +59,48 @@ class AboutScreen extends StatelessWidget {
                     color: AppTheme.onSurfaceVariant, fontSize: 16),
               ),
               const SizedBox(height: 40),
+
+              // About app card
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  color: AppTheme.surfaceContainerLowest,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: AppTheme.surfaceVariant),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Sobre Monedo',
+                      style: GoogleFonts.plusJakartaSans(
+                        color: AppTheme.primary,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      'Monedo es una app de finanzas personales diseñada para ayudarte a tomar control de tu dinero. Registra tus ingresos y gastos, visualiza estadísticas mensuales, establece metas de ahorro y toma mejores decisiones financieras, todo desde un solo lugar.',
+                      style: GoogleFonts.beVietnamPro(
+                        color: AppTheme.onSurfaceVariant,
+                        fontSize: 15,
+                        height: 1.6,
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    _featureRow(Icons.receipt_long_rounded, 'Registro de ingresos y gastos'),
+                    const SizedBox(height: 10),
+                    _featureRow(Icons.analytics_rounded, 'Estadísticas visuales por mes'),
+                    const SizedBox(height: 10),
+                    _featureRow(Icons.savings_rounded, 'Metas de ahorro con seguimiento'),
+                    const SizedBox(height: 10),
+                    _featureRow(Icons.devices_rounded, 'Diseño responsive: web y móvil'),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 24),
 
               // Creator card
               Container(
@@ -96,47 +147,23 @@ class AboutScreen extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 24),
-                    _infoRow(Icons.email_outlined, 'Correo',
-                        'narvaezvegaerick@gmail.com'),
+                    _linkRow(
+                      Icons.language_rounded,
+                      'Portafolio',
+                      'ericknvp-dev.vercel.app',
+                      () => _launch('https://ericknvp-dev.vercel.app'),
+                    ),
                     const SizedBox(height: 14),
-                    _infoRow(Icons.camera_alt_outlined, 'Instagram', '@ericknvp'),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 24),
-
-              // About section
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(24),
-                decoration: BoxDecoration(
-                  color: AppTheme.surfaceContainerLowest,
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: AppTheme.surfaceVariant),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Sobre Monedo',
-                      style: GoogleFonts.plusJakartaSans(
-                        color: AppTheme.primary,
-                        fontSize: 18,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      'Monedo es una app de finanzas personales diseñada para ayudarte a tomar control de tu dinero. Registra tus ingresos y gastos, visualiza tus estadísticas y toma mejores decisiones financieras.',
-                      style: GoogleFonts.beVietnamPro(
-                        color: AppTheme.onSurfaceVariant,
-                        fontSize: 15,
-                        height: 1.6,
-                      ),
+                    _linkRow(
+                      Icons.code_rounded,
+                      'Repositorio',
+                      'github.com/Ericknvp/monedo',
+                      () => _launch('https://github.com/Ericknvp/monedo'),
                     ),
                   ],
                 ),
               ),
+              const SizedBox(height: 32),
             ],
           ),
         ),
@@ -144,33 +171,57 @@ class AboutScreen extends StatelessWidget {
     );
   }
 
-  Widget _infoRow(IconData icon, String label, String value) {
+  Widget _featureRow(IconData icon, String text) {
     return Row(
       children: [
-        Container(
-          padding: const EdgeInsets.all(10),
-          decoration: BoxDecoration(
-            color: AppTheme.secondaryContainer.withOpacity(0.3),
-            borderRadius: BorderRadius.circular(10),
+        Icon(icon, color: AppTheme.secondary, size: 18),
+        const SizedBox(width: 10),
+        Text(
+          text,
+          style: GoogleFonts.beVietnamPro(
+            color: AppTheme.onSurfaceVariant,
+            fontSize: 14,
           ),
-          child: Icon(icon, color: AppTheme.secondary, size: 20),
-        ),
-        const SizedBox(width: 14),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(label,
-                style: GoogleFonts.beVietnamPro(
-                    color: AppTheme.onSurfaceVariant, fontSize: 12)),
-            Text(value,
-                style: GoogleFonts.beVietnamPro(
-                  color: AppTheme.primary,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                )),
-          ],
         ),
       ],
+    );
+  }
+
+  Widget _linkRow(IconData icon, String label, String display, VoidCallback onTap) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(10),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: AppTheme.secondaryContainer.withOpacity(0.3),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(icon, color: AppTheme.secondary, size: 20),
+          ),
+          const SizedBox(width: 14),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(label,
+                  style: GoogleFonts.beVietnamPro(
+                      color: AppTheme.onSurfaceVariant, fontSize: 12)),
+              Text(
+                display,
+                style: GoogleFonts.beVietnamPro(
+                  color: AppTheme.secondary,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  decoration: TextDecoration.underline,
+                  decorationColor: AppTheme.secondary,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 }
