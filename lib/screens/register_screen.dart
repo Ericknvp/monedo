@@ -110,15 +110,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Container(
-                  padding: const EdgeInsets.all(12),
+                  padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
                     color: Colors.white,
-                    borderRadius: BorderRadius.circular(14),
+                    borderRadius: BorderRadius.circular(16),
                   ),
                   child: Image.asset(
                     'assets/newmonedodesign/newlogo.png',
-                    width: 44,
-                    height: 44,
+                    width: 56,
+                    height: 56,
                     fit: BoxFit.contain,
                   ),
                 ),
