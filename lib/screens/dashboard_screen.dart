@@ -172,11 +172,25 @@ class _DashboardScreenState extends State<DashboardScreen> {
           // Brand
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 28, 20, 24),
-            child: Image.asset(
-              'assets/newmonedodesign/newlogo.png',
-              width: 64,
-              height: 64,
-              fit: BoxFit.contain,
+            child: Row(
+              children: [
+                Image.asset(
+                  'assets/newmonedodesign/newlogo.png',
+                  width: 48,
+                  height: 48,
+                  fit: BoxFit.contain,
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  'Monedo',
+                  style: GoogleFonts.plusJakartaSans(
+                    color: Colors.white,
+                    fontSize: 22,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: -0.5,
+                  ),
+                ),
+              ],
             ),
           ),
 
