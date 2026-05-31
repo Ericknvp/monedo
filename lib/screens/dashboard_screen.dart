@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:fl_chart/fl_chart.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../services/auth_service.dart';
 import '../services/transaction_service.dart';
 import '../models/transaction.dart';
@@ -15,6 +17,14 @@ import 'goals_screen.dart';
 import 'about_screen.dart';
 import 'login_screen.dart';
 
+class _MonthData {
+  final DateTime month;
+  final double income;
+  final double expenses;
+  const _MonthData(
+      {required this.month, required this.income, required this.expenses});
+}
+
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
 
@@ -24,27 +34,54 @@ class DashboardScreen extends StatefulWidget {
 
 class _DashboardScreenState extends State<DashboardScreen> {
   final _authService = AuthService();
-  final _transactionService = TransactionService();
+  final _txService = TransactionService();
   int _selectedIndex = 0;
   UserModel? _currentUser;
+  late final Future<List<_MonthData>> _chartFuture;
 
   static const _sectionTitles = [
-    'Inicio',
-    'Movimientos',
-    'Estadísticas',
-    'Metas de ahorro',
+    'Vista general ✨',
+    'Movimientos 💸',
+    'Estadísticas 📊',
+    'Metas de ahorro 🎯',
     'Acerca de',
+  ];
+
+  static const _navItems = [
+    (Icons.dashboard_rounded, 'Vista general'),
+    (Icons.receipt_long_rounded, 'Movimientos'),
+    (Icons.analytics_rounded, 'Estadísticas'),
+    (Icons.savings_rounded, 'Metas'),
+    (Icons.person_outline_rounded, 'Acerca de'),
   ];
 
   @override
   void initState() {
     super.initState();
     _loadUser();
+    final uid = FirebaseAuth.instance.currentUser?.uid ?? '';
+    _chartFuture = _loadChartData(uid);
   }
 
   Future<void> _loadUser() async {
     final user = await _authService.getCurrentUserData();
     if (mounted) setState(() => _currentUser = user);
+  }
+
+  Future<List<_MonthData>> _loadChartData(String userId) async {
+    final now = DateTime.now();
+    final result = <_MonthData>[];
+    for (int i = 5; i >= 0; i--) {
+      final d = DateTime(now.year, now.month - i, 1);
+      final transactions =
+          await _txService.getTransactionsByMonth(userId, d.year, d.month).first;
+      result.add(_MonthData(
+        month: d,
+        income: _txService.calculateIncome(transactions),
+        expenses: _txService.calculateExpenses(transactions),
+      ));
+    }
+    return result;
   }
 
   Future<void> _logout() async {
@@ -57,31 +94,32 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
   }
 
-  Future<bool?> _confirmLogout() {
-    return showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: AppTheme.cardDark,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text('¿Cerrar sesión?',
-            style: TextStyle(color: AppTheme.textPrimary)),
-        content: const Text('¿Seguro que quieres salir de tu cuenta?',
-            style: TextStyle(color: AppTheme.textSecondary)),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Cancelar',
-                style: TextStyle(color: AppTheme.textSecondary)),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            child:
-                const Text('Salir', style: TextStyle(color: AppTheme.expense)),
-          ),
-        ],
-      ),
-    );
-  }
+  Future<bool?> _confirmLogout() => showDialog<bool>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          backgroundColor: AppTheme.surfaceContainerLowest,
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: Text('¿Cerrar sesión?',
+              style: GoogleFonts.plusJakartaSans(
+                  color: AppTheme.primary, fontWeight: FontWeight.w600)),
+          content: Text('¿Seguro que quieres salir de tu cuenta?',
+              style: GoogleFonts.beVietnamPro(color: AppTheme.onSurfaceVariant)),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: Text('Cancelar',
+                  style: TextStyle(color: AppTheme.onSurfaceVariant)),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: Text('Salir',
+                  style: TextStyle(
+                      color: AppTheme.errorRed, fontWeight: FontWeight.w600)),
+            ),
+          ],
+        ),
+      );
 
   @override
   Widget build(BuildContext context) {
@@ -89,96 +127,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final now = DateTime.now();
     final isDesktop = MediaQuery.of(context).size.width >= 900;
 
-    if (isDesktop) {
-      return _buildDesktopScaffold(userId, now);
-    }
-
-    // ── MOBILE (sin cambios) ──────────────────────────────────────
-    final pages = [
-      _buildHome(userId, now),
-      const TransactionsScreen(),
-      const StatisticsScreen(),
-      const GoalsScreen(),
-      const AboutScreen(),
-    ];
-
-    return Scaffold(
-      backgroundColor: AppTheme.backgroundDark,
-      appBar: AppBar(
-        backgroundColor: AppTheme.cardDark,
-        elevation: 0,
-        title: Row(
-          children: [
-            Image.asset('assets/images/logomonedo.png', height: 32),
-            const SizedBox(width: 8),
-            const Text(
-              'Monedo',
-              style: TextStyle(
-                  color: AppTheme.textPrimary, fontWeight: FontWeight.bold),
-            ),
-          ],
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout, color: AppTheme.textSecondary),
-            tooltip: 'Cerrar sesión',
-            onPressed: () async {
-              if (await _confirmLogout() == true) _logout();
-            },
-          ),
-        ],
-      ),
-      body: pages[_selectedIndex],
-      floatingActionButton: _selectedIndex == 0
-          ? FloatingActionButton(
-              backgroundColor: AppTheme.primaryPurple,
-              onPressed: () => Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const AddTransactionScreen()),
-              ),
-              child: const Icon(Icons.add, color: AppTheme.textPrimary),
-            )
-          : null,
-      bottomNavigationBar: NavigationBar(
-        backgroundColor: AppTheme.cardDark,
-        indicatorColor: AppTheme.primaryPurple,
-        selectedIndex: _selectedIndex,
-        labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
-        onDestinationSelected: (i) => setState(() => _selectedIndex = i),
-        destinations: const [
-          NavigationDestination(
-            icon: Icon(Icons.home_outlined, color: AppTheme.textSecondary),
-            selectedIcon: Icon(Icons.home, color: AppTheme.textPrimary),
-            label: 'Inicio',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.list_outlined, color: AppTheme.textSecondary),
-            selectedIcon: Icon(Icons.list, color: AppTheme.textPrimary),
-            label: 'Gastos',
-          ),
-          NavigationDestination(
-            icon:
-                Icon(Icons.bar_chart_outlined, color: AppTheme.textSecondary),
-            selectedIcon: Icon(Icons.bar_chart, color: AppTheme.textPrimary),
-            label: 'Estadísticas',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.flag_outlined, color: AppTheme.textSecondary),
-            selectedIcon: Icon(Icons.flag, color: AppTheme.textPrimary),
-            label: 'Metas',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.person_outline, color: AppTheme.textSecondary),
-            selectedIcon: Icon(Icons.person, color: AppTheme.textPrimary),
-            label: 'Info',
-          ),
-        ],
-      ),
-    );
+    if (isDesktop) return _buildDesktop(userId, now);
+    return _buildMobile(userId, now);
   }
 
-  // ── DESKTOP LAYOUT ────────────────────────────────────────────────
-  Widget _buildDesktopScaffold(String userId, DateTime now) {
+  // ── DESKTOP ───────────────────────────────────────────────────
+  Widget _buildDesktop(String userId, DateTime now) {
     final pages = [
       _buildDesktopHome(userId, now),
       const TransactionsScreen(),
@@ -188,14 +142,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
     ];
 
     return Scaffold(
-      backgroundColor: AppTheme.backgroundDark,
+      backgroundColor: AppTheme.background,
       body: Row(
         children: [
           _buildSidebar(),
           Expanded(
             child: Column(
               children: [
-                _buildDesktopTopBar(),
+                _buildDesktopHeader(userId),
                 Expanded(child: pages[_selectedIndex]),
               ],
             ),
@@ -207,102 +161,69 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Widget _buildSidebar() {
     return Container(
-      width: 240,
+      width: 280,
       decoration: const BoxDecoration(
-        color: AppTheme.cardDark,
+        color: AppTheme.primary,
         border: Border(right: BorderSide(color: Colors.white10)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Logo
+          // Brand
           Padding(
-            padding: const EdgeInsets.fromLTRB(24, 28, 24, 24),
+            padding: const EdgeInsets.fromLTRB(28, 32, 28, 28),
             child: Row(
               children: [
-                Image.asset('assets/images/logomonedo.png', height: 36),
+                const Icon(Icons.account_balance_wallet_rounded,
+                    color: AppTheme.secondaryFixed, size: 32),
                 const SizedBox(width: 10),
-                const Text(
+                Text(
                   'Monedo',
-                  style: TextStyle(
-                    color: AppTheme.textPrimary,
+                  style: GoogleFonts.plusJakartaSans(
+                    color: Colors.white,
                     fontSize: 22,
-                    fontWeight: FontWeight.bold,
+                    fontWeight: FontWeight.w800,
                   ),
                 ),
               ],
             ),
           ),
 
-          // Botón nuevo movimiento
+          // Nav
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                onPressed: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (_) => const AddTransactionScreen()),
-                ),
-                icon: const Icon(Icons.add, size: 18),
-                label: const Text('Nuevo movimiento'),
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                ),
-              ),
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            child: Column(
+              children: _navItems.asMap().entries.map((e) {
+                return _sidebarItem(e.value.$1, e.value.$2, e.key);
+              }).toList(),
             ),
           ),
-
-          const SizedBox(height: 20),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24),
-            child: Text(
-              'MENÚ',
-              style: TextStyle(
-                color: AppTheme.textSecondary.withOpacity(0.5),
-                fontSize: 11,
-                fontWeight: FontWeight.w700,
-                letterSpacing: 1.5,
-              ),
-            ),
-          ),
-          const SizedBox(height: 6),
-
-          _buildSidebarItem(Icons.home_outlined, Icons.home, 'Inicio', 0),
-          _buildSidebarItem(Icons.list_outlined, Icons.list, 'Movimientos', 1),
-          _buildSidebarItem(Icons.bar_chart_outlined, Icons.bar_chart,
-              'Estadísticas', 2),
-          _buildSidebarItem(
-              Icons.flag_outlined, Icons.flag, 'Metas de ahorro', 3),
-          _buildSidebarItem(
-              Icons.person_outline, Icons.person, 'Acerca de', 4),
 
           const Spacer(),
 
-          // Usuario + logout
+          // User footer
           Container(
             margin: const EdgeInsets.all(12),
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
             decoration: BoxDecoration(
-              color: AppTheme.backgroundDark,
-              borderRadius: BorderRadius.circular(12),
+              color: Colors.white.withOpacity(0.05),
+              borderRadius: BorderRadius.circular(14),
             ),
             child: Row(
               children: [
                 Container(
-                  width: 34,
-                  height: 34,
+                  width: 36,
+                  height: 36,
                   decoration: const BoxDecoration(
-                    gradient: AppTheme.primaryGradient,
+                    color: AppTheme.secondaryFixed,
                     shape: BoxShape.circle,
                   ),
                   child: Center(
                     child: Text(
                       (_currentUser?.username ?? 'U')[0].toUpperCase(),
-                      style: const TextStyle(
-                        color: AppTheme.textPrimary,
-                        fontWeight: FontWeight.bold,
+                      style: GoogleFonts.plusJakartaSans(
+                        color: AppTheme.onSecondaryFixed,
+                        fontWeight: FontWeight.w700,
                         fontSize: 15,
                       ),
                     ),
@@ -312,23 +233,23 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 Expanded(
                   child: Text(
                     _currentUser?.username ?? 'Usuario',
-                    style: const TextStyle(
-                      color: AppTheme.textPrimary,
-                      fontWeight: FontWeight.w600,
+                    style: GoogleFonts.beVietnamPro(
+                      color: Colors.white,
                       fontSize: 13,
+                      fontWeight: FontWeight.w600,
                     ),
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
                 IconButton(
-                  onPressed: () async {
-                    if (await _confirmLogout() == true) _logout();
-                  },
-                  icon: const Icon(Icons.logout,
-                      color: AppTheme.textSecondary, size: 18),
+                  icon: const Icon(Icons.logout_rounded,
+                      color: AppTheme.onPrimaryFixedVariant, size: 18),
                   tooltip: 'Cerrar sesión',
                   padding: EdgeInsets.zero,
                   constraints: const BoxConstraints(),
+                  onPressed: () async {
+                    if (await _confirmLogout() == true) _logout();
+                  },
                 ),
               ],
             ),
@@ -339,38 +260,32 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildSidebarItem(
-      IconData icon, IconData selectedIcon, String label, int index) {
+  Widget _sidebarItem(IconData icon, String label, int index) {
     final isSelected = _selectedIndex == index;
-    return InkWell(
+    return GestureDetector(
       onTap: () => setState(() => _selectedIndex = index),
-      borderRadius: BorderRadius.circular(10),
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 150),
-        margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+        duration: const Duration(milliseconds: 180),
+        margin: const EdgeInsets.symmetric(vertical: 2),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 13),
         decoration: BoxDecoration(
-          color: isSelected
-              ? AppTheme.primaryPurple.withOpacity(0.15)
-              : Colors.transparent,
-          borderRadius: BorderRadius.circular(10),
+          color: isSelected ? AppTheme.surfaceContainerLowest : Colors.transparent,
+          borderRadius: BorderRadius.circular(100),
         ),
         child: Row(
           children: [
             Icon(
-              isSelected ? selectedIcon : icon,
-              color:
-                  isSelected ? AppTheme.primaryPurple : AppTheme.textSecondary,
+              icon,
+              color: isSelected ? AppTheme.primary : AppTheme.onPrimaryFixedVariant,
               size: 20,
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: 14),
             Text(
               label,
-              style: TextStyle(
-                color: isSelected ? AppTheme.textPrimary : AppTheme.textSecondary,
-                fontWeight:
-                    isSelected ? FontWeight.w600 : FontWeight.normal,
+              style: GoogleFonts.beVietnamPro(
+                color: isSelected ? AppTheme.primary : AppTheme.onPrimaryFixedVariant,
                 fontSize: 14,
+                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
               ),
             ),
           ],
@@ -379,7 +294,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildDesktopTopBar() {
+  Widget _buildDesktopHeader(String userId) {
     final now = DateTime.now();
     const months = [
       'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
@@ -388,255 +303,151 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final dateStr = '${now.day} de ${months[now.month - 1]} de ${now.year}';
 
     return Container(
-      height: 60,
-      padding: const EdgeInsets.symmetric(horizontal: 32),
+      height: 72,
+      padding: const EdgeInsets.symmetric(horizontal: 40),
       decoration: const BoxDecoration(
-        color: AppTheme.cardDark,
-        border: Border(bottom: BorderSide(color: Colors.white10)),
+        color: AppTheme.background,
+        border: Border(bottom: BorderSide(color: AppTheme.surfaceVariant)),
       ),
       child: Row(
         children: [
-          Text(
-            _sectionTitles[_selectedIndex],
-            style: const TextStyle(
-              color: AppTheme.textPrimary,
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-            ),
+          Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                _sectionTitles[_selectedIndex],
+                style: GoogleFonts.plusJakartaSans(
+                  color: AppTheme.primary,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              Text(
+                dateStr,
+                style: GoogleFonts.beVietnamPro(
+                  color: AppTheme.onSurfaceVariant,
+                  fontSize: 12,
+                ),
+              ),
+            ],
           ),
           const Spacer(),
-          Text(
-            dateStr,
-            style: const TextStyle(color: AppTheme.textSecondary, fontSize: 14),
+          IconButton(
+            icon: const Icon(Icons.notifications_none_rounded,
+                color: AppTheme.onSurfaceVariant),
+            onPressed: () {},
+          ),
+          const SizedBox(width: 8),
+          ElevatedButton.icon(
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (_) => const AddTransactionScreen()),
+            ),
+            icon: const Icon(Icons.add_rounded, size: 18),
+            label: const Text('Agregar movimiento'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppTheme.secondary,
+              foregroundColor: Colors.white,
+              shape: const StadiumBorder(),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              elevation: 0,
+              textStyle: GoogleFonts.beVietnamPro(
+                  fontSize: 13, fontWeight: FontWeight.w600),
+            ),
           ),
         ],
       ),
     );
   }
 
-  // ── DESKTOP HOME (2 columnas) ─────────────────────────────────────
+  // ── DESKTOP HOME ──────────────────────────────────────────────
   Widget _buildDesktopHome(String userId, DateTime now) {
     return StreamBuilder<List<TransactionModel>>(
-      stream: _transactionService.getTransactions(userId),
-      builder: (context, allSnapshot) {
-        final allTransactions = allSnapshot.data ?? [];
-        final totalBalance =
-            _transactionService.calculateBalance(allTransactions);
+      stream: _txService.getTransactions(userId),
+      builder: (context, allSnap) {
+        final allTx = allSnap.data ?? [];
+        final totalBalance = _txService.calculateBalance(allTx);
 
         return StreamBuilder<List<TransactionModel>>(
-          stream: _transactionService.getTransactionsByMonth(
-              userId, now.year, now.month),
-          builder: (context, monthSnapshot) {
-            final monthTransactions = monthSnapshot.data ?? [];
-            final monthIncome =
-                _transactionService.calculateIncome(monthTransactions);
-            final monthExpenses =
-                _transactionService.calculateExpenses(monthTransactions);
+          stream: _txService.getTransactionsByMonth(userId, now.year, now.month),
+          builder: (context, monthSnap) {
+            final monthTx = monthSnap.data ?? [];
+            final income = _txService.calculateIncome(monthTx);
+            final expenses = _txService.calculateExpenses(monthTx);
 
-            final expenses =
-                monthTransactions.where((t) => !t.isIncome).toList();
-            final incomes =
-                monthTransactions.where((t) => t.isIncome).toList();
-            final maxExpense = expenses.isEmpty
+            final expList = monthTx.where((t) => !t.isIncome).toList();
+            final incList = monthTx.where((t) => t.isIncome).toList();
+            final maxExp = expList.isEmpty
                 ? 0.0
-                : expenses
-                    .map((t) => t.amount)
-                    .reduce((a, b) => a > b ? a : b);
-            final maxIncome = incomes.isEmpty
+                : expList.map((t) => t.amount).reduce((a, b) => a > b ? a : b);
+            final maxInc = incList.isEmpty
                 ? 0.0
-                : incomes
-                    .map((t) => t.amount)
-                    .reduce((a, b) => a > b ? a : b);
+                : incList.map((t) => t.amount).reduce((a, b) => a > b ? a : b);
 
-            return Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // ── Columna izquierda ──────────────────────────────
-                Expanded(
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.all(32),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Hola, ${_currentUser?.username ?? 'Usuario'}! 👋',
-                          style: const TextStyle(
-                              color: AppTheme.textSecondary, fontSize: 16),
-                        ),
-                        const SizedBox(height: 4),
-                        const Text(
-                          'Tu resumen del mes',
-                          style: TextStyle(
-                            color: AppTheme.textPrimary,
-                            fontSize: 28,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 24),
-                        BalanceCard(
-                          balance: totalBalance,
-                          income: monthIncome,
-                          expenses: monthExpenses,
-                        ),
-                        const SizedBox(height: 20),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: _buildStatCard(
-                                'Movimientos',
-                                '${monthTransactions.length}',
-                                Icons.receipt_long_outlined,
-                                AppTheme.primaryPurple,
-                              ),
-                            ),
-                            const SizedBox(width: 14),
-                            Expanded(
-                              child: _buildStatCard(
-                                'Mayor gasto',
-                                CurrencyFormatter.format(maxExpense),
-                                Icons.trending_down_outlined,
-                                AppTheme.expense,
-                              ),
-                            ),
-                            const SizedBox(width: 14),
-                            Expanded(
-                              child: _buildStatCard(
-                                'Mayor ingreso',
-                                CurrencyFormatter.format(maxIncome),
-                                Icons.trending_up_outlined,
-                                AppTheme.income,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
+            return SingleChildScrollView(
+              padding: const EdgeInsets.all(40),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Hero card
+                  _buildHeroCard(totalBalance, income, expenses),
+                  const SizedBox(height: 24),
 
-                // ── Columna derecha: últimos movimientos ───────────
-                Container(
-                  width: 360,
-                  margin: const EdgeInsets.fromLTRB(0, 32, 32, 32),
-                  decoration: BoxDecoration(
-                    color: AppTheme.cardDark,
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: Colors.white10),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                  // Stat cards row
+                  Row(
                     children: [
-                      Padding(
-                        padding: const EdgeInsets.fromLTRB(20, 18, 12, 10),
-                        child: Row(
-                          children: [
-                            const Text(
-                              'Últimos movimientos',
-                              style: TextStyle(
-                                color: AppTheme.textPrimary,
-                                fontSize: 15,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            const Spacer(),
-                            TextButton(
-                              onPressed: () =>
-                                  setState(() => _selectedIndex = 1),
-                              child: const Text(
-                                'Ver todos',
-                                style: TextStyle(
-                                    color: AppTheme.accentPurple,
-                                    fontSize: 13),
-                              ),
-                            ),
-                          ],
+                      Expanded(
+                        child: _statCard(
+                          '${monthTx.length} movimientos',
+                          'Este mes',
+                          Icons.receipt_long_rounded,
+                          AppTheme.primaryContainer.withOpacity(0.15),
+                          AppTheme.primary,
                         ),
                       ),
-                      const Divider(height: 1, color: Colors.white10),
-                      if (monthTransactions.isEmpty)
-                        Expanded(
-                          child: Center(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(Icons.receipt_long_outlined,
-                                    size: 48,
-                                    color: AppTheme.textSecondary),
-                                const SizedBox(height: 12),
-                                const Text(
-                                  'No hay movimientos este mes',
-                                  style:
-                                      TextStyle(color: AppTheme.textSecondary),
-                                ),
-                              ],
-                            ),
-                          ),
-                        )
-                      else
-                        Expanded(
-                          child: ListView.builder(
-                            itemCount:
-                                monthTransactions.take(8).length,
-                            itemBuilder: (context, index) {
-                              final t =
-                                  monthTransactions.take(8).toList()[index];
-                              return TransactionTile(
-                                transaction: t,
-                                onEdit: () => Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (_) =>
-                                        AddTransactionScreen(transaction: t),
-                                  ),
-                                ),
-                                onDelete: () async {
-                                  final confirm = await showDialog<bool>(
-                                    context: context,
-                                    builder: (ctx) => AlertDialog(
-                                      backgroundColor: AppTheme.cardDark,
-                                      shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(16)),
-                                      title: const Text('¿Eliminar movimiento?',
-                                          style: TextStyle(
-                                              color: AppTheme.textPrimary)),
-                                      content: Text(
-                                        'Se eliminará "${t.title}" (${CurrencyFormatter.format(t.amount)}). Esta acción no se puede deshacer.',
-                                        style: const TextStyle(
-                                            color: AppTheme.textSecondary),
-                                      ),
-                                      actions: [
-                                        TextButton(
-                                          onPressed: () =>
-                                              Navigator.pop(ctx, false),
-                                          child: const Text('Cancelar',
-                                              style: TextStyle(
-                                                  color:
-                                                      AppTheme.textSecondary)),
-                                        ),
-                                        TextButton(
-                                          onPressed: () =>
-                                              Navigator.pop(ctx, true),
-                                          child: const Text('Eliminar',
-                                              style: TextStyle(
-                                                  color: AppTheme.expense)),
-                                        ),
-                                      ],
-                                    ),
-                                  );
-                                  if (confirm == true) {
-                                    await _transactionService
-                                        .deleteTransaction(t.id);
-                                  }
-                                },
-                              );
-                            },
-                          ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: _statCard(
+                          CurrencyFormatter.format(maxExp),
+                          'Mayor gasto',
+                          Icons.trending_down_rounded,
+                          AppTheme.errorContainer.withOpacity(0.3),
+                          AppTheme.errorRed,
                         ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: _statCard(
+                          CurrencyFormatter.format(maxInc),
+                          'Mayor ingreso',
+                          Icons.trending_up_rounded,
+                          AppTheme.secondaryContainer.withOpacity(0.4),
+                          AppTheme.secondary,
+                        ),
+                      ),
                     ],
                   ),
-                ),
-              ],
+                  const SizedBox(height: 24),
+
+                  // Chart + Recent transactions
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        flex: 7,
+                        child: _buildBarChartCard(userId),
+                      ),
+                      const SizedBox(width: 24),
+                      SizedBox(
+                        width: 360,
+                        child: _buildRecentPanel(monthTx, userId),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             );
           },
         );
@@ -644,153 +455,540 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildStatCard(
-      String title, String value, IconData icon, Color color) {
+  Widget _buildHeroCard(double balance, double income, double expenses) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      width: double.infinity,
+      padding: const EdgeInsets.all(32),
       decoration: BoxDecoration(
-        color: AppTheme.cardDark,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: color.withOpacity(0.2)),
+        color: AppTheme.primaryContainer,
+        borderRadius: BorderRadius.circular(20),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, color: color, size: 20),
+          Text(
+            'BALANCE DISPONIBLE',
+            style: GoogleFonts.beVietnamPro(
+              color: AppTheme.secondaryFixed,
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 1.5,
+            ),
+          ),
           const SizedBox(height: 10),
-          Text(value,
-              style: TextStyle(
-                  color: color,
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold)),
-          const SizedBox(height: 4),
-          Text(title,
-              style: const TextStyle(
-                  color: AppTheme.textSecondary, fontSize: 12)),
+          Text(
+            'Balance total: ${CurrencyFormatter.format(balance)}',
+            style: GoogleFonts.plusJakartaSans(
+              color: Colors.white,
+              fontSize: 36,
+              fontWeight: FontWeight.w700,
+              letterSpacing: -0.72,
+            ),
+          ),
+          const SizedBox(height: 20),
+          Wrap(
+            spacing: 10,
+            runSpacing: 8,
+            children: [
+              _heroChip(
+                Icons.arrow_downward_rounded,
+                'Ingresos del mes: ${CurrencyFormatter.format(income)}',
+                AppTheme.secondaryFixed,
+                AppTheme.onSecondaryFixed,
+              ),
+              _heroChip(
+                Icons.arrow_upward_rounded,
+                'Gastos del mes: ${CurrencyFormatter.format(expenses)}',
+                Colors.white.withOpacity(0.12),
+                Colors.white,
+              ),
+            ],
+          ),
         ],
       ),
     );
   }
 
-  // ── MOBILE HOME (sin cambios) ─────────────────────────────────────
-  Widget _buildHome(String userId, DateTime now) {
+  Widget _heroChip(IconData icon, String text, Color bg, Color fg) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(100),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 16, color: fg),
+          const SizedBox(width: 6),
+          Text(
+            text,
+            style: GoogleFonts.beVietnamPro(
+                color: fg, fontSize: 13, fontWeight: FontWeight.w600),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _statCard(
+      String value, String label, IconData icon, Color bg, Color color) {
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: AppTheme.surfaceContainerLowest,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppTheme.surfaceVariant),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(100)),
+            child: Icon(icon, color: color, size: 22),
+          ),
+          const SizedBox(height: 14),
+          Text(
+            value,
+            style: GoogleFonts.plusJakartaSans(
+                color: AppTheme.primary, fontSize: 20, fontWeight: FontWeight.w700),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            label,
+            style: GoogleFonts.beVietnamPro(
+                color: AppTheme.onSurfaceVariant, fontSize: 12),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBarChartCard(String userId) {
+    const monthNames = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun',
+                        'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+
+    return Container(
+      padding: const EdgeInsets.all(28),
+      decoration: BoxDecoration(
+        color: AppTheme.surfaceContainerLowest,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppTheme.surfaceVariant),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Text(
+                'Ingresos vs Gastos',
+                style: GoogleFonts.plusJakartaSans(
+                  color: AppTheme.primary,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const Spacer(),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                decoration: BoxDecoration(
+                  color: AppTheme.surfaceContainer,
+                  borderRadius: BorderRadius.circular(100),
+                ),
+                child: Text(
+                  'Últimos 6 meses',
+                  style: GoogleFonts.beVietnamPro(
+                    color: AppTheme.onSurfaceVariant,
+                    fontSize: 12,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 28),
+          FutureBuilder<List<_MonthData>>(
+            future: _chartFuture,
+            builder: (ctx, snap) {
+              if (!snap.hasData) {
+                return const SizedBox(
+                  height: 200,
+                  child: Center(
+                    child: CircularProgressIndicator(color: AppTheme.secondary),
+                  ),
+                );
+              }
+              final data = snap.data!;
+              final maxY = data.fold<double>(
+                0,
+                (prev, d) => [prev, d.income, d.expenses].reduce((a, b) => a > b ? a : b),
+              );
+
+              return SizedBox(
+                height: 220,
+                child: BarChart(
+                  BarChartData(
+                    alignment: BarChartAlignment.spaceAround,
+                    maxY: maxY == 0 ? 100 : maxY * 1.25,
+                    barGroups: data.asMap().entries.map((e) {
+                      return BarChartGroupData(
+                        x: e.key,
+                        groupVertically: false,
+                        barRods: [
+                          BarChartRodData(
+                            toY: e.value.income,
+                            color: AppTheme.secondaryFixed,
+                            width: 12,
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          BarChartRodData(
+                            toY: e.value.expenses,
+                            color: AppTheme.primary.withOpacity(0.15),
+                            width: 12,
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                        ],
+                      );
+                    }).toList(),
+                    gridData: const FlGridData(show: false),
+                    borderData: FlBorderData(show: false),
+                    titlesData: FlTitlesData(
+                      leftTitles: const AxisTitles(
+                          sideTitles: SideTitles(showTitles: false)),
+                      rightTitles: const AxisTitles(
+                          sideTitles: SideTitles(showTitles: false)),
+                      topTitles: const AxisTitles(
+                          sideTitles: SideTitles(showTitles: false)),
+                      bottomTitles: AxisTitles(
+                        sideTitles: SideTitles(
+                          showTitles: true,
+                          reservedSize: 28,
+                          getTitlesWidget: (value, meta) {
+                            final idx = value.toInt();
+                            if (idx < 0 || idx >= data.length) {
+                              return const SizedBox.shrink();
+                            }
+                            return Padding(
+                              padding: const EdgeInsets.only(top: 8),
+                              child: Text(
+                                monthNames[data[idx].month.month - 1],
+                                style: GoogleFonts.beVietnamPro(
+                                  color: AppTheme.onSurfaceVariant,
+                                  fontSize: 11,
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              _chartLegend(AppTheme.secondaryFixed, 'Ingresos'),
+              const SizedBox(width: 20),
+              _chartLegend(AppTheme.primary.withOpacity(0.2), 'Gastos'),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _chartLegend(Color color, String label) {
+    return Row(
+      children: [
+        Container(
+          width: 12,
+          height: 12,
+          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+        ),
+        const SizedBox(width: 6),
+        Text(
+          label,
+          style: GoogleFonts.beVietnamPro(
+              color: AppTheme.onSurfaceVariant, fontSize: 12),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildRecentPanel(List<TransactionModel> monthTx, String userId) {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppTheme.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppTheme.surfaceVariant),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 20, 12, 12),
+            child: Row(
+              children: [
+                Text(
+                  'Actividad reciente',
+                  style: GoogleFonts.plusJakartaSans(
+                    color: AppTheme.primary,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const Spacer(),
+                TextButton(
+                  onPressed: () => setState(() => _selectedIndex = 1),
+                  child: Text(
+                    'Ver todos',
+                    style: GoogleFonts.beVietnamPro(
+                      color: AppTheme.secondary,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const Divider(height: 1, color: AppTheme.surfaceVariant),
+          if (monthTx.isEmpty)
+            Padding(
+              padding: const EdgeInsets.all(32),
+              child: Center(
+                child: Column(
+                  children: [
+                    const Icon(Icons.receipt_long_outlined,
+                        size: 40, color: AppTheme.outlineVariant),
+                    const SizedBox(height: 10),
+                    Text(
+                      'Sin movimientos este mes',
+                      style: GoogleFonts.beVietnamPro(
+                          color: AppTheme.onSurfaceVariant, fontSize: 13),
+                    ),
+                  ],
+                ),
+              ),
+            )
+          else
+            ...monthTx.take(7).map((t) => TransactionTile(
+                  transaction: t,
+                  onEdit: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (_) => AddTransactionScreen(transaction: t)),
+                  ),
+                  onDelete: () => _deleteTransaction(t),
+                )),
+          const SizedBox(height: 8),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _deleteTransaction(TransactionModel t) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppTheme.surfaceContainerLowest,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text('¿Eliminar movimiento?',
+            style: GoogleFonts.plusJakartaSans(
+                color: AppTheme.primary, fontWeight: FontWeight.w600)),
+        content: Text(
+          'Se eliminará "${t.title}". Esta acción no se puede deshacer.',
+          style: GoogleFonts.beVietnamPro(color: AppTheme.onSurfaceVariant),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text('Cancelar',
+                style: TextStyle(color: AppTheme.onSurfaceVariant)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text('Eliminar',
+                style: TextStyle(
+                    color: AppTheme.errorRed, fontWeight: FontWeight.w600)),
+          ),
+        ],
+      ),
+    );
+    if (confirm == true) await _txService.deleteTransaction(t.id);
+  }
+
+  // ── MOBILE ───────────────────────────────────────────────────
+  Widget _buildMobile(String userId, DateTime now) {
+    final pages = [
+      _buildMobileHome(userId, now),
+      const TransactionsScreen(),
+      const StatisticsScreen(),
+      const GoalsScreen(),
+      const AboutScreen(),
+    ];
+
+    return Scaffold(
+      backgroundColor: AppTheme.background,
+      appBar: AppBar(
+        backgroundColor: AppTheme.primary,
+        elevation: 0,
+        title: Row(
+          children: [
+            const Icon(Icons.account_balance_wallet_rounded,
+                color: AppTheme.secondaryFixed, size: 26),
+            const SizedBox(width: 8),
+            Text(
+              'Monedo',
+              style: GoogleFonts.plusJakartaSans(
+                color: Colors.white,
+                fontSize: 20,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout_rounded,
+                color: AppTheme.onPrimaryFixedVariant),
+            tooltip: 'Cerrar sesión',
+            onPressed: () async {
+              if (await _confirmLogout() == true) _logout();
+            },
+          ),
+        ],
+      ),
+      body: pages[_selectedIndex],
+      floatingActionButton: _selectedIndex == 0
+          ? FloatingActionButton(
+              backgroundColor: AppTheme.secondary,
+              foregroundColor: Colors.white,
+              onPressed: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (_) => const AddTransactionScreen()),
+              ),
+              child: const Icon(Icons.add_rounded),
+            )
+          : null,
+      bottomNavigationBar: NavigationBar(
+        backgroundColor: AppTheme.surfaceContainer,
+        indicatorColor: AppTheme.secondaryContainer,
+        selectedIndex: _selectedIndex,
+        labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
+        onDestinationSelected: (i) => setState(() => _selectedIndex = i),
+        destinations: const [
+          NavigationDestination(
+            icon: Icon(Icons.dashboard_outlined),
+            selectedIcon: Icon(Icons.dashboard_rounded),
+            label: 'Inicio',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.receipt_long_outlined),
+            selectedIcon: Icon(Icons.receipt_long_rounded),
+            label: 'Gastos',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.analytics_outlined),
+            selectedIcon: Icon(Icons.analytics_rounded),
+            label: 'Stats',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.savings_outlined),
+            selectedIcon: Icon(Icons.savings_rounded),
+            label: 'Metas',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.person_outline_rounded),
+            selectedIcon: Icon(Icons.person_rounded),
+            label: 'Info',
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMobileHome(String userId, DateTime now) {
     return StreamBuilder<List<TransactionModel>>(
-      stream: _transactionService.getTransactions(userId),
-      builder: (context, allSnapshot) {
-        final allTransactions = allSnapshot.data ?? [];
-        final totalBalance =
-            _transactionService.calculateBalance(allTransactions);
+      stream: _txService.getTransactions(userId),
+      builder: (context, allSnap) {
+        final allTx = allSnap.data ?? [];
+        final totalBalance = _txService.calculateBalance(allTx);
 
         return StreamBuilder<List<TransactionModel>>(
-          stream: _transactionService.getTransactionsByMonth(
-              userId, now.year, now.month),
-          builder: (context, monthSnapshot) {
-            final monthTransactions = monthSnapshot.data ?? [];
-            final monthIncome =
-                _transactionService.calculateIncome(monthTransactions);
-            final monthExpenses =
-                _transactionService.calculateExpenses(monthTransactions);
+          stream: _txService.getTransactionsByMonth(userId, now.year, now.month),
+          builder: (context, monthSnap) {
+            final monthTx = monthSnap.data ?? [];
+            final income = _txService.calculateIncome(monthTx);
+            final expenses = _txService.calculateExpenses(monthTx);
 
             return SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     'Hola, ${_currentUser?.username ?? 'Usuario'}! 👋',
-                    style: const TextStyle(
-                        color: AppTheme.textSecondary, fontSize: 16),
+                    style: GoogleFonts.beVietnamPro(
+                        color: AppTheme.onSurfaceVariant, fontSize: 15),
                   ),
                   const SizedBox(height: 4),
-                  const Text(
+                  Text(
                     'Tu resumen del mes',
-                    style: TextStyle(
-                      color: AppTheme.textPrimary,
+                    style: GoogleFonts.plusJakartaSans(
+                      color: AppTheme.primary,
                       fontSize: 22,
-                      fontWeight: FontWeight.bold,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
                   const SizedBox(height: 20),
                   BalanceCard(
-                    balance: totalBalance,
-                    income: monthIncome,
-                    expenses: monthExpenses,
-                  ),
-                  const SizedBox(height: 24),
-                  const Text(
+                      balance: totalBalance,
+                      income: income,
+                      expenses: expenses),
+                  const SizedBox(height: 28),
+                  Text(
                     'Últimos movimientos',
-                    style: TextStyle(
-                      color: AppTheme.textPrimary,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
+                    style: GoogleFonts.plusJakartaSans(
+                      color: AppTheme.primary,
+                      fontSize: 17,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                   const SizedBox(height: 12),
-                  if (monthTransactions.isEmpty)
+                  if (monthTx.isEmpty)
                     Center(
-                      child: Column(
-                        children: [
-                          const SizedBox(height: 32),
-                          Icon(Icons.receipt_long_outlined,
-                              size: 64, color: AppTheme.textSecondary),
-                          const SizedBox(height: 16),
-                          const Text(
-                            'No hay movimientos este mes',
-                            style: TextStyle(color: AppTheme.textSecondary),
-                          ),
-                        ],
+                      child: Padding(
+                        padding: const EdgeInsets.all(32),
+                        child: Column(
+                          children: [
+                            const Icon(Icons.receipt_long_outlined,
+                                size: 56, color: AppTheme.outlineVariant),
+                            const SizedBox(height: 14),
+                            Text(
+                              'No hay movimientos este mes',
+                              style: GoogleFonts.beVietnamPro(
+                                  color: AppTheme.onSurfaceVariant),
+                            ),
+                          ],
+                        ),
                       ),
                     )
                   else
-                    ...monthTransactions.take(5).map((t) => TransactionTile(
+                    ...monthTx.take(5).map((t) => TransactionTile(
                           transaction: t,
                           onEdit: () => Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (_) =>
-                                  AddTransactionScreen(transaction: t),
-                            ),
+                                builder: (_) =>
+                                    AddTransactionScreen(transaction: t)),
                           ),
-                          onDelete: () async {
-                            final confirm = await showDialog<bool>(
-                              context: context,
-                              builder: (ctx) => AlertDialog(
-                                backgroundColor: AppTheme.cardDark,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(16),
-                                ),
-                                title: const Text(
-                                  '¿Eliminar movimiento?',
-                                  style:
-                                      TextStyle(color: AppTheme.textPrimary),
-                                ),
-                                content: Text(
-                                  'Se eliminará "${t.title}" (${CurrencyFormatter.format(t.amount)}). Esta acción no se puede deshacer.',
-                                  style: const TextStyle(
-                                      color: AppTheme.textSecondary),
-                                ),
-                                actions: [
-                                  TextButton(
-                                    onPressed: () =>
-                                        Navigator.pop(ctx, false),
-                                    child: const Text('Cancelar',
-                                        style: TextStyle(
-                                            color: AppTheme.textSecondary)),
-                                  ),
-                                  TextButton(
-                                    onPressed: () =>
-                                        Navigator.pop(ctx, true),
-                                    child: const Text('Eliminar',
-                                        style:
-                                            TextStyle(color: AppTheme.expense)),
-                                  ),
-                                ],
-                              ),
-                            );
-                            if (confirm == true) {
-                              await _transactionService.deleteTransaction(t.id);
-                            }
-                          },
+                          onDelete: () => _deleteTransaction(t),
                         )),
                 ],
               ),

@@ -1,5 +1,5 @@
-
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../theme/app_theme.dart';
 import '../utils/currency_formatter.dart';
 
@@ -19,63 +19,47 @@ class BalanceCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.all(28),
       decoration: BoxDecoration(
-        gradient: AppTheme.primaryGradient,
+        color: AppTheme.primaryContainer,
         borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: AppTheme.primaryPurple.withOpacity(0.4),
-            blurRadius: 20,
-            offset: const Offset(0, 8),
-          ),
-        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // ---- Balance total ----
-          const Text(
-            'Balance actual',
-            style: TextStyle(
-              color: Colors.white70,
-              fontSize: 14,
+          Text(
+            'BALANCE DISPONIBLE',
+            style: GoogleFonts.beVietnamPro(
+              color: AppTheme.secondaryFixed,
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+              letterSpacing: 1.5,
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 10),
           Text(
             CurrencyFormatter.format(balance),
-            style: const TextStyle(
-              color: AppTheme.textPrimary,
-              fontSize: 36,
-              fontWeight: FontWeight.bold,
+            style: GoogleFonts.plusJakartaSans(
+              color: Colors.white,
+              fontSize: 34,
+              fontWeight: FontWeight.w700,
+              letterSpacing: -0.68,
             ),
           ),
-          const SizedBox(height: 24),
-
-          // ---- Ingresos y gastos ----
-          Row(
+          const SizedBox(height: 20),
+          Wrap(
+            spacing: 10,
+            runSpacing: 8,
             children: [
-              Expanded(
-                child: _buildStat(
-                  icon: Icons.arrow_upward,
-                  label: 'Ingresos',
-                  amount: income,
-                  color: AppTheme.income,
-                ),
+              _chip(
+                '↑  Ingresos: ${CurrencyFormatter.format(income)}',
+                AppTheme.secondaryFixed,
+                AppTheme.onSecondaryFixed,
               ),
-              Container(
-                width: 1,
-                height: 40,
-                color: Colors.white24,
-              ),
-              Expanded(
-                child: _buildStat(
-                  icon: Icons.arrow_downward,
-                  label: 'Gastos',
-                  amount: expenses,
-                  color: AppTheme.expense,
-                ),
+              _chip(
+                '↑  Gastos: ${CurrencyFormatter.format(expenses)}',
+                Colors.white.withOpacity(0.1),
+                Colors.white,
               ),
             ],
           ),
@@ -84,40 +68,20 @@ class BalanceCard extends StatelessWidget {
     );
   }
 
-  Widget _buildStat({
-    required IconData icon,
-    required String label,
-    required double amount,
-    required Color color,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(icon, color: color, size: 16),
-              const SizedBox(width: 4),
-              Text(
-                label,
-                style: const TextStyle(
-                  color: Colors.white70,
-                  fontSize: 13,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 4),
-          Text(
-            CurrencyFormatter.format(amount),
-            style: const TextStyle(
-              color: AppTheme.textPrimary,
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ],
+  Widget _chip(String text, Color bg, Color fg) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(100),
+      ),
+      child: Text(
+        text,
+        style: GoogleFonts.beVietnamPro(
+          color: fg,
+          fontSize: 13,
+          fontWeight: FontWeight.w600,
+        ),
       ),
     );
   }
