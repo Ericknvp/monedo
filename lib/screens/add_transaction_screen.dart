@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../services/transaction_service.dart';
 import '../models/transaction.dart';
 import '../theme/app_theme.dart';
@@ -14,29 +15,20 @@ class AddTransactionScreen extends StatefulWidget {
 }
 
 class _AddTransactionScreenState extends State<AddTransactionScreen> {
-  final _titleController = TextEditingController();
-  final _amountController = TextEditingController();
-  final _noteController = TextEditingController();
-  final _transactionService = TransactionService();
+  final _titleCtrl = TextEditingController();
+  final _amountCtrl = TextEditingController();
+  final _noteCtrl = TextEditingController();
+  final _txService = TransactionService();
 
   bool _isIncome = false;
   bool _isLoading = false;
   DateTime _selectedDate = DateTime.now();
   String _selectedCategory = 'Otros';
 
-  final List<String> _categories = [
-    'Alimentación',
-    'Transporte',
-    'Entretenimiento',
-    'Salud',
-    'Educación',
-    'Ropa',
-    'Hogar',
-    'Trabajo',
-    'Inversión',
-    'Ahorro',
-    'Ocio',
-    'Otros',
+  static const _categories = [
+    'Alimentación', 'Transporte', 'Entretenimiento', 'Salud',
+    'Educación', 'Ropa', 'Hogar', 'Trabajo', 'Inversión',
+    'Ahorro', 'Ocio', 'Otros',
   ];
 
   @override
@@ -44,9 +36,9 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
     super.initState();
     if (widget.transaction != null) {
       final t = widget.transaction!;
-      _titleController.text = t.title;
-      _amountController.text = t.amount.toString();
-      _noteController.text = t.note ?? '';
+      _titleCtrl.text = t.title;
+      _amountCtrl.text = t.amount.toString();
+      _noteCtrl.text = t.note ?? '';
       _isIncome = t.isIncome;
       _selectedDate = t.date;
       _selectedCategory = t.category;
@@ -59,11 +51,11 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
       initialDate: _selectedDate,
       firstDate: DateTime(2020),
       lastDate: DateTime.now(),
-      builder: (context, child) => Theme(
-        data: Theme.of(context).copyWith(
-          colorScheme: const ColorScheme.dark(
-            primary: AppTheme.primaryPurple,
-            surface: AppTheme.cardDark,
+      builder: (ctx, child) => Theme(
+        data: Theme.of(ctx).copyWith(
+          colorScheme: const ColorScheme.light(
+            primary: AppTheme.secondary,
+            surface: AppTheme.surfaceContainerLowest,
           ),
         ),
         child: child!,
@@ -73,59 +65,54 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
   }
 
   Future<void> _save() async {
-    if (_titleController.text.trim().isEmpty ||
-        _amountController.text.trim().isEmpty) {
+    if (_titleCtrl.text.trim().isEmpty || _amountCtrl.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Por favor completa todos los campos'),
-          backgroundColor: AppTheme.expense,
+        SnackBar(
+          content:
+              Text('Por favor completa todos los campos',
+                  style: GoogleFonts.beVietnamPro()),
+          backgroundColor: AppTheme.errorRed,
         ),
       );
       return;
     }
-
-    final amount = double.tryParse(_amountController.text.trim());
+    final amount = double.tryParse(_amountCtrl.text.trim());
     if (amount == null || amount <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('El monto debe ser un número válido mayor a 0'),
-          backgroundColor: AppTheme.expense,
+        SnackBar(
+          content: Text('El monto debe ser un número válido mayor a 0',
+              style: GoogleFonts.beVietnamPro()),
+          backgroundColor: AppTheme.errorRed,
         ),
       );
       return;
     }
-
     setState(() => _isLoading = true);
-
     final userId = FirebaseAuth.instance.currentUser?.uid ?? '';
-    final transaction = TransactionModel(
+    final tx = TransactionModel(
       id: widget.transaction?.id ?? '',
       userId: userId,
-      title: _titleController.text.trim(),
+      title: _titleCtrl.text.trim(),
       amount: amount,
       category: _selectedCategory,
       isIncome: _isIncome,
       date: _selectedDate,
-      note: _noteController.text.trim().isEmpty
-          ? null
-          : _noteController.text.trim(),
+      note: _noteCtrl.text.trim().isEmpty ? null : _noteCtrl.text.trim(),
     );
-
     if (widget.transaction != null) {
-      await _transactionService.updateTransaction(transaction);
+      await _txService.updateTransaction(tx);
     } else {
-      await _transactionService.addTransaction(transaction);
+      await _txService.addTransaction(tx);
     }
-
     setState(() => _isLoading = false);
     if (mounted) Navigator.pop(context);
   }
 
   @override
   void dispose() {
-    _titleController.dispose();
-    _amountController.dispose();
-    _noteController.dispose();
+    _titleCtrl.dispose();
+    _amountCtrl.dispose();
+    _noteCtrl.dispose();
     super.dispose();
   }
 
@@ -135,179 +122,128 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
     final isDesktop = MediaQuery.of(context).size.width >= 900;
 
     return Scaffold(
-      backgroundColor: AppTheme.backgroundDark,
+      backgroundColor: AppTheme.background,
       appBar: AppBar(
-        backgroundColor: AppTheme.cardDark,
+        backgroundColor: AppTheme.surfaceContainerLowest,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_rounded, color: AppTheme.primary),
+          onPressed: () => Navigator.pop(context),
+        ),
         title: Text(
           isEditing ? 'Editar movimiento' : 'Nuevo movimiento',
-          style: const TextStyle(color: AppTheme.textPrimary),
+          style: GoogleFonts.plusJakartaSans(
+            color: AppTheme.primary,
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+          ),
         ),
-        iconTheme: const IconThemeData(color: AppTheme.textPrimary),
       ),
       body: isDesktop ? _buildDesktop(isEditing) : _buildMobile(isEditing),
     );
   }
 
-  // ── DESKTOP ───────────────────────────────────────────────────────
   Widget _buildDesktop(bool isEditing) {
     return Center(
       child: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 24),
         child: Container(
-          width: 700,
-          padding: const EdgeInsets.all(36),
+          width: 720,
+          padding: const EdgeInsets.all(40),
           decoration: BoxDecoration(
-            color: AppTheme.cardDark,
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: Colors.white10),
+            color: AppTheme.surfaceContainerLowest,
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(color: AppTheme.surfaceVariant),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Título de sección
               Text(
                 isEditing ? 'Editar movimiento' : 'Registrar movimiento',
-                style: const TextStyle(
-                  color: AppTheme.textPrimary,
+                style: GoogleFonts.plusJakartaSans(
+                  color: AppTheme.primary,
                   fontSize: 22,
-                  fontWeight: FontWeight.bold,
+                  fontWeight: FontWeight.w700,
                 ),
               ),
               const SizedBox(height: 4),
-              const Text(
+              Text(
                 'Completa los datos del movimiento',
-                style:
-                    TextStyle(color: AppTheme.textSecondary, fontSize: 14),
+                style: GoogleFonts.beVietnamPro(
+                    color: AppTheme.onSurfaceVariant, fontSize: 14),
               ),
+              const SizedBox(height: 32),
+
+              _buildTypeSelector(),
               const SizedBox(height: 28),
 
-              // Selector tipo
-              _buildTypeSelector(),
-              const SizedBox(height: 24),
-
-              // Fila 1: Descripción + Monto
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Expanded(
                     flex: 3,
-                    child: TextField(
-                      controller: _titleController,
-                      style: const TextStyle(color: AppTheme.textPrimary),
-                      decoration: const InputDecoration(
-                        labelText: 'Descripción',
-                        prefixIcon: Icon(Icons.description_outlined,
-                            color: AppTheme.accentPurple),
-                      ),
+                    child: _textField(
+                      _titleCtrl,
+                      'Descripción',
+                      icon: Icons.description_outlined,
                     ),
                   ),
-                  const SizedBox(width: 16),
+                  const SizedBox(width: 20),
                   Expanded(
                     flex: 2,
-                    child: TextField(
-                      controller: _amountController,
-                      keyboardType: const TextInputType.numberWithOptions(
-                          decimal: true),
-                      style: const TextStyle(color: AppTheme.textPrimary),
-                      decoration: const InputDecoration(
-                        labelText: 'Monto',
-                        prefixIcon: Icon(Icons.attach_money,
-                            color: AppTheme.accentPurple),
-                      ),
+                    child: _textField(
+                      _amountCtrl,
+                      'Monto',
+                      icon: Icons.attach_money_rounded,
+                      keyboardType:
+                          const TextInputType.numberWithOptions(decimal: true),
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 20),
 
-              // Fila 2: Categoría + Fecha
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Expanded(
-                    child: DropdownButtonFormField<String>(
-                      value: _selectedCategory,
-                      dropdownColor: AppTheme.cardDark,
-                      style: const TextStyle(color: AppTheme.textPrimary),
-                      decoration: const InputDecoration(
-                        labelText: 'Categoría',
-                        prefixIcon: Icon(Icons.category_outlined,
-                            color: AppTheme.accentPurple),
-                      ),
-                      items: _categories
-                          .map((cat) => DropdownMenuItem(
-                              value: cat, child: Text(cat)))
-                          .toList(),
-                      onChanged: (v) =>
-                          setState(() => _selectedCategory = v!),
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: GestureDetector(
-                      onTap: _selectDate,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 16),
-                        decoration: BoxDecoration(
-                          color: AppTheme.cardMedium,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Row(
-                          children: [
-                            const Icon(Icons.calendar_today_outlined,
-                                color: AppTheme.accentPurple),
-                            const SizedBox(width: 12),
-                            Text(
-                              '${_selectedDate.day}/${_selectedDate.month}/${_selectedDate.year}',
-                              style: const TextStyle(
-                                  color: AppTheme.textPrimary),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
+                  Expanded(child: _buildCategoryDropdown()),
+                  const SizedBox(width: 20),
+                  Expanded(child: _buildDatePicker()),
                 ],
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 20),
 
-              // Nota
-              TextField(
-                controller: _noteController,
-                style: const TextStyle(color: AppTheme.textPrimary),
-                maxLines: 3,
-                decoration: const InputDecoration(
-                  labelText: 'Nota (opcional)',
-                  prefixIcon: Icon(Icons.note_outlined,
-                      color: AppTheme.accentPurple),
-                ),
-              ),
-              const SizedBox(height: 28),
+              _textField(_noteCtrl, 'Nota (opcional)',
+                  icon: Icons.note_outlined, maxLines: 3),
+              const SizedBox(height: 32),
 
-              // Botón guardar
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   TextButton(
                     onPressed: () => Navigator.pop(context),
-                    child: const Text('Cancelar',
-                        style:
-                            TextStyle(color: AppTheme.textSecondary)),
+                    child: Text('Cancelar',
+                        style: TextStyle(color: AppTheme.onSurfaceVariant)),
                   ),
                   const SizedBox(width: 12),
                   SizedBox(
-                    width: 200,
+                    width: 220,
                     child: ElevatedButton(
                       onPressed: _isLoading ? null : _save,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppTheme.secondary,
+                        shape: const StadiumBorder(),
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        elevation: 0,
+                      ),
                       child: _isLoading
-                          ? const CircularProgressIndicator(
-                              color: AppTheme.textPrimary)
+                          ? const CircularProgressIndicator(color: Colors.white)
                           : Text(
                               isEditing
                                   ? 'Guardar cambios'
                                   : 'Agregar movimiento',
-                              style: const TextStyle(fontSize: 15),
+                              style: GoogleFonts.plusJakartaSans(
+                                  fontWeight: FontWeight.w600, fontSize: 14),
                             ),
                     ),
                   ),
@@ -320,7 +256,6 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
     );
   }
 
-  // ── MOBILE (sin cambios) ──────────────────────────────────────────
   Widget _buildMobile(bool isEditing) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(24),
@@ -329,88 +264,37 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
         children: [
           _buildTypeSelector(),
           const SizedBox(height: 24),
-          TextField(
-            controller: _titleController,
-            style: const TextStyle(color: AppTheme.textPrimary),
-            decoration: const InputDecoration(
-              labelText: 'Descripción',
-              prefixIcon: Icon(Icons.description_outlined,
-                  color: AppTheme.accentPurple),
-            ),
-          ),
+          _textField(_titleCtrl, 'Descripción',
+              icon: Icons.description_outlined),
           const SizedBox(height: 16),
-          TextField(
-            controller: _amountController,
-            keyboardType:
-                const TextInputType.numberWithOptions(decimal: true),
-            style: const TextStyle(color: AppTheme.textPrimary),
-            decoration: const InputDecoration(
-              labelText: 'Monto',
-              prefixIcon:
-                  Icon(Icons.attach_money, color: AppTheme.accentPurple),
-            ),
-          ),
+          _textField(_amountCtrl, 'Monto',
+              icon: Icons.attach_money_rounded,
+              keyboardType:
+                  const TextInputType.numberWithOptions(decimal: true)),
           const SizedBox(height: 16),
-          DropdownButtonFormField<String>(
-            value: _selectedCategory,
-            dropdownColor: AppTheme.cardDark,
-            style: const TextStyle(color: AppTheme.textPrimary),
-            decoration: const InputDecoration(
-              labelText: 'Categoría',
-              prefixIcon: Icon(Icons.category_outlined,
-                  color: AppTheme.accentPurple),
-            ),
-            items: _categories
-                .map((cat) =>
-                    DropdownMenuItem(value: cat, child: Text(cat)))
-                .toList(),
-            onChanged: (v) => setState(() => _selectedCategory = v!),
-          ),
+          _buildCategoryDropdown(),
           const SizedBox(height: 16),
-          GestureDetector(
-            onTap: _selectDate,
-            child: Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-              decoration: BoxDecoration(
-                color: AppTheme.cardMedium,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Row(
-                children: [
-                  const Icon(Icons.calendar_today_outlined,
-                      color: AppTheme.accentPurple),
-                  const SizedBox(width: 12),
-                  Text(
-                    '${_selectedDate.day}/${_selectedDate.month}/${_selectedDate.year}',
-                    style: const TextStyle(color: AppTheme.textPrimary),
-                  ),
-                ],
-              ),
-            ),
-          ),
+          _buildDatePicker(),
           const SizedBox(height: 16),
-          TextField(
-            controller: _noteController,
-            style: const TextStyle(color: AppTheme.textPrimary),
-            maxLines: 3,
-            decoration: const InputDecoration(
-              labelText: 'Nota (opcional)',
-              prefixIcon:
-                  Icon(Icons.note_outlined, color: AppTheme.accentPurple),
-            ),
-          ),
+          _textField(_noteCtrl, 'Nota (opcional)',
+              icon: Icons.note_outlined, maxLines: 3),
           const SizedBox(height: 32),
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
               onPressed: _isLoading ? null : _save,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.secondary,
+                shape: const StadiumBorder(),
+                padding: const EdgeInsets.symmetric(vertical: 18),
+                elevation: 0,
+              ),
               child: _isLoading
-                  ? const CircularProgressIndicator(
-                      color: AppTheme.textPrimary)
+                  ? const CircularProgressIndicator(color: Colors.white)
                   : Text(
                       isEditing ? 'Guardar cambios' : 'Agregar movimiento',
-                      style: const TextStyle(fontSize: 16),
+                      style: GoogleFonts.plusJakartaSans(
+                          fontSize: 16, fontWeight: FontWeight.w600),
                     ),
             ),
           ),
@@ -419,58 +303,112 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
     );
   }
 
-  // ── SELECTOR COMPARTIDO ───────────────────────────────────────────
   Widget _buildTypeSelector() {
     return Container(
       decoration: BoxDecoration(
-        color: AppTheme.backgroundDark,
-        borderRadius: BorderRadius.circular(12),
+        color: AppTheme.surfaceContainer,
+        borderRadius: BorderRadius.circular(100),
       ),
+      padding: const EdgeInsets.all(4),
       child: Row(
         children: [
-          Expanded(
-            child: GestureDetector(
-              onTap: () => setState(() => _isIncome = false),
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 150),
-                padding: const EdgeInsets.symmetric(vertical: 14),
-                decoration: BoxDecoration(
-                  color: !_isIncome ? AppTheme.expense : Colors.transparent,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Center(
-                  child: Text(
-                    '💸 Gasto',
-                    style: TextStyle(
-                        color: AppTheme.textPrimary,
-                        fontWeight: FontWeight.bold),
-                  ),
-                ),
-              ),
-            ),
-          ),
-          Expanded(
-            child: GestureDetector(
-              onTap: () => setState(() => _isIncome = true),
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 150),
-                padding: const EdgeInsets.symmetric(vertical: 14),
-                decoration: BoxDecoration(
-                  color: _isIncome ? AppTheme.income : Colors.transparent,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Center(
-                  child: Text(
-                    '💰 Ingreso',
-                    style: TextStyle(
-                        color: AppTheme.textPrimary,
-                        fontWeight: FontWeight.bold),
-                  ),
-                ),
-              ),
-            ),
-          ),
+          Expanded(child: _typeBtn('💸 Gasto', false)),
+          Expanded(child: _typeBtn('💰 Ingreso', true)),
         ],
+      ),
+    );
+  }
+
+  Widget _typeBtn(String label, bool isIncome) {
+    final isSelected = _isIncome == isIncome;
+    final selectedBg = isIncome ? AppTheme.secondary : AppTheme.errorRed;
+    return GestureDetector(
+      onTap: () => setState(() => _isIncome = isIncome),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        padding: const EdgeInsets.symmetric(vertical: 13),
+        decoration: BoxDecoration(
+          color: isSelected ? selectedBg : Colors.transparent,
+          borderRadius: BorderRadius.circular(100),
+        ),
+        child: Center(
+          child: Text(
+            label,
+            style: GoogleFonts.plusJakartaSans(
+              color: isSelected ? Colors.white : AppTheme.onSurfaceVariant,
+              fontWeight: FontWeight.w700,
+              fontSize: 14,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _textField(
+    TextEditingController ctrl,
+    String label, {
+    IconData? icon,
+    int maxLines = 1,
+    TextInputType? keyboardType,
+  }) {
+    return TextField(
+      controller: ctrl,
+      maxLines: maxLines,
+      keyboardType: keyboardType,
+      style: GoogleFonts.beVietnamPro(color: AppTheme.primary, fontSize: 15),
+      decoration: InputDecoration(
+        labelText: label,
+        labelStyle: GoogleFonts.beVietnamPro(
+            color: AppTheme.onSurfaceVariant, fontSize: 13),
+        prefixIcon: icon != null
+            ? Icon(icon, color: AppTheme.secondary, size: 20)
+            : null,
+      ),
+    );
+  }
+
+  Widget _buildCategoryDropdown() {
+    return DropdownButtonFormField<String>(
+      value: _selectedCategory,
+      dropdownColor: AppTheme.surfaceContainerLowest,
+      style: GoogleFonts.beVietnamPro(color: AppTheme.primary, fontSize: 15),
+      decoration: InputDecoration(
+        labelText: 'Categoría',
+        labelStyle: GoogleFonts.beVietnamPro(
+            color: AppTheme.onSurfaceVariant, fontSize: 13),
+        prefixIcon: const Icon(Icons.category_outlined,
+            color: AppTheme.secondary, size: 20),
+      ),
+      items: _categories
+          .map((c) => DropdownMenuItem(value: c, child: Text(c)))
+          .toList(),
+      onChanged: (v) => setState(() => _selectedCategory = v!),
+    );
+  }
+
+  Widget _buildDatePicker() {
+    return GestureDetector(
+      onTap: _selectDate,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        decoration: BoxDecoration(
+          border: const Border(
+            bottom: BorderSide(color: AppTheme.surfaceVariant, width: 2),
+          ),
+        ),
+        child: Row(
+          children: [
+            const Icon(Icons.calendar_today_outlined,
+                color: AppTheme.secondary, size: 20),
+            const SizedBox(width: 12),
+            Text(
+              '${_selectedDate.day}/${_selectedDate.month}/${_selectedDate.year}',
+              style: GoogleFonts.beVietnamPro(
+                  color: AppTheme.primary, fontSize: 15),
+            ),
+          ],
+        ),
       ),
     );
   }
