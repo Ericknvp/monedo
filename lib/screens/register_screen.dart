@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../services/auth_service.dart';
 import '../theme/app_theme.dart';
 import 'dashboard_screen.dart';
+import 'login_screen.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -443,7 +444,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
         const SizedBox(height: 24),
         Center(
           child: TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (_) => const LoginScreen()),
+            ),
             child: RichText(
               text: TextSpan(
                 text: '¿Ya tienes cuenta? ',
