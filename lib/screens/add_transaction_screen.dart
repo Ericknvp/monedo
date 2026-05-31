@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../services/transaction_service.dart';
@@ -37,7 +36,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
     'Inversión',
     'Ahorro',
     'Ocio',
-    'Otros'
+    'Otros',
   ];
 
   @override
@@ -60,21 +59,17 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
       initialDate: _selectedDate,
       firstDate: DateTime(2020),
       lastDate: DateTime.now(),
-      builder: (context, child) {
-        return Theme(
-          data: Theme.of(context).copyWith(
-            colorScheme: const ColorScheme.dark(
-              primary: AppTheme.primaryPurple,
-              surface: AppTheme.cardDark,
-            ),
+      builder: (context, child) => Theme(
+        data: Theme.of(context).copyWith(
+          colorScheme: const ColorScheme.dark(
+            primary: AppTheme.primaryPurple,
+            surface: AppTheme.cardDark,
           ),
-          child: child!,
-        );
-      },
+        ),
+        child: child!,
+      ),
     );
-    if (picked != null) {
-      setState(() => _selectedDate = picked);
-    }
+    if (picked != null) setState(() => _selectedDate = picked);
   }
 
   Future<void> _save() async {
@@ -103,7 +98,6 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
     setState(() => _isLoading = true);
 
     final userId = FirebaseAuth.instance.currentUser?.uid ?? '';
-
     final transaction = TransactionModel(
       id: widget.transaction?.id ?? '',
       userId: userId,
@@ -124,7 +118,6 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
     }
 
     setState(() => _isLoading = false);
-
     if (mounted) Navigator.pop(context);
   }
 
@@ -139,6 +132,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
   @override
   Widget build(BuildContext context) {
     final isEditing = widget.transaction != null;
+    final isDesktop = MediaQuery.of(context).size.width >= 900;
 
     return Scaffold(
       backgroundColor: AppTheme.backgroundDark,
@@ -150,166 +144,333 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
         ),
         iconTheme: const IconThemeData(color: AppTheme.textPrimary),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // ---- Selector ingreso/gasto ----
-            Container(
-              decoration: BoxDecoration(
-                color: AppTheme.cardDark,
-                borderRadius: BorderRadius.circular(12),
+      body: isDesktop ? _buildDesktop(isEditing) : _buildMobile(isEditing),
+    );
+  }
+
+  // ── DESKTOP ───────────────────────────────────────────────────────
+  Widget _buildDesktop(bool isEditing) {
+    return Center(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 24),
+        child: Container(
+          width: 700,
+          padding: const EdgeInsets.all(36),
+          decoration: BoxDecoration(
+            color: AppTheme.cardDark,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: Colors.white10),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Título de sección
+              Text(
+                isEditing ? 'Editar movimiento' : 'Registrar movimiento',
+                style: const TextStyle(
+                  color: AppTheme.textPrimary,
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
-              child: Row(
+              const SizedBox(height: 4),
+              const Text(
+                'Completa los datos del movimiento',
+                style:
+                    TextStyle(color: AppTheme.textSecondary, fontSize: 14),
+              ),
+              const SizedBox(height: 28),
+
+              // Selector tipo
+              _buildTypeSelector(),
+              const SizedBox(height: 24),
+
+              // Fila 1: Descripción + Monto
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Expanded(
-                    child: GestureDetector(
-                      onTap: () => setState(() => _isIncome = false),
-                      child: Container(
-                        padding:
-                        const EdgeInsets.symmetric(vertical: 14),
-                        decoration: BoxDecoration(
-                          color: !_isIncome
-                              ? AppTheme.expense
-                              : Colors.transparent,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: const Center(
-                          child: Text(
-                            '💸 Gasto',
-                            style: TextStyle(
-                              color: AppTheme.textPrimary,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
+                    flex: 3,
+                    child: TextField(
+                      controller: _titleController,
+                      style: const TextStyle(color: AppTheme.textPrimary),
+                      decoration: const InputDecoration(
+                        labelText: 'Descripción',
+                        prefixIcon: Icon(Icons.description_outlined,
+                            color: AppTheme.accentPurple),
                       ),
                     ),
                   ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    flex: 2,
+                    child: TextField(
+                      controller: _amountController,
+                      keyboardType: const TextInputType.numberWithOptions(
+                          decimal: true),
+                      style: const TextStyle(color: AppTheme.textPrimary),
+                      decoration: const InputDecoration(
+                        labelText: 'Monto',
+                        prefixIcon: Icon(Icons.attach_money,
+                            color: AppTheme.accentPurple),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+
+              // Fila 2: Categoría + Fecha
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: DropdownButtonFormField<String>(
+                      value: _selectedCategory,
+                      dropdownColor: AppTheme.cardDark,
+                      style: const TextStyle(color: AppTheme.textPrimary),
+                      decoration: const InputDecoration(
+                        labelText: 'Categoría',
+                        prefixIcon: Icon(Icons.category_outlined,
+                            color: AppTheme.accentPurple),
+                      ),
+                      items: _categories
+                          .map((cat) => DropdownMenuItem(
+                              value: cat, child: Text(cat)))
+                          .toList(),
+                      onChanged: (v) =>
+                          setState(() => _selectedCategory = v!),
+                    ),
+                  ),
+                  const SizedBox(width: 16),
                   Expanded(
                     child: GestureDetector(
-                      onTap: () => setState(() => _isIncome = true),
+                      onTap: _selectDate,
                       child: Container(
-                        padding:
-                        const EdgeInsets.symmetric(vertical: 14),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 16),
                         decoration: BoxDecoration(
-                          color: _isIncome
-                              ? AppTheme.income
-                              : Colors.transparent,
+                          color: AppTheme.cardMedium,
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        child: const Center(
-                          child: Text(
-                            '💰 Ingreso',
-                            style: TextStyle(
-                              color: AppTheme.textPrimary,
-                              fontWeight: FontWeight.bold,
+                        child: Row(
+                          children: [
+                            const Icon(Icons.calendar_today_outlined,
+                                color: AppTheme.accentPurple),
+                            const SizedBox(width: 12),
+                            Text(
+                              '${_selectedDate.day}/${_selectedDate.month}/${_selectedDate.year}',
+                              style: const TextStyle(
+                                  color: AppTheme.textPrimary),
                             ),
-                          ),
+                          ],
                         ),
                       ),
                     ),
                   ),
                 ],
               ),
-            ),
-            const SizedBox(height: 24),
+              const SizedBox(height: 16),
 
-            TextField(
-              controller: _titleController,
-              style: const TextStyle(color: AppTheme.textPrimary),
-              decoration: const InputDecoration(
-                labelText: 'Descripción',
-                prefixIcon: Icon(Icons.description_outlined,
-                    color: AppTheme.accentPurple),
+              // Nota
+              TextField(
+                controller: _noteController,
+                style: const TextStyle(color: AppTheme.textPrimary),
+                maxLines: 3,
+                decoration: const InputDecoration(
+                  labelText: 'Nota (opcional)',
+                  prefixIcon: Icon(Icons.note_outlined,
+                      color: AppTheme.accentPurple),
+                ),
+              ),
+              const SizedBox(height: 28),
+
+              // Botón guardar
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text('Cancelar',
+                        style:
+                            TextStyle(color: AppTheme.textSecondary)),
+                  ),
+                  const SizedBox(width: 12),
+                  SizedBox(
+                    width: 200,
+                    child: ElevatedButton(
+                      onPressed: _isLoading ? null : _save,
+                      child: _isLoading
+                          ? const CircularProgressIndicator(
+                              color: AppTheme.textPrimary)
+                          : Text(
+                              isEditing
+                                  ? 'Guardar cambios'
+                                  : 'Agregar movimiento',
+                              style: const TextStyle(fontSize: 15),
+                            ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // ── MOBILE (sin cambios) ──────────────────────────────────────────
+  Widget _buildMobile(bool isEditing) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildTypeSelector(),
+          const SizedBox(height: 24),
+          TextField(
+            controller: _titleController,
+            style: const TextStyle(color: AppTheme.textPrimary),
+            decoration: const InputDecoration(
+              labelText: 'Descripción',
+              prefixIcon: Icon(Icons.description_outlined,
+                  color: AppTheme.accentPurple),
+            ),
+          ),
+          const SizedBox(height: 16),
+          TextField(
+            controller: _amountController,
+            keyboardType:
+                const TextInputType.numberWithOptions(decimal: true),
+            style: const TextStyle(color: AppTheme.textPrimary),
+            decoration: const InputDecoration(
+              labelText: 'Monto',
+              prefixIcon:
+                  Icon(Icons.attach_money, color: AppTheme.accentPurple),
+            ),
+          ),
+          const SizedBox(height: 16),
+          DropdownButtonFormField<String>(
+            value: _selectedCategory,
+            dropdownColor: AppTheme.cardDark,
+            style: const TextStyle(color: AppTheme.textPrimary),
+            decoration: const InputDecoration(
+              labelText: 'Categoría',
+              prefixIcon: Icon(Icons.category_outlined,
+                  color: AppTheme.accentPurple),
+            ),
+            items: _categories
+                .map((cat) =>
+                    DropdownMenuItem(value: cat, child: Text(cat)))
+                .toList(),
+            onChanged: (v) => setState(() => _selectedCategory = v!),
+          ),
+          const SizedBox(height: 16),
+          GestureDetector(
+            onTap: _selectDate,
+            child: Container(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+              decoration: BoxDecoration(
+                color: AppTheme.cardMedium,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.calendar_today_outlined,
+                      color: AppTheme.accentPurple),
+                  const SizedBox(width: 12),
+                  Text(
+                    '${_selectedDate.day}/${_selectedDate.month}/${_selectedDate.year}',
+                    style: const TextStyle(color: AppTheme.textPrimary),
+                  ),
+                ],
               ),
             ),
-            const SizedBox(height: 16),
-
-            TextField(
-              controller: _amountController,
-              keyboardType:
-              const TextInputType.numberWithOptions(decimal: true),
-              style: const TextStyle(color: AppTheme.textPrimary),
-              decoration: const InputDecoration(
-                labelText: 'Monto',
-                prefixIcon: Icon(Icons.attach_money,
-                    color: AppTheme.accentPurple),
-              ),
+          ),
+          const SizedBox(height: 16),
+          TextField(
+            controller: _noteController,
+            style: const TextStyle(color: AppTheme.textPrimary),
+            maxLines: 3,
+            decoration: const InputDecoration(
+              labelText: 'Nota (opcional)',
+              prefixIcon:
+                  Icon(Icons.note_outlined, color: AppTheme.accentPurple),
             ),
-            const SizedBox(height: 16),
-
-            DropdownButtonFormField<String>(
-              value: _selectedCategory,
-              dropdownColor: AppTheme.cardDark,
-              style: const TextStyle(color: AppTheme.textPrimary),
-              decoration: const InputDecoration(
-                labelText: 'Categoría',
-                prefixIcon: Icon(Icons.category_outlined,
-                    color: AppTheme.accentPurple),
-              ),
-              items: _categories.map((cat) {
-                return DropdownMenuItem(value: cat, child: Text(cat));
-              }).toList(),
-              onChanged: (value) {
-                setState(() => _selectedCategory = value!);
-              },
+          ),
+          const SizedBox(height: 32),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: _isLoading ? null : _save,
+              child: _isLoading
+                  ? const CircularProgressIndicator(
+                      color: AppTheme.textPrimary)
+                  : Text(
+                      isEditing ? 'Guardar cambios' : 'Agregar movimiento',
+                      style: const TextStyle(fontSize: 16),
+                    ),
             ),
-            const SizedBox(height: 16),
+          ),
+        ],
+      ),
+    );
+  }
 
-            GestureDetector(
-              onTap: _selectDate,
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 16, vertical: 16),
+  // ── SELECTOR COMPARTIDO ───────────────────────────────────────────
+  Widget _buildTypeSelector() {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppTheme.backgroundDark,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: GestureDetector(
+              onTap: () => setState(() => _isIncome = false),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 150),
+                padding: const EdgeInsets.symmetric(vertical: 14),
                 decoration: BoxDecoration(
-                  color: AppTheme.cardMedium,
+                  color: !_isIncome ? AppTheme.expense : Colors.transparent,
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Row(
-                  children: [
-                    const Icon(Icons.calendar_today_outlined,
-                        color: AppTheme.accentPurple),
-                    const SizedBox(width: 12),
-                    Text(
-                      '${_selectedDate.day}/${_selectedDate.month}/${_selectedDate.year}',
-                      style:
-                      const TextStyle(color: AppTheme.textPrimary),
-                    ),
-                  ],
+                child: const Center(
+                  child: Text(
+                    '💸 Gasto',
+                    style: TextStyle(
+                        color: AppTheme.textPrimary,
+                        fontWeight: FontWeight.bold),
+                  ),
                 ),
               ),
             ),
-            const SizedBox(height: 16),
-
-            TextField(
-              controller: _noteController,
-              style: const TextStyle(color: AppTheme.textPrimary),
-              maxLines: 3,
-              decoration: const InputDecoration(
-                labelText: 'Nota (opcional)',
-                prefixIcon: Icon(Icons.note_outlined,
-                    color: AppTheme.accentPurple),
-              ),
-            ),
-            const SizedBox(height: 32),
-
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: _isLoading ? null : _save,
-                child: _isLoading
-                    ? const CircularProgressIndicator(
-                    color: AppTheme.textPrimary)
-                    : Text(
-                  isEditing ? 'Guardar cambios' : 'Agregar movimiento',
-                  style: const TextStyle(fontSize: 16),
+          ),
+          Expanded(
+            child: GestureDetector(
+              onTap: () => setState(() => _isIncome = true),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 150),
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                decoration: BoxDecoration(
+                  color: _isIncome ? AppTheme.income : Colors.transparent,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Center(
+                  child: Text(
+                    '💰 Ingreso',
+                    style: TextStyle(
+                        color: AppTheme.textPrimary,
+                        fontWeight: FontWeight.bold),
+                  ),
                 ),
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
