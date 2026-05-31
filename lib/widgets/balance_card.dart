@@ -21,10 +21,37 @@ class BalanceCard extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(28),
       decoration: BoxDecoration(
-        color: AppTheme.primaryContainer,
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Color(0xFF0C3547),
+            Color(0xFF082D3C),
+          ],
+        ),
         borderRadius: BorderRadius.circular(20),
       ),
-      child: Column(
+      child: Stack(
+        clipBehavior: Clip.hardEdge,
+        children: [
+          Positioned(
+            top: -40,
+            left: -40,
+            child: Container(
+              width: 220,
+              height: 220,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: RadialGradient(
+                  colors: [
+                    const Color(0xFF96F6C8).withOpacity(0.22),
+                    Colors.transparent,
+                  ],
+                ),
+              ),
+            ),
+          ),
+          Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
@@ -62,6 +89,8 @@ class BalanceCard extends StatelessWidget {
                 Colors.white,
               ),
             ],
+          ),
+        ],
           ),
         ],
       ),

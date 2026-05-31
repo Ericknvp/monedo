@@ -451,47 +451,76 @@ class _DashboardScreenState extends State<DashboardScreen> {
       width: double.infinity,
       padding: const EdgeInsets.all(32),
       decoration: BoxDecoration(
-        color: AppTheme.primaryContainer,
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Color(0xFF0C3547),
+            Color(0xFF082D3C),
+          ],
+        ),
         borderRadius: BorderRadius.circular(20),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Stack(
+        clipBehavior: Clip.hardEdge,
         children: [
-          Text(
-            'BALANCE DISPONIBLE',
-            style: GoogleFonts.beVietnamPro(
-              color: AppTheme.secondaryFixed,
-              fontSize: 11,
-              fontWeight: FontWeight.w700,
-              letterSpacing: 1.5,
-            ),
-          ),
-          const SizedBox(height: 10),
-          Text(
-            'Balance total: ${CurrencyFormatter.format(balance)}',
-            style: GoogleFonts.plusJakartaSans(
-              color: Colors.white,
-              fontSize: 36,
-              fontWeight: FontWeight.w700,
-              letterSpacing: -0.72,
-            ),
-          ),
-          const SizedBox(height: 20),
-          Wrap(
-            spacing: 10,
-            runSpacing: 8,
-            children: [
-              _heroChip(
-                Icons.arrow_downward_rounded,
-                'Ingresos del mes: ${CurrencyFormatter.format(income)}',
-                AppTheme.secondaryFixed,
-                AppTheme.onSecondaryFixed,
+          Positioned(
+            top: -40,
+            left: -40,
+            child: Container(
+              width: 260,
+              height: 260,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: RadialGradient(
+                  colors: [
+                    const Color(0xFF96F6C8).withOpacity(0.25),
+                    Colors.transparent,
+                  ],
+                ),
               ),
-              _heroChip(
-                Icons.arrow_upward_rounded,
-                'Gastos del mes: ${CurrencyFormatter.format(expenses)}',
-                Colors.white.withOpacity(0.12),
-                Colors.white,
+            ),
+          ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'BALANCE DISPONIBLE',
+                style: GoogleFonts.beVietnamPro(
+                  color: AppTheme.secondaryFixed,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 1.5,
+                ),
+              ),
+              const SizedBox(height: 10),
+              Text(
+                'Balance total: ${CurrencyFormatter.format(balance)}',
+                style: GoogleFonts.plusJakartaSans(
+                  color: Colors.white,
+                  fontSize: 36,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: -0.72,
+                ),
+              ),
+              const SizedBox(height: 20),
+              Wrap(
+                spacing: 10,
+                runSpacing: 8,
+                children: [
+                  _heroChip(
+                    Icons.arrow_downward_rounded,
+                    'Ingresos del mes: ${CurrencyFormatter.format(income)}',
+                    AppTheme.secondaryFixed,
+                    AppTheme.onSecondaryFixed,
+                  ),
+                  _heroChip(
+                    Icons.arrow_upward_rounded,
+                    'Gastos del mes: ${CurrencyFormatter.format(expenses)}',
+                    Colors.white.withOpacity(0.12),
+                    Colors.white,
+                  ),
+                ],
               ),
             ],
           ),
