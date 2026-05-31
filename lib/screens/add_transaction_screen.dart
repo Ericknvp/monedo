@@ -312,8 +312,8 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
       padding: const EdgeInsets.all(4),
       child: Row(
         children: [
-          Expanded(child: _typeBtn('💸 Gasto', false)),
-          Expanded(child: _typeBtn('💰 Ingreso', true)),
+          Expanded(child: _typeBtn('Gasto', false)),
+          Expanded(child: _typeBtn('Ingreso', true)),
         ],
       ),
     );
