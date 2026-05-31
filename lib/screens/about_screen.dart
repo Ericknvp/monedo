@@ -1,14 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:url_launcher/url_launcher.dart';
 import '../theme/app_theme.dart';
+import '../utils/web_redirect.dart' if (dart.library.io) '../utils/web_redirect_stub.dart';
 
 class AboutScreen extends StatelessWidget {
   const AboutScreen({super.key});
-
-  Future<void> _launch(String url) async {
-    await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -111,7 +107,7 @@ class AboutScreen extends StatelessWidget {
                     ),
                   ),
                   InkWell(
-                    onTap: () => _launch('https://ericknvp-dev.vercel.app'),
+                    onTap: () => openExternalUrl('https://ericknvp-dev.vercel.app'),
                     borderRadius: BorderRadius.circular(8),
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -142,7 +138,7 @@ class AboutScreen extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   InkWell(
-                    onTap: () => _launch('https://github.com/Ericknvp/monedo'),
+                    onTap: () => openExternalUrl('https://github.com/Ericknvp/monedo'),
                     borderRadius: BorderRadius.circular(8),
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),

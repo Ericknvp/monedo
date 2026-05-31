@@ -8,3 +8,7 @@ void redirectToLanding() {
 String? getViewParam() {
   return Uri.parse(html.window.location.href).queryParameters['view'];
 }
+
+void openExternalUrl(String url) {
+  html.window.open(url, '_blank');
+}
