@@ -26,14 +26,15 @@ class AboutScreen extends StatelessWidget {
 
               // Logo
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                padding: const EdgeInsets.all(18),
                 decoration: BoxDecoration(
                   color: AppTheme.primaryContainer,
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Image.asset(
                   'assets/newmonedodesign/newlogo.png',
-                  height: 44,
+                  width: 52,
+                  height: 52,
                   fit: BoxFit.contain,
                 ),
               ),
