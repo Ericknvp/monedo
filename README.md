@@ -1,123 +1,117 @@
-#  Monedo
+# Monedo
 
-Aplicación de finanzas personales desarrollada con Flutter, enfocada en la gestión de ingresos, gastos y control financiero diario.
+Aplicación de finanzas personales desarrollada con Flutter, orientada a la gestión de ingresos, gastos, metas de ahorro y control financiero diario. Disponible en Android y Web.
 
-##  Descripción
+## Descripción
 
-Monedo es una aplicación que permite a los usuarios registrar y visualizar sus movimientos financieros de forma sencilla, ayudando a mejorar el control del dinero y la toma de decisiones.
+Monedo permite registrar y visualizar movimientos financieros de forma clara e intuitiva, ayudando a tomar mejores decisiones sobre el dinero. Incluye estadísticas visuales, metas de ahorro y una landing page pública que presenta la aplicación a nuevos usuarios.
 
-Este proyecto fue desarrollado como parte de mi proceso de aprendizaje en desarrollo móvil con Flutter y Firebase.
+## Tecnologías
 
-##  Tecnologías
+- Flutter / Dart
+- Firebase Firestore
+- Firebase Auth
+- Firebase Hosting
+- Android Studio
 
-* Flutter
-* Dart
-* Firebase (base de datos)
-* Android Studio
+## Funcionalidades
 
-##  Funcionalidades
+- Registro de ingresos y gastos con categoría, fecha y nota opcional
+- Edición y eliminación de movimientos
+- Filtros por tipo: Todos, Ingresos, Gastos
+- Balance actual con desglose mensual de ingresos y gastos
+- Estadísticas mensuales con selector de mes
+- Gráfica de torta de gastos por categoría
+- Estadísticas semanales
+- Metas de ahorro con progreso visual y descuento automático del balance
+- Formato de moneda con separador de miles
+- Confirmación antes de cerrar sesión y al eliminar movimientos
+- Landing page pública con presentación de características y sección "Cómo funciona"
+- Redirección automática a landing en web cuando no hay sesión activa
+- Pantalla "Acerca de" con información del creador y enlaces externos
+- Diseño responsive — funciona en Android y Web
+- Soporte PWA con favicon e iconos de aplicación personalizados
 
-* Registro de ingresos y gastos
-* Visualización de transacciones
-* Persistencia de datos en Firebase
-* Interfaz intuitiva y responsive
-* Estadisticas visuales
+## Paleta de colores
 
+La interfaz utiliza Material Design 3 con una paleta azul petróleo / verde esmeralda sobre fondo claro.
 
-## 📲 Instalación
+| Token                    | Color     | Uso principal                        |
+|--------------------------|-----------|--------------------------------------|
+| primary                  | `#001F2D` | Fondos de header, gradientes         |
+| primaryContainer         | `#0C3547` | Variante de fondo primario           |
+| onPrimaryFixedVariant    | `#264B5E` | Bordes y elementos secundarios       |
+| secondary                | `#006C4B` | Botones, accents, indicadores activos|
+| secondaryContainer       | `#96F6C8` | Chips, badges, fondos de acento      |
+| secondaryFixed           | `#96F6C8` | Texto y elementos sobre fondo oscuro |
+| secondaryFixedDim        | `#7AD9AD` | Variante atenuada del acento         |
+| background               | `#FCFAF8` | Fondo general de la app              |
+| surfaceContainerLowest   | `#FFFFFF` | Tarjetas y modales                   |
+| surfaceContainer         | `#F0EDEC` | Fondos de navegación inferior        |
+| outlineVariant           | `#C1C7CC` | Bordes y divisores                   |
+| errorRed / expense       | `#BA1A1A` | Errores y gastos                     |
+| income                   | `#006C4B` | Ingresos (alias de secondary)        |
+
+Tipografía: **Plus Jakarta Sans** (encabezados y cuerpo) / **Be Vietnam Pro** (etiquetas e inputs).
+
+## Instalación
 
 1. Clonar el repositorio
-2. Ejecutar:
-
+2. Instalar dependencias:
    ```
    flutter pub get
    ```
 3. Ejecutar la app:
-
    ```
    flutter run
    ```
 
-## 📲 Descargar APK
+## Descargar APK
 
 [Descargar Monedo v1.0](https://github.com/Ericknvp/monedo/releases/tag/v1.0)
 
-##  Aprendizaje
+## Changelog
 
-Este proyecto me permitió fortalecer conocimientos en:
+### v1.3.0 — Mayo 2026
 
-* Desarrollo móvil con Flutter
-* Manejo de estado
-* Integración con Firebase
-* Estructuración de aplicaciones móviles
+- Landing page publica con secciones de características, paso a paso y footer con enlaces
+- Redirección automática a landing en web cuando el usuario no tiene sesión activa
+- Botones de edición y eliminación siempre visibles en TransactionTile en móvil
+- Header del dashboard móvil actualizado con nombre de la app y tab activa más destacada
+- Nuevo logo e iconos PWA / iOS actualizados
+- Enlace a Ko-fi agregado en el footer de la landing
 
-##  Autor
+### v1.2.0 — Abril 2026
 
-Erick Narváez
-Instagram: Ericknvp
-Correo: narvaezvegaerick@gmail.com
+- Metas de ahorro — crea metas con nombre y monto objetivo, registra abonos y el saldo se descuenta automáticamente del balance, con porcentaje de progreso visual
+- Formato de moneda con separador de miles (ejemplo: $69,308)
+- Confirmación al cerrar sesión y al eliminar movimientos desde el dashboard
+- Nueva categoría "Ocio" en la lista de gastos
 
-Paleta original:
+### v1.1.0
 
-static const Color primaryPurple = Color(0xFF7C3AED);     
-static const Color darkPurple = Color(0xFF4C1D95);       
-static const Color lightPurple = Color(0xFFDDD6FE);       
-static const Color accentPurple = Color(0xFFA78BFA);     
-static const Color backgroundDark = Color(0xFF0F0F1A);
-static const Color cardDark = Color(0xFF1A1A2E);        
-static const Color cardMedium = Color(0xFF16213E);      
-static const Color income = Color(0xFF10B981);     
-static const Color expense = Color(0xFFEF4444);      
-static const Color textPrimary = Color(0xFFFFFFFF);       
-static const Color textSecondary = Color(0xFF9CA3AF);    
+- Corregido error de `setState()` called after dispose en el dashboard
+- Resuelto conflicto de nombre entre Transaction de Firestore y el modelo propio, renombrado a TransactionModel
+- Corregido CardTheme a CardThemeData para compatibilidad con Flutter 3.x
+- Simplificadas las consultas de Firestore para evitar índices compuestos
 
+### v1.0.0 — Abril 2026
 
-Paleta de colores de borrador:
+- Registro e inicio de sesión con correo y contraseña
+- Nombres de usuario únicos
+- Dashboard con balance actual, ingresos y gastos del mes
+- Registro de ingresos y gastos con categoría, fecha y nota opcional
+- Edición y eliminación de movimientos
+- Filtros por Todos, Ingresos y Gastos
+- Estadísticas mensuales con selector de mes
+- Gráfica de torta de gastos por categoría
+- Estadísticas semanales
+- Pantalla "Acerca de" con información del creador
+- Diseño responsive en Android y Web
+- Autenticación y base de datos con Firebase
 
-static const Color primaryPurple  = Color(0xFFD97706);
-static const Color darkPurple     = Color(0xFF92400E);
-static const Color lightPurple    = Color(0xFFFDE68A);
-static const Color accentPurple   = Color(0xFFF59E0B);
-static const Color backgroundDark = Color(0xFF0A0A0A);
-static const Color cardDark       = Color(0xFF141414);
-static const Color cardMedium     = Color(0xFF1C1C1C);
-static const Color income         = Color(0xFF10B981);
-static const Color expense        = Color(0xFFEF4444);
-static const Color textPrimary    = Color(0xFFFFFFFF);
-static const Color textSecondary  = Color(0xFF9CA3AF);
+## Autor
 
-
-Changelog
-v1.2.0 — Abril 2026
-Nuevas funcionalidades
-
-Metas de ahorro — crea metas con nombre y monto objetivo, registra abonos y el saldo se descuenta automáticamente del balance. Muestra porcentaje de progreso visual.
-Formato de moneda — los montos ahora muestran separador de miles con comas (ej: $69,308)
-Confirmación al salir — diálogo de confirmación antes de cerrar sesión para evitar salidas accidentales
-Confirmación al eliminar movimientos en el dashboard.
-Nueva categoría — se agregó "Ocio" a la lista de categorías de gastos
-
-v1.1.0
-Correcciones
-
-Corregido error de setState() called after dispose() en el dashboard
-Corregido conflicto de nombre entre Transaction de Firestore y el modelo propio, renombrado a TransactionModel
-Corregido CardTheme → CardThemeData para compatibilidad con Flutter 3.x
-Simplificadas las consultas de Firestore para evitar necesidad de índices compuestos
-
-v1.0.0 — Abril 2026
-Lanzamiento inicial
-
-Registro e inicio de sesión con correo y contraseña
-Nombres de usuario únicos
-Dashboard con balance actual, ingresos y gastos del mes
-Registro de ingresos y gastos con categoría, fecha y nota opcional
-Edición y eliminación de movimientos
-Filtros por Todos, Ingresos y Gastos
-Estadísticas mensuales con selector de mes
-Gráfica de torta de gastos por categoría
-Estadísticas semanales
-Pantalla "Acerca de" con info del creador
-Diseño responsive — funciona en Android y Web
-Base de datos en Firebase Firestore
-Autenticación con Firebase Auth
+Ericknvp  
+Portafolio: [ericknvp-dev.vercel.app](https://ericknvp-dev.vercel.app)  
+GitHub: [github.com/Ericknvp](https://github.com/Ericknvp)
