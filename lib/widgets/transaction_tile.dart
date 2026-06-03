@@ -70,9 +70,9 @@ class _TransactionTileState extends State<TransactionTile> {
           boxShadow: _hovered
               ? [
                   BoxShadow(
-                    color: AppTheme.primary.withOpacity(0.05),
-                    blurRadius: 20,
-                    offset: const Offset(0, 8),
+                    color: AppTheme.primary.withOpacity(0.08),
+                    blurRadius: 16,
+                    offset: const Offset(0, 6),
                   )
                 ]
               : [],
