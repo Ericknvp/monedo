@@ -52,45 +52,45 @@ class BalanceCard extends StatelessWidget {
             ),
           ),
           Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'BALANCE DISPONIBLE',
-            style: GoogleFonts.beVietnamPro(
-              color: AppTheme.secondaryFixed,
-              fontSize: 11,
-              fontWeight: FontWeight.w600,
-              letterSpacing: 1.5,
-            ),
-          ),
-          const SizedBox(height: 10),
-          Text(
-            CurrencyFormatter.format(balance),
-            style: GoogleFonts.plusJakartaSans(
-              color: Colors.white,
-              fontSize: 34,
-              fontWeight: FontWeight.w700,
-              letterSpacing: -0.68,
-            ),
-          ),
-          const SizedBox(height: 20),
-          Wrap(
-            spacing: 10,
-            runSpacing: 8,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _chip(
-                '↑  Ingresos: ${CurrencyFormatter.format(income)}',
-                AppTheme.secondaryFixed,
-                AppTheme.onSecondaryFixed,
+              Text(
+                'BALANCE DISPONIBLE',
+                style: GoogleFonts.beVietnamPro(
+                  color: AppTheme.secondaryFixed,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 1.5,
+                ),
               ),
-              _chip(
-                '↑  Gastos: ${CurrencyFormatter.format(expenses)}',
-                Colors.white.withOpacity(0.1),
-                Colors.white,
+              const SizedBox(height: 10),
+              Text(
+                CurrencyFormatter.format(balance),
+                style: GoogleFonts.plusJakartaSans(
+                  color: Colors.white,
+                  fontSize: 34,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: -0.68,
+                ),
+              ),
+              const SizedBox(height: 20),
+              Wrap(
+                spacing: 10,
+                runSpacing: 8,
+                children: [
+                  _chip(
+                    '↑  Ingresos: ${CurrencyFormatter.format(income)}',
+                    AppTheme.secondaryFixed,
+                    AppTheme.onSecondaryFixed,
+                  ),
+                  _chip(
+                    '↓  Gastos: ${CurrencyFormatter.format(expenses)}',
+                    Colors.white.withOpacity(0.1),
+                    Colors.white,
+                  ),
+                ],
               ),
             ],
-          ),
-        ],
           ),
         ],
       ),
