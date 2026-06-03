@@ -58,7 +58,7 @@ class _TransactionTileState extends State<TransactionTile> {
       onEnter: (_) => setState(() => _hovered = true),
       onExit: (_) => setState(() => _hovered = false),
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 180),
+        duration: const Duration(milliseconds: 200),
         margin: const EdgeInsets.only(bottom: 8),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         decoration: BoxDecoration(
@@ -175,7 +175,7 @@ class _TransactionTileState extends State<TransactionTile> {
                 const SizedBox(height: 6),
                 AnimatedOpacity(
                   opacity: (!isDesktop || _hovered) ? 1.0 : 0.0,
-                  duration: const Duration(milliseconds: 180),
+                  duration: const Duration(milliseconds: 200),
                   child: Row(
                     children: [
                       _actionBtn(Icons.edit_rounded,
