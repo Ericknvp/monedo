@@ -663,10 +663,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       touchTooltipData: BarTouchTooltipData(
                         getTooltipColor: (group) => AppTheme.primary,
                         getTooltipItem: (group, groupIndex, rod, rodIndex) {
+                          final textColor = rodIndex == 0
+                              ? AppTheme.secondaryFixed
+                              : Colors.white;
                           return BarTooltipItem(
                             rod.toY.toStringAsFixed(0),
-                            const TextStyle(
-                              color: Colors.white,
+                            TextStyle(
+                              color: textColor,
                               fontWeight: FontWeight.bold,
                               fontSize: 12,
                             ),
