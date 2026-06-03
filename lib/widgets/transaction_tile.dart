@@ -87,7 +87,7 @@ class _TransactionTileState extends State<TransactionTile> {
                 color: iconBg,
                 borderRadius: BorderRadius.circular(14),
               ),
-              child: Icon(_icon(t.category), color: iconColor, size: 22),
+              child: Icon(_icon(t.category), color: iconColor, size: 20),
             ),
             const SizedBox(width: 14),
 
