@@ -661,10 +661,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   BarChartData(
                     barTouchData: BarTouchData(
                       touchTooltipData: BarTouchTooltipData(
-                        getTooltipColor: (group, groupIndex, rod, rodIndex) =>
-                            rodIndex == 1
-                                ? AppTheme.primary
-                                : AppTheme.secondary,
+                        getTooltipColor: (group) => AppTheme.primary,
                         getTooltipItem: (group, groupIndex, rod, rodIndex) {
                           return BarTooltipItem(
                             rod.toY.toStringAsFixed(0),
