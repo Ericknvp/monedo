@@ -37,7 +37,7 @@ class GoalsScreen extends StatelessWidget {
                   foregroundColor: Colors.white,
                   onPressed: () =>
                       _showGoalSheet(context, userId, goalService),
-                  icon: const Icon(Icons.add_circle_outline_rounded),
+                  icon: const Icon(Icons.add_rounded),
                   label: Text(
                     'Crear meta',
                     style: GoogleFonts.beVietnamPro(fontWeight: FontWeight.w600),
