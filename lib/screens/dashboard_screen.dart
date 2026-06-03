@@ -659,6 +659,24 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 height: 220,
                 child: BarChart(
                   BarChartData(
+                    barTouchData: BarTouchData(
+                      touchTooltipData: BarTouchTooltipData(
+                        getTooltipColor: (group, groupIndex, rod, rodIndex) =>
+                            rodIndex == 1
+                                ? AppTheme.primary
+                                : AppTheme.secondary,
+                        getTooltipItem: (group, groupIndex, rod, rodIndex) {
+                          return BarTooltipItem(
+                            rod.toY.toStringAsFixed(0),
+                            const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 12,
+                            ),
+                          );
+                        },
+                      ),
+                    ),
                     alignment: BarChartAlignment.spaceAround,
                     maxY: maxY == 0 ? 100 : maxY * 1.25,
                     barGroups: data.asMap().entries.map((e) {
