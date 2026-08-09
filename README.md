@@ -8,7 +8,7 @@ Monedo permite registrar y visualizar movimientos financieros de forma clara e i
 
 ## Tecnologías
 
-- Flutter / Dar
+- Flutter / Dart
 - Firebase Firestore
 - Firebase Auth
 - Firebase Hosting
