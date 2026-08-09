@@ -97,7 +97,6 @@ Tipografía: **Plus Jakarta Sans** (encabezados y cuerpo) / **Be Vietnam Pro** (
 
 ### v1.0.0 — Abril 2026
 
-- Registro e inicio de sesión con correo y contraseña
 - Nombres de usuario únicos
 - Dashboard con balance actual, ingresos y gastos del mes
 - Registro de ingresos y gastos con categoría, fecha y nota opcional
