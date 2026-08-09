@@ -104,7 +104,6 @@ Tipografía: **Plus Jakarta Sans** (encabezados y cuerpo) / **Be Vietnam Pro** (
 - Estadísticas mensuales con selector de mes
 - Gráfica de torta de gastos por categoría
 - Estadísticas semanales
-- Pantalla "Acerca de" con información del creador
 - Diseño responsive en Android y Web
 - Autenticación y base de datos con Firebase
 
