@@ -229,146 +229,122 @@ class _RegisterScreenState extends State<RegisterScreen> {
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(gradient: AppTheme.backgroundGradient),
-        child: SafeArea(
-          child: Center(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(28),
+        child: Stack(
+          children: [
+            Positioned(
+              top: -80, right: -60,
+              child: _blob(220, AppTheme.secondaryFixed, 0.2),
+            ),
+            Positioned(
+              top: 60, left: -70,
+              child: _blob(180, AppTheme.secondary, 0.18),
+            ),
+            SafeArea(
               child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Image.asset(
-                    'assets/images/logomonedo_new.png',
-                    width: 56,
-                    height: 56,
-                    fit: BoxFit.contain,
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Crear cuenta',
-                    style: GoogleFonts.plusJakartaSans(
-                      color: Colors.white,
-                      fontSize: 32,
-                      fontWeight: FontWeight.w800,
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(28, 24, 28, 28),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildLogoChip(),
+                        const SizedBox(height: 20),
+                        Text(
+                          'Crear cuenta',
+                          style: GoogleFonts.plusJakartaSans(
+                            fontSize: 30,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white,
+                            letterSpacing: -0.5,
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          'Comienza tu camino hacia la claridad financiera.',
+                          style: GoogleFonts.beVietnamPro(
+                            fontSize: 15,
+                            color: AppTheme.secondaryFixed.withOpacity(0.85),
+                            height: 1.5,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  const SizedBox(height: 6),
-                  Text(
-                    'Únete a Monedo',
-                    style: GoogleFonts.beVietnamPro(
-                      color: AppTheme.secondaryFixed,
-                      fontSize: 16,
+                  Expanded(
+                    child: Container(
+                      width: double.infinity,
+                      decoration: const BoxDecoration(
+                        color: AppTheme.surfaceContainerLowest,
+                        borderRadius:
+                            BorderRadius.vertical(top: Radius.circular(32)),
+                      ),
+                      child: SingleChildScrollView(
+                        padding: const EdgeInsets.fromLTRB(28, 36, 28, 28),
+                        child: _buildFormFields(),
+                      ),
                     ),
                   ),
-                  const SizedBox(height: 40),
-                  _buildMobileFormFields(),
                 ],
               ),
             ),
-          ),
+          ],
         ),
       ),
     );
   }
 
-  Widget _buildMobileFormFields() {
-    inputField(TextEditingController ctrl, String label, IconData icon,
-        {bool obscure = false, bool isConfirm = false, TextInputType? keyboardType}) {
-      return TextField(
-        controller: ctrl,
-        obscureText: obscure
-            ? (isConfirm ? _obscureConfirm : _obscurePassword)
-            : false,
-        keyboardType: keyboardType,
-        style: const TextStyle(color: Colors.white),
-        decoration: InputDecoration(
-          labelText: label,
-          labelStyle:
-              GoogleFonts.beVietnamPro(color: Colors.white60, fontSize: 14),
-          enabledBorder: const UnderlineInputBorder(
-            borderSide: BorderSide(color: Colors.white24, width: 2),
-          ),
-          focusedBorder: const UnderlineInputBorder(
-            borderSide:
-                BorderSide(color: AppTheme.secondaryFixed, width: 2),
-          ),
-          prefixIcon: Icon(icon, color: AppTheme.secondaryFixed),
-          suffixIcon: obscure
-              ? IconButton(
-                  icon: Icon(
-                    (isConfirm ? _obscureConfirm : _obscurePassword)
-                        ? Icons.visibility_outlined
-                        : Icons.visibility_off_outlined,
-                    color: Colors.white54,
-                  ),
-                  onPressed: () => setState(() => isConfirm
-                      ? _obscureConfirm = !_obscureConfirm
-                      : _obscurePassword = !_obscurePassword),
-                )
-              : null,
-        ),
-      );
-    }
+  Widget _buildLogoChip() {
+    return Container(
+      width: 72,
+      height: 72,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.08),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.white.withOpacity(0.12)),
+      ),
+      child: Image.asset(
+        'assets/images/logomonedo_new.png',
+        fit: BoxFit.contain,
+      ),
+    );
+  }
 
-    return Column(
-      children: [
-        inputField(_usernameController, 'Nombre de usuario', Icons.person_outline),
-        const SizedBox(height: 20),
-        inputField(_emailController, 'Correo electrónico', Icons.email_outlined,
-            keyboardType: TextInputType.emailAddress),
-        const SizedBox(height: 20),
-        inputField(_passwordController, 'Contraseña', Icons.lock_outlined,
-            obscure: true),
-        const SizedBox(height: 20),
-        inputField(_confirmPasswordController, 'Confirmar contraseña',
-            Icons.lock_outlined,
-            obscure: true, isConfirm: true),
-        const SizedBox(height: 36),
-        SizedBox(
-          width: double.infinity,
-          child: ElevatedButton(
-            onPressed: _isLoading ? null : _register,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.secondary,
-              shape: const StadiumBorder(),
-              padding: const EdgeInsets.symmetric(vertical: 18),
-            ),
-            child: _isLoading
-                ? const CircularProgressIndicator(color: Colors.white)
-                : Text('Crear cuenta',
-                    style: GoogleFonts.plusJakartaSans(
-                        fontSize: 16, fontWeight: FontWeight.w600)),
-          ),
-        ),
-        const SizedBox(height: 16),
-        TextButton(
-          onPressed: () => Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (_) => const LoginScreen()),
-          ),
-          child: RichText(
-            text: TextSpan(
-              text: '¿Ya tienes cuenta? ',
-              style: GoogleFonts.beVietnamPro(
-                  color: Colors.white70, fontSize: 14),
-              children: [
-                TextSpan(
-                  text: 'Inicia sesión',
-                  style: GoogleFonts.beVietnamPro(
-                    color: AppTheme.secondaryFixed,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ],
+  InputDecoration _fieldDecoration(
+    String label, {
+    IconData? prefixIcon,
+    Widget? suffixIcon,
+  }) {
+    return InputDecoration(
+      labelText: label,
+      labelStyle:
+          GoogleFonts.beVietnamPro(color: AppTheme.onSurfaceVariant, fontSize: 14),
+      filled: true,
+      fillColor: AppTheme.surfaceContainerLow,
+      prefixIcon: prefixIcon == null
+          ? null
+          : Icon(prefixIcon, color: AppTheme.onSurfaceVariant, size: 20),
+      suffixIcon: suffixIcon,
+      contentPadding:
+          const EdgeInsets.symmetric(vertical: 18, horizontal: 20),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16),
+        borderSide: BorderSide.none,
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16),
+        borderSide: const BorderSide(color: AppTheme.outlineVariant, width: 1),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16),
+        borderSide: const BorderSide(color: AppTheme.secondary, width: 1.6),
+      ),
     );
   }
 
   // ── SHARED FORM (desktop) ─────────────────────────────────────
   Widget _buildFormFields() {
-    Widget field(TextEditingController ctrl, String label,
+    Widget field(TextEditingController ctrl, String label, IconData icon,
         {bool obscure = false,
         bool isConfirm = false,
         TextInputType? keyboardType}) {
@@ -378,16 +354,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
             obscure ? (isConfirm ? _obscureConfirm : _obscurePassword) : false,
         keyboardType: keyboardType,
         style: GoogleFonts.beVietnamPro(color: AppTheme.primary, fontSize: 16),
-        decoration: InputDecoration(
-          labelText: label,
-          labelStyle: GoogleFonts.beVietnamPro(
-              color: AppTheme.onSurfaceVariant, fontSize: 14),
-          enabledBorder: const UnderlineInputBorder(
-            borderSide: BorderSide(color: AppTheme.surfaceVariant, width: 2),
-          ),
-          focusedBorder: const UnderlineInputBorder(
-            borderSide: BorderSide(color: AppTheme.secondary, width: 2),
-          ),
+        decoration: _fieldDecoration(
+          label,
+          prefixIcon: icon,
           suffixIcon: obscure
               ? IconButton(
                   icon: Icon(
@@ -395,6 +364,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         ? Icons.visibility_outlined
                         : Icons.visibility_off_outlined,
                     color: AppTheme.onSurfaceVariant,
+                    size: 20,
                   ),
                   onPressed: () => setState(() => isConfirm
                       ? _obscureConfirm = !_obscureConfirm
@@ -408,16 +378,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        field(_usernameController, 'Nombre de usuario'),
-        const SizedBox(height: 28),
-        field(_emailController, 'Correo electrónico',
+        field(_usernameController, 'Nombre de usuario', Icons.person_outline),
+        const SizedBox(height: 20),
+        field(_emailController, 'Correo electrónico', Icons.email_outlined,
             keyboardType: TextInputType.emailAddress),
-        const SizedBox(height: 28),
-        field(_passwordController, 'Contraseña', obscure: true),
-        const SizedBox(height: 28),
+        const SizedBox(height: 20),
+        field(_passwordController, 'Contraseña', Icons.lock_outlined,
+            obscure: true),
+        const SizedBox(height: 20),
         field(_confirmPasswordController, 'Confirmar contraseña',
+            Icons.lock_outlined,
             obscure: true, isConfirm: true),
-        const SizedBox(height: 40),
+        const SizedBox(height: 36),
         SizedBox(
           width: double.infinity,
           child: ElevatedButton(

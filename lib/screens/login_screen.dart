@@ -257,138 +257,116 @@ class _LoginScreenState extends State<LoginScreen> {
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(gradient: AppTheme.backgroundGradient),
-        child: SafeArea(
-          child: Center(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(28),
+        child: Stack(
+          children: [
+            Positioned(
+              top: -70, left: -60,
+              child: _blob(220, AppTheme.secondaryFixed, 0.2),
+            ),
+            Positioned(
+              top: 50, right: -70,
+              child: _blob(180, AppTheme.onSecondaryContainer, 0.15),
+            ),
+            SafeArea(
               child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Image.asset(
-                    'assets/images/logomonedo_new.png',
-                    width: 56,
-                    height: 56,
-                    fit: BoxFit.contain,
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    'Controla tus finanzas',
-                    style: GoogleFonts.beVietnamPro(
-                      color: AppTheme.secondaryFixed,
-                      fontSize: 16,
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(28, 24, 28, 28),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildLogoChip(),
+                        const SizedBox(height: 20),
+                        Text(
+                          'Bienvenido de nuevo',
+                          style: GoogleFonts.plusJakartaSans(
+                            fontSize: 30,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white,
+                            letterSpacing: -0.5,
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          'Ingresa tus datos para acceder a tu cuenta.',
+                          style: GoogleFonts.beVietnamPro(
+                            fontSize: 15,
+                            color: AppTheme.secondaryFixed.withOpacity(0.85),
+                            height: 1.5,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  const SizedBox(height: 48),
-                  _buildMobileFormFields(),
+                  Expanded(
+                    child: Container(
+                      width: double.infinity,
+                      decoration: const BoxDecoration(
+                        color: AppTheme.surfaceContainerLowest,
+                        borderRadius:
+                            BorderRadius.vertical(top: Radius.circular(32)),
+                      ),
+                      child: SingleChildScrollView(
+                        padding: const EdgeInsets.fromLTRB(28, 36, 28, 28),
+                        child: _buildFormFields(),
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ),
-          ),
+          ],
         ),
       ),
     );
   }
 
-  Widget _buildMobileFormFields() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        TextField(
-          controller: _emailController,
-          keyboardType: TextInputType.emailAddress,
-          style: const TextStyle(color: Colors.white),
-          decoration: InputDecoration(
-            labelText: 'Correo electrónico',
-            labelStyle: GoogleFonts.beVietnamPro(
-                color: Colors.white60, fontSize: 14),
-            enabledBorder: const UnderlineInputBorder(
-              borderSide: BorderSide(color: Colors.white24, width: 2),
-            ),
-            focusedBorder: const UnderlineInputBorder(
-              borderSide: BorderSide(color: AppTheme.secondaryFixed, width: 2),
-            ),
-            prefixIcon: const Icon(Icons.email_outlined,
-                color: AppTheme.secondaryFixed),
-          ),
-        ),
-        const SizedBox(height: 24),
-        TextField(
-          controller: _passwordController,
-          obscureText: _obscurePassword,
-          style: const TextStyle(color: Colors.white),
-          decoration: InputDecoration(
-            labelText: 'Contraseña',
-            labelStyle: GoogleFonts.beVietnamPro(
-                color: Colors.white60, fontSize: 14),
-            enabledBorder: const UnderlineInputBorder(
-              borderSide: BorderSide(color: Colors.white24, width: 2),
-            ),
-            focusedBorder: const UnderlineInputBorder(
-              borderSide: BorderSide(color: AppTheme.secondaryFixed, width: 2),
-            ),
-            prefixIcon: const Icon(Icons.lock_outlined,
-                color: AppTheme.secondaryFixed),
-            suffixIcon: IconButton(
-              icon: Icon(
-                _obscurePassword
-                    ? Icons.visibility_outlined
-                    : Icons.visibility_off_outlined,
-                color: Colors.white54,
-              ),
-              onPressed: () =>
-                  setState(() => _obscurePassword = !_obscurePassword),
-            ),
-          ),
-        ),
-        const SizedBox(height: 36),
-        SizedBox(
-          width: double.infinity,
-          child: ElevatedButton(
-            onPressed: _isLoading ? null : _login,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.secondary,
-              foregroundColor: Colors.white,
-              shape: const StadiumBorder(),
-              padding: const EdgeInsets.symmetric(vertical: 18),
-            ),
-            child: _isLoading
-                ? const CircularProgressIndicator(color: Colors.white)
-                : Text(
-                    'Iniciar sesión',
-                    style: GoogleFonts.plusJakartaSans(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-          ),
-        ),
-        const SizedBox(height: 20),
-        Center(
-          child: TextButton(
-            onPressed: () => Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const RegisterScreen()),
-            ),
-            child: RichText(
-              text: TextSpan(
-                text: '¿No tienes cuenta? ',
-                style: GoogleFonts.beVietnamPro(
-                    color: Colors.white70, fontSize: 14),
-                children: [
-                  TextSpan(
-                    text: 'Regístrate',
-                    style: GoogleFonts.beVietnamPro(
-                      color: AppTheme.secondaryFixed,
-                      fontWeight: FontWeight.w700,
-                      fontSize: 14,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ],
+  Widget _buildLogoChip() {
+    return Container(
+      width: 72,
+      height: 72,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.08),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.white.withOpacity(0.12)),
+      ),
+      child: Image.asset(
+        'assets/images/logomonedo_new.png',
+        fit: BoxFit.contain,
+      ),
+    );
+  }
+
+  InputDecoration _fieldDecoration(
+    String label, {
+    IconData? prefixIcon,
+    Widget? suffixIcon,
+  }) {
+    return InputDecoration(
+      labelText: label,
+      labelStyle:
+          GoogleFonts.beVietnamPro(color: AppTheme.onSurfaceVariant, fontSize: 14),
+      filled: true,
+      fillColor: AppTheme.surfaceContainerLow,
+      prefixIcon: prefixIcon == null
+          ? null
+          : Icon(prefixIcon, color: AppTheme.onSurfaceVariant, size: 20),
+      suffixIcon: suffixIcon,
+      contentPadding:
+          const EdgeInsets.symmetric(vertical: 18, horizontal: 20),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16),
+        borderSide: BorderSide.none,
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16),
+        borderSide: const BorderSide(color: AppTheme.outlineVariant, width: 1),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16),
+        borderSide: const BorderSide(color: AppTheme.secondary, width: 1.6),
+      ),
     );
   }
 
@@ -402,49 +380,32 @@ class _LoginScreenState extends State<LoginScreen> {
           keyboardType: TextInputType.emailAddress,
           style: GoogleFonts.beVietnamPro(
               color: AppTheme.primary, fontSize: 16),
-          decoration: InputDecoration(
-            labelText: 'Correo electrónico',
-            labelStyle: GoogleFonts.beVietnamPro(
-                color: AppTheme.onSurfaceVariant, fontSize: 14),
-            enabledBorder: const UnderlineInputBorder(
-              borderSide:
-                  BorderSide(color: AppTheme.surfaceVariant, width: 2),
-            ),
-            focusedBorder: const UnderlineInputBorder(
-              borderSide: BorderSide(color: AppTheme.secondary, width: 2),
-            ),
-          ),
+          decoration: _fieldDecoration('Correo electrónico',
+              prefixIcon: Icons.email_outlined),
         ),
-        const SizedBox(height: 32),
+        const SizedBox(height: 20),
         TextField(
           controller: _passwordController,
           obscureText: _obscurePassword,
           style: GoogleFonts.beVietnamPro(
               color: AppTheme.primary, fontSize: 16),
-          decoration: InputDecoration(
-            labelText: 'Contraseña',
-            labelStyle: GoogleFonts.beVietnamPro(
-                color: AppTheme.onSurfaceVariant, fontSize: 14),
-            enabledBorder: const UnderlineInputBorder(
-              borderSide:
-                  BorderSide(color: AppTheme.surfaceVariant, width: 2),
-            ),
-            focusedBorder: const UnderlineInputBorder(
-              borderSide: BorderSide(color: AppTheme.secondary, width: 2),
-            ),
+          decoration: _fieldDecoration(
+            'Contraseña',
+            prefixIcon: Icons.lock_outlined,
             suffixIcon: IconButton(
               icon: Icon(
                 _obscurePassword
                     ? Icons.visibility_outlined
                     : Icons.visibility_off_outlined,
                 color: AppTheme.onSurfaceVariant,
+                size: 20,
               ),
               onPressed: () =>
                   setState(() => _obscurePassword = !_obscurePassword),
             ),
           ),
         ),
-        const SizedBox(height: 44),
+        const SizedBox(height: 36),
         SizedBox(
           width: double.infinity,
           child: ElevatedButton(
