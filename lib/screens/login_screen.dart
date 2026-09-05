@@ -275,7 +275,12 @@ class _LoginScreenState extends State<LoginScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        _buildLogoChip(),
+                        Image.asset(
+                          'assets/images/logomonedo_new.png',
+                          width: 60,
+                          height: 60,
+                          fit: BoxFit.contain,
+                        ),
                         const SizedBox(height: 20),
                         Text(
                           'Bienvenido de nuevo',
@@ -317,23 +322,6 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildLogoChip() {
-    return Container(
-      width: 72,
-      height: 72,
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.08),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.white.withOpacity(0.12)),
-      ),
-      child: Image.asset(
-        'assets/images/logomonedo_new.png',
-        fit: BoxFit.contain,
       ),
     );
   }
