@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+
 class Currency {
   final String code;
   final String name;
@@ -36,19 +38,23 @@ Currency currencyByCode(String? code) {
 }
 
 class CurrencyFormatter {
-  static Currency _current = kCurrencies.first;
+  /// Notifica a toda la app cuando cambia la moneda activa, para que
+  /// cada pantalla (incluidas las que quedan vivas en un IndexedStack)
+  /// se refresque automáticamente.
+  static final ValueNotifier<Currency> notifier =
+      ValueNotifier<Currency>(kCurrencies.first);
 
-  static Currency get current => _current;
+  static Currency get current => notifier.value;
 
   /// Establece la moneda activa para todo el formateo de la app.
   static void setCurrency(String code) {
-    _current = currencyByCode(code);
+    notifier.value = currencyByCode(code);
   }
 
   static String format(double amount) {
     final isNegative = amount < 0;
     final absAmount = amount.abs();
-    final c = _current;
+    final c = current;
 
     final fixed = absAmount.toStringAsFixed(c.decimalDigits);
     final parts = fixed.split('.');

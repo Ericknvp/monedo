@@ -6,6 +6,7 @@ import '../utils/currency_formatter.dart';
 import '../widgets/currency_picker.dart';
 import 'dashboard_screen.dart';
 import 'login_screen.dart';
+import 'onboarding_screen.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -59,7 +60,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       CurrencyFormatter.setCurrency(_selectedCurrency!.code);
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (_) => const DashboardScreen()),
+        MaterialPageRoute(builder: (_) => const _PostRegisterOnboarding()),
       );
     }
   }
@@ -445,5 +446,25 @@ class _RegisterScreenState extends State<RegisterScreen> {
         ),
       ],
     );
+  }
+}
+
+/// Muestra el onboarding siempre después de un registro nuevo (sin
+/// importar si ya se vio antes en este dispositivo) y luego el Dashboard.
+class _PostRegisterOnboarding extends StatefulWidget {
+  const _PostRegisterOnboarding();
+
+  @override
+  State<_PostRegisterOnboarding> createState() =>
+      _PostRegisterOnboardingState();
+}
+
+class _PostRegisterOnboardingState extends State<_PostRegisterOnboarding> {
+  bool _done = false;
+
+  @override
+  Widget build(BuildContext context) {
+    if (_done) return const DashboardScreen();
+    return OnboardingScreen(onFinish: () => setState(() => _done = true));
   }
 }

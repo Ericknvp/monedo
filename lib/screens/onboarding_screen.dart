@@ -114,82 +114,89 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               child: _blob(280, AppTheme.secondary, 0.2),
             ),
             SafeArea(
-              child: Column(
-                children: [
-                  Align(
-                    alignment: Alignment.topRight,
-                    child: Padding(
-                      padding: const EdgeInsets.fromLTRB(24, 12, 24, 0),
-                      child: TextButton(
-                        onPressed: _isLast ? null : _complete,
-                        style: TextButton.styleFrom(
-                          foregroundColor: Colors.white70,
-                        ),
-                        child: Text(
-                          _isLast ? '' : 'Saltar',
-                          style: GoogleFonts.beVietnamPro(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                  Expanded(
-                    child: PageView.builder(
-                      controller: _controller,
-                      itemCount: _slides.length,
-                      onPageChanged: (i) => setState(() => _page = i),
-                      itemBuilder: (context, i) => _buildSlide(_slides[i]),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(28, 0, 28, 32),
-                    child: Column(
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: List.generate(
-                            _slides.length,
-                            (i) => AnimatedContainer(
-                              duration: const Duration(milliseconds: 250),
-                              margin: const EdgeInsets.symmetric(horizontal: 4),
-                              width: i == _page ? 22 : 8,
-                              height: 8,
-                              decoration: BoxDecoration(
-                                color: i == _page
-                                    ? AppTheme.secondaryFixed
-                                    : Colors.white.withOpacity(0.24),
-                                borderRadius: BorderRadius.circular(4),
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 28),
-                        SizedBox(
-                          width: double.infinity,
-                          child: ElevatedButton(
-                            onPressed: _next,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: AppTheme.secondary,
-                              foregroundColor: Colors.white,
-                              shape: const StadiumBorder(),
-                              padding: const EdgeInsets.symmetric(vertical: 18),
-                              elevation: 0,
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 460),
+                  child: Column(
+                    children: [
+                      Align(
+                        alignment: Alignment.topRight,
+                        child: Padding(
+                          padding: const EdgeInsets.fromLTRB(24, 12, 24, 0),
+                          child: TextButton(
+                            onPressed: _isLast ? null : _complete,
+                            style: TextButton.styleFrom(
+                              foregroundColor: Colors.white70,
                             ),
                             child: Text(
-                              _isLast ? 'Comenzar' : 'Siguiente',
-                              style: GoogleFonts.plusJakartaSans(
-                                fontSize: 16,
+                              _isLast ? '' : 'Saltar',
+                              style: GoogleFonts.beVietnamPro(
+                                fontSize: 14,
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
                           ),
                         ),
-                      ],
-                    ),
+                      ),
+                      Expanded(
+                        child: PageView.builder(
+                          controller: _controller,
+                          itemCount: _slides.length,
+                          onPageChanged: (i) => setState(() => _page = i),
+                          itemBuilder: (context, i) => _buildSlide(_slides[i]),
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(28, 0, 28, 32),
+                        child: Column(
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: List.generate(
+                                _slides.length,
+                                (i) => AnimatedContainer(
+                                  duration: const Duration(milliseconds: 250),
+                                  margin:
+                                      const EdgeInsets.symmetric(horizontal: 4),
+                                  width: i == _page ? 22 : 8,
+                                  height: 8,
+                                  decoration: BoxDecoration(
+                                    color: i == _page
+                                        ? AppTheme.secondaryFixed
+                                        : Colors.white.withOpacity(0.24),
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 28),
+                            SizedBox(
+                              width: double.infinity,
+                              child: ElevatedButton(
+                                onPressed: _next,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: AppTheme.secondary,
+                                  foregroundColor: Colors.white,
+                                  shape: const StadiumBorder(),
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 18),
+                                  elevation: 0,
+                                ),
+                                child: Text(
+                                  _isLast ? 'Comenzar' : 'Siguiente',
+                                  style: GoogleFonts.plusJakartaSans(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
-                ],
+                ),
               ),
             ),
           ],

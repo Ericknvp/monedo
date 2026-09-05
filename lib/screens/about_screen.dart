@@ -1,10 +1,40 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../services/auth_service.dart';
 import '../theme/app_theme.dart';
+import '../utils/currency_formatter.dart';
 import '../utils/web_redirect.dart' if (dart.library.io) '../utils/web_redirect_stub.dart';
+import '../widgets/currency_picker.dart';
 
-class AboutScreen extends StatelessWidget {
+class AboutScreen extends StatefulWidget {
   const AboutScreen({super.key});
+
+  @override
+  State<AboutScreen> createState() => _AboutScreenState();
+}
+
+class _AboutScreenState extends State<AboutScreen> {
+  final _authService = AuthService();
+  late Currency _currency = CurrencyFormatter.current;
+  bool _savingCurrency = false;
+
+  Future<void> _changeCurrency(Currency currency) async {
+    setState(() => _savingCurrency = true);
+    await _authService.updateCurrency(currency.code);
+    CurrencyFormatter.setCurrency(currency.code);
+    setState(() {
+      _currency = currency;
+      _savingCurrency = false;
+    });
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Moneda actualizada a ${currency.code}'),
+          backgroundColor: AppTheme.secondary,
+        ),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -88,6 +118,51 @@ class AboutScreen extends StatelessWidget {
                     _featureRow(Icons.savings_rounded, 'Metas de ahorro con seguimiento'),
                     const SizedBox(height: 10),
                     _featureRow(Icons.devices_rounded, 'Diseño responsive: web y móvil'),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 24),
+
+              // Preferences card
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  color: AppTheme.surfaceContainerLowest,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: AppTheme.surfaceVariant),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Preferencias',
+                      style: GoogleFonts.plusJakartaSans(
+                        color: AppTheme.primary,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    IgnorePointer(
+                      ignoring: _savingCurrency,
+                      child: Opacity(
+                        opacity: _savingCurrency ? 0.6 : 1,
+                        child: CurrencyPickerField(
+                          selected: _currency,
+                          onChanged: _changeCurrency,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Text(
+                      'Cambiar la moneda solo actualiza el formato de tus cifras; no convierte los montos ya registrados.',
+                      style: GoogleFonts.beVietnamPro(
+                        color: AppTheme.onSurfaceVariant,
+                        fontSize: 12,
+                        height: 1.4,
+                      ),
+                    ),
                   ],
                 ),
               ),

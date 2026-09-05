@@ -16,6 +16,7 @@ import 'screens/register_screen.dart';
 import 'screens/dashboard_screen.dart';
 import 'screens/onboarding_screen.dart';
 import 'widgets/currency_gate.dart';
+import 'utils/currency_formatter.dart';
 import 'utils/web_redirect.dart' if (dart.library.io) 'utils/web_redirect_stub.dart';
 
 void main() async {
@@ -38,7 +39,13 @@ class MonedoApp extends StatelessWidget {
       title: 'Monedo',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
-      home: const AuthWrapper(),
+      home: ValueListenableBuilder<Currency>(
+        valueListenable: CurrencyFormatter.notifier,
+        // No usar `const` aquí: se necesita una instancia nueva en cada
+        // notificación para que Flutter reconstruya todo el subárbol
+        // (si no, al ser idéntica al widget anterior, se omite el rebuild).
+        builder: (context, _, __) => AuthWrapper(),
+      ),
     );
   }
 }
