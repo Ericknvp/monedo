@@ -7,11 +7,13 @@ class _OnboardingSlide {
   final IconData icon;
   final String title;
   final String description;
+  final List<String> steps;
 
   const _OnboardingSlide({
     required this.icon,
     required this.title,
     required this.description,
+    this.steps = const [],
   });
 }
 
@@ -20,23 +22,39 @@ const _slides = [
     icon: Icons.insights_rounded,
     title: 'Todo tu dinero,\nen un solo lugar',
     description:
-        'Visualiza el resumen completo de tus finanzas personales apenas abres la app.',
+        'Apenas abres Monedo ves el resumen completo de tus finanzas personales.',
+    steps: [
+      'Balance total, ingresos y gastos del mes',
+      'Accede a transacciones, metas y estadísticas desde un solo menú',
+    ],
   ),
   _OnboardingSlide(
     icon: Icons.receipt_long_rounded,
     title: 'Registra ingresos\ny gastos al instante',
-    description:
-        'Agrega cada movimiento en segundos y mantén tus cuentas siempre al día.',
+    description: 'Cada movimiento queda registrado en segundos.',
+    steps: [
+      'Toca el botón + para agregar un movimiento',
+      'Elige si es ingreso o gasto, la categoría y el monto',
+      'Tu balance se actualiza al instante',
+    ],
   ),
   _OnboardingSlide(
     icon: Icons.bar_chart_rounded,
     title: 'Estadísticas claras\nde tus finanzas',
-    description:
-        'Analiza tus gastos por categoría y por mes con gráficas fáciles de entender.',
+    description: 'Entiende en qué se va tu dinero cada mes.',
+    steps: [
+      'Filtra por mes para ver tu evolución',
+      'Compara ingresos contra gastos por categoría',
+    ],
   ),
   _OnboardingSlide(
     icon: Icons.savings_rounded,
     title: 'Cumple tus metas\nde ahorro',
+    steps: [
+      'Toca "Nueva meta" y ponle un nombre',
+      'Define el monto objetivo que quieres ahorrar',
+      'Agrega abonos cuando quieras y sigue tu progreso en tiempo real',
+    ],
     description:
         'Define objetivos, sigue tu progreso y celebra cada avance en el camino.',
   ),
@@ -181,42 +199,95 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   }
 
   Widget _buildSlide(_OnboardingSlide slide) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 36),
+    return SingleChildScrollView(
+      padding: const EdgeInsets.fromLTRB(32, 12, 32, 12),
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Container(
-            width: 108,
-            height: 108,
+            width: 84,
+            height: 84,
             decoration: BoxDecoration(
               color: AppTheme.secondaryFixed.withOpacity(0.16),
               shape: BoxShape.circle,
             ),
-            child: Icon(slide.icon, color: AppTheme.secondaryFixed, size: 48),
+            child: Icon(slide.icon, color: AppTheme.secondaryFixed, size: 38),
           ),
-          const SizedBox(height: 40),
+          const SizedBox(height: 28),
           Text(
             slide.title,
             textAlign: TextAlign.center,
             style: GoogleFonts.plusJakartaSans(
-              fontSize: 26,
+              fontSize: 25,
               fontWeight: FontWeight.w700,
               color: Colors.white,
               height: 1.25,
               letterSpacing: -0.3,
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
           Text(
             slide.description,
             textAlign: TextAlign.center,
             style: GoogleFonts.beVietnamPro(
-              fontSize: 15,
+              fontSize: 14.5,
               color: AppTheme.onPrimaryContainer,
               height: 1.6,
             ),
           ),
+          if (slide.steps.isNotEmpty) ...[
+            const SizedBox(height: 24),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.fromLTRB(18, 16, 18, 16),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.06),
+                borderRadius: BorderRadius.circular(18),
+                border: Border.all(color: Colors.white.withOpacity(0.1)),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  for (int i = 0; i < slide.steps.length; i++) ...[
+                    if (i > 0) const SizedBox(height: 12),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          width: 22,
+                          height: 22,
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            color: AppTheme.secondaryFixed.withOpacity(0.18),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Text(
+                            '${i + 1}',
+                            style: GoogleFonts.plusJakartaSans(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w700,
+                              color: AppTheme.secondaryFixed,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            slide.steps[i],
+                            style: GoogleFonts.beVietnamPro(
+                              fontSize: 13.5,
+                              color: Colors.white.withOpacity(0.9),
+                              height: 1.4,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ],
         ],
       ),
     );

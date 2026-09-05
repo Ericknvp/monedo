@@ -15,8 +15,7 @@ import 'screens/login_screen.dart';
 import 'screens/register_screen.dart';
 import 'screens/dashboard_screen.dart';
 import 'screens/onboarding_screen.dart';
-import 'screens/currency_selection_screen.dart';
-import 'utils/currency_formatter.dart';
+import 'widgets/currency_gate.dart';
 import 'utils/web_redirect.dart' if (dart.library.io) 'utils/web_redirect_stub.dart';
 
 void main() async {
@@ -124,56 +123,6 @@ class _OnboardingGateState extends State<OnboardingGate> {
     if (_hasSeenOnboarding == false) {
       return OnboardingScreen(
         onFinish: () => setState(() => _hasSeenOnboarding = true),
-      );
-    }
-    return widget.child;
-  }
-}
-
-/// Verifica que el usuario tenga una moneda configurada (Firestore).
-/// Cuentas creadas antes de esta función la seleccionan una única vez.
-class CurrencyGate extends StatefulWidget {
-  final Widget child;
-
-  const CurrencyGate({super.key, required this.child});
-
-  @override
-  State<CurrencyGate> createState() => _CurrencyGateState();
-}
-
-class _CurrencyGateState extends State<CurrencyGate> {
-  final _authService = AuthService();
-  bool? _needsCurrency;
-
-  @override
-  void initState() {
-    super.initState();
-    _checkCurrency();
-  }
-
-  Future<void> _checkCurrency() async {
-    final userData = await _authService.getCurrentUserData();
-    if (userData?.currency != null) {
-      CurrencyFormatter.setCurrency(userData!.currency!);
-      setState(() => _needsCurrency = false);
-    } else {
-      setState(() => _needsCurrency = true);
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    if (_needsCurrency == null) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
-    }
-    if (_needsCurrency == true) {
-      return CurrencySelectionScreen(
-        onFinish: (code) {
-          CurrencyFormatter.setCurrency(code);
-          setState(() => _needsCurrency = false);
-        },
       );
     }
     return widget.child;

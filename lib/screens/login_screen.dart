@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../services/auth_service.dart';
 import '../theme/app_theme.dart';
+import '../widgets/currency_gate.dart';
 import 'register_screen.dart';
 import 'dashboard_screen.dart';
 
@@ -36,7 +37,9 @@ class _LoginScreenState extends State<LoginScreen> {
     } else if (mounted) {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (_) => const DashboardScreen()),
+        MaterialPageRoute(
+          builder: (_) => const CurrencyGate(child: DashboardScreen()),
+        ),
       );
     }
   }
