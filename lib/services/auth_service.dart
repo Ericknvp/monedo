@@ -33,6 +33,7 @@ class AuthService {
     required String username,
     required String email,
     required String password,
+    required String currency,
   }) async {
     try {
       // Verifica que el nombre de usuario no exista
@@ -52,6 +53,7 @@ class AuthService {
         username: username,
         email: email,
         createdAt: DateTime.now(),
+        currency: currency,
       );
 
       await _firestore
@@ -120,5 +122,14 @@ class AuthService {
     } catch (e) {
       return null;
     }
+  }
+
+  // ---- Guarda la moneda preferida del usuario actual ----
+  Future<void> updateCurrency(String currencyCode) async {
+    if (currentUser == null) return;
+    await _firestore
+        .collection('users')
+        .doc(currentUser!.uid)
+        .update({'currency': currencyCode});
   }
 }

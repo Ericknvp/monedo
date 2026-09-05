@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../services/auth_service.dart';
 import '../theme/app_theme.dart';
+import '../utils/currency_formatter.dart';
+import '../widgets/currency_picker.dart';
 import 'dashboard_screen.dart';
 import 'login_screen.dart';
 
@@ -21,6 +23,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   bool _isLoading = false;
   bool _obscurePassword = true;
   bool _obscureConfirm = true;
+  Currency? _selectedCurrency;
 
   Future<void> _register() async {
     if (_usernameController.text.trim().isEmpty ||
@@ -28,6 +31,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
         _passwordController.text.trim().isEmpty ||
         _confirmPasswordController.text.trim().isEmpty) {
       _showError('Por favor completa todos los campos');
+      return;
+    }
+    if (_selectedCurrency == null) {
+      _showError('Selecciona tu moneda');
       return;
     }
     if (_passwordController.text != _confirmPasswordController.text) {
@@ -43,11 +50,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
       username: _usernameController.text.trim(),
       email: _emailController.text.trim(),
       password: _passwordController.text.trim(),
+      currency: _selectedCurrency!.code,
     );
     setState(() => _isLoading = false);
     if (error != null) {
       _showError(error);
     } else if (mounted) {
+      CurrencyFormatter.setCurrency(_selectedCurrency!.code);
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (_) => const DashboardScreen()),
@@ -367,6 +376,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         field(_usernameController, 'Nombre de usuario', Icons.person_outline),
+        const SizedBox(height: 20),
+        CurrencyPickerField(
+          selected: _selectedCurrency,
+          onChanged: (c) => setState(() => _selectedCurrency = c),
+        ),
         const SizedBox(height: 20),
         field(_emailController, 'Correo electrónico', Icons.email_outlined,
             keyboardType: TextInputType.emailAddress),

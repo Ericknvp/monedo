@@ -7,12 +7,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:firebase_core/firebase_core.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'firebase_options.dart';
 import 'theme/app_theme.dart';
 import 'services/auth_service.dart';
 import 'screens/login_screen.dart';
 import 'screens/register_screen.dart';
 import 'screens/dashboard_screen.dart';
+import 'screens/onboarding_screen.dart';
+import 'screens/currency_selection_screen.dart';
+import 'utils/currency_formatter.dart';
 import 'utils/web_redirect.dart' if (dart.library.io) 'utils/web_redirect_stub.dart';
 
 void main() async {
@@ -57,14 +61,18 @@ class AuthWrapper extends StatelessWidget {
         }
 
         if (snapshot.hasData) {
-          return const DashboardScreen();
+          return const CurrencyGate(child: DashboardScreen());
         }
 
         // No autenticado: en web redirige a la landing o muestra la pantalla según ?view=
         if (kIsWeb) {
           final view = getViewParam();
-          if (view == 'register') return const RegisterScreen();
-          if (view == 'login') return const LoginScreen();
+          if (view == 'register') {
+            return const OnboardingGate(child: RegisterScreen());
+          }
+          if (view == 'login') {
+            return const OnboardingGate(child: LoginScreen());
+          }
           // Sin parámetro → redirige a la landing page
           redirectToLanding();
           return const Scaffold(
@@ -72,9 +80,102 @@ class AuthWrapper extends StatelessWidget {
           );
         }
 
-        // Mobile: muestra login directamente
-        return const LoginScreen();
+        // Mobile: muestra onboarding (solo la primera vez) y luego login
+        return const OnboardingGate(child: LoginScreen());
       },
     );
+  }
+}
+
+/// Muestra el onboarding una única vez (persistido en SharedPreferences)
+/// antes de dar paso a [child].
+class OnboardingGate extends StatefulWidget {
+  final Widget child;
+
+  const OnboardingGate({super.key, required this.child});
+
+  @override
+  State<OnboardingGate> createState() => _OnboardingGateState();
+}
+
+class _OnboardingGateState extends State<OnboardingGate> {
+  bool? _hasSeenOnboarding;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkOnboarding();
+  }
+
+  Future<void> _checkOnboarding() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _hasSeenOnboarding = prefs.getBool('has_seen_onboarding') ?? false;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_hasSeenOnboarding == null) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+    if (_hasSeenOnboarding == false) {
+      return OnboardingScreen(
+        onFinish: () => setState(() => _hasSeenOnboarding = true),
+      );
+    }
+    return widget.child;
+  }
+}
+
+/// Verifica que el usuario tenga una moneda configurada (Firestore).
+/// Cuentas creadas antes de esta función la seleccionan una única vez.
+class CurrencyGate extends StatefulWidget {
+  final Widget child;
+
+  const CurrencyGate({super.key, required this.child});
+
+  @override
+  State<CurrencyGate> createState() => _CurrencyGateState();
+}
+
+class _CurrencyGateState extends State<CurrencyGate> {
+  final _authService = AuthService();
+  bool? _needsCurrency;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkCurrency();
+  }
+
+  Future<void> _checkCurrency() async {
+    final userData = await _authService.getCurrentUserData();
+    if (userData?.currency != null) {
+      CurrencyFormatter.setCurrency(userData!.currency!);
+      setState(() => _needsCurrency = false);
+    } else {
+      setState(() => _needsCurrency = true);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_needsCurrency == null) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+    if (_needsCurrency == true) {
+      return CurrencySelectionScreen(
+        onFinish: (code) {
+          CurrencyFormatter.setCurrency(code);
+          setState(() => _needsCurrency = false);
+        },
+      );
+    }
+    return widget.child;
   }
 }

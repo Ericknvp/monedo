@@ -9,12 +9,14 @@ class UserModel {
   final String username;     // Nombre de usuario único
   final String email;        // Correo electrónico
   final DateTime createdAt;  // Fecha de registro
+  final String? currency;    // Código de moneda preferida (USD, COP, etc.)
 
   UserModel({
     required this.id,
     required this.username,
     required this.email,
     required this.createdAt,
+    this.currency,
   });
 
   // ---- Convierte un documento de Firestore a UserModel ----
@@ -24,6 +26,7 @@ class UserModel {
       username: map['username'] ?? '',
       email: map['email'] ?? '',
       createdAt: DateTime.parse(map['createdAt']),
+      currency: map['currency'] as String?,
     );
   }
 
@@ -33,6 +36,7 @@ class UserModel {
       'username': username,
       'email': email,
       'createdAt': createdAt.toIso8601String(),
+      if (currency != null) 'currency': currency,
     };
   }
 }
