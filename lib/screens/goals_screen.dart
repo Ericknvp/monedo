@@ -118,7 +118,7 @@ class GoalsScreen extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Metas de ahorro 🎯',
+                      'Metas de ahorro',
                       style: GoogleFonts.plusJakartaSans(
                         color: AppTheme.primary,
                         fontSize: 28,
@@ -362,13 +362,22 @@ class _GoalCardState extends State<_GoalCard> {
                             color: AppTheme.secondaryContainer.withOpacity(0.5),
                             borderRadius: BorderRadius.circular(100),
                           ),
-                          child: Text(
-                            '✅ Completada',
-                            style: GoogleFonts.beVietnamPro(
-                              color: AppTheme.onSecondaryContainer,
-                              fontSize: 11,
-                              fontWeight: FontWeight.w700,
-                            ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.check_circle_rounded,
+                                  color: AppTheme.onSecondaryContainer,
+                                  size: 13),
+                              const SizedBox(width: 4),
+                              Text(
+                                'Completada',
+                                style: GoogleFonts.beVietnamPro(
+                                  color: AppTheme.onSecondaryContainer,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       IconButton(
@@ -570,8 +579,15 @@ class _GoalCardState extends State<_GoalCard> {
                 if (context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text(
-                          '${CurrencyFormatter.format(amount)} ahorrado 🎯'),
+                      content: Row(
+                        children: [
+                          const Icon(Icons.savings_rounded,
+                              color: Colors.white, size: 18),
+                          const SizedBox(width: 8),
+                          Text(
+                              '${CurrencyFormatter.format(amount)} ahorrado'),
+                        ],
+                      ),
                       backgroundColor: AppTheme.secondary,
                     ),
                   );
@@ -737,7 +753,7 @@ class _GoalSheetState extends State<_GoalSheet> {
             ),
             const SizedBox(height: 20),
             Text(
-              _isEditing ? '✏️ Editar meta' : '🎯 Nueva meta de ahorro',
+              _isEditing ? 'Editar meta' : 'Nueva meta de ahorro',
               style: GoogleFonts.plusJakartaSans(
                 color: AppTheme.primary,
                 fontSize: 20,
