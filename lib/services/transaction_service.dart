@@ -1,16 +1,24 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/transaction.dart';
+import 'account_service.dart';
 
 class TransactionService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final AccountService _accountService = AccountService();
 
   CollectionReference get _transactions =>
       _firestore.collection('transactions');
 
-  // ---- Agrega una nueva transacción ----
+  double _signedAmount(TransactionModel t) => t.isIncome ? t.amount : -t.amount;
+
+  // ---- Agrega una nueva transacción y ajusta el saldo de la cuenta ----
   Future<void> addTransaction(TransactionModel transaction) async {
     await _transactions.add(transaction.toMap());
+    if (transaction.accountId != null) {
+      await _accountService.adjustBalance(
+          transaction.accountId!, _signedAmount(transaction));
+    }
   }
 
   // ---- Obtiene todas las transacciones de un usuario ----
@@ -52,14 +60,36 @@ class TransactionService {
     });
   }
 
-  // ---- Edita una transacción existente ----
-  Future<void> updateTransaction(TransactionModel transaction) async {
-    await _transactions.doc(transaction.id).update(transaction.toMap());
+  // ---- Edita una transacción existente y corrige el saldo de la(s) cuenta(s) ----
+  Future<void> updateTransaction(
+      TransactionModel oldTransaction, TransactionModel newTransaction) async {
+    await _transactions.doc(newTransaction.id).update(newTransaction.toMap());
+
+    if (oldTransaction.accountId == newTransaction.accountId) {
+      final delta =
+          _signedAmount(newTransaction) - _signedAmount(oldTransaction);
+      if (oldTransaction.accountId != null) {
+        await _accountService.adjustBalance(oldTransaction.accountId!, delta);
+      }
+    } else {
+      if (oldTransaction.accountId != null) {
+        await _accountService.adjustBalance(
+            oldTransaction.accountId!, -_signedAmount(oldTransaction));
+      }
+      if (newTransaction.accountId != null) {
+        await _accountService.adjustBalance(
+            newTransaction.accountId!, _signedAmount(newTransaction));
+      }
+    }
   }
 
-  // ---- Elimina una transacción ----
-  Future<void> deleteTransaction(String transactionId) async {
-    await _transactions.doc(transactionId).delete();
+  // ---- Elimina una transacción y revierte su efecto en la cuenta ----
+  Future<void> deleteTransaction(TransactionModel transaction) async {
+    await _transactions.doc(transaction.id).delete();
+    if (transaction.accountId != null) {
+      await _accountService.adjustBalance(
+          transaction.accountId!, -_signedAmount(transaction));
+    }
   }
 
   // ---- Calcula el balance total ----

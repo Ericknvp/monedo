@@ -3,12 +3,15 @@ import 'package:flutter/services.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../services/transaction_service.dart';
+import '../services/account_service.dart';
 import '../models/transaction.dart';
+import '../models/account.dart';
 import '../theme/app_theme.dart';
 import '../utils/amount_input_formatter.dart';
 import '../utils/currency_formatter.dart';
 import '../utils/category_icons.dart';
 import 'categories_screen.dart';
+import 'accounts_screen.dart';
 
 /// Abre el formulario de movimiento: como una ventana modal centrada (con
 /// fondo oscurecido) en escritorio, o a pantalla completa en móvil.
@@ -70,11 +73,13 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
   final _amountCtrl = TextEditingController();
   final _noteCtrl = TextEditingController();
   final _txService = TransactionService();
+  final _accountService = AccountService();
 
   bool _isIncome = false;
   bool _isLoading = false;
   DateTime _selectedDate = DateTime.now();
   String _selectedCategory = 'Otros';
+  String? _selectedAccountId;
 
   static const _categories = [
     'Alimentación', 'Transporte', 'Entretenimiento', 'Salud',
@@ -93,6 +98,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
       _isIncome = t.isIncome;
       _selectedDate = t.date;
       _selectedCategory = t.category;
+      _selectedAccountId = t.accountId;
     }
   }
 
@@ -138,6 +144,16 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
       );
       return;
     }
+    if (_selectedAccountId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Selecciona de qué cuenta sale o entra el dinero',
+              style: GoogleFonts.beVietnamPro()),
+          backgroundColor: AppTheme.errorRed,
+        ),
+      );
+      return;
+    }
     setState(() => _isLoading = true);
     final userId = FirebaseAuth.instance.currentUser?.uid ?? '';
     final tx = TransactionModel(
@@ -149,9 +165,10 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
       isIncome: _isIncome,
       date: _selectedDate,
       note: _noteCtrl.text.trim().isEmpty ? null : _noteCtrl.text.trim(),
+      accountId: _selectedAccountId,
     );
     if (widget.transaction != null) {
-      await _txService.updateTransaction(tx);
+      await _txService.updateTransaction(widget.transaction!, tx);
     } else {
       await _txService.addTransaction(tx);
     }
@@ -323,6 +340,9 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
               ),
               const SizedBox(height: 20),
 
+              _buildAccountDropdown(),
+              const SizedBox(height: 20),
+
               _textField(_noteCtrl, 'Nota (opcional)',
                   icon: Icons.note_outlined, maxLines: 3),
               const SizedBox(height: 28),
@@ -386,6 +406,8 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
           _buildCategoryDropdown(),
           const SizedBox(height: 16),
           _buildDatePicker(),
+          const SizedBox(height: 16),
+          _buildAccountDropdown(),
           const SizedBox(height: 16),
           _textField(_noteCtrl, 'Nota (opcional)',
               icon: Icons.note_outlined, maxLines: 3),
@@ -589,6 +611,77 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                     const SizedBox(width: 6),
                     Text(
                       'Agregar categoría',
+                      style: GoogleFonts.beVietnamPro(
+                        color: AppTheme.secondary,
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildAccountDropdown() {
+    final userId = FirebaseAuth.instance.currentUser?.uid ?? '';
+    return StreamBuilder<List<AccountModel>>(
+      stream: _accountService.getAccounts(userId),
+      builder: (context, snap) {
+        final accounts = snap.data ?? [];
+        final hasSelection =
+            accounts.any((a) => a.id == _selectedAccountId);
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            DropdownButtonFormField<String>(
+              value: hasSelection ? _selectedAccountId : null,
+              dropdownColor: AppTheme.surfaceContainerLowest,
+              style: GoogleFonts.beVietnamPro(
+                  color: AppTheme.primary, fontSize: 15),
+              decoration: InputDecoration(
+                labelText: 'Cuenta',
+                labelStyle: GoogleFonts.beVietnamPro(
+                    color: AppTheme.onSurfaceVariant, fontSize: 13),
+                prefixIcon: const Icon(Icons.account_balance_wallet_outlined,
+                    color: AppTheme.secondary, size: 20),
+              ),
+              hint: Text('Selecciona una cuenta',
+                  style: GoogleFonts.beVietnamPro(
+                      color: AppTheme.outline, fontSize: 14)),
+              items: accounts
+                  .map((a) => DropdownMenuItem(
+                        value: a.id,
+                        child: Text(a.name),
+                      ))
+                  .toList(),
+              onChanged: (v) => setState(() => _selectedAccountId = v),
+            ),
+            const SizedBox(height: 6),
+            InkWell(
+              borderRadius: BorderRadius.circular(8),
+              onTap: () async {
+                final created =
+                    await showAddAccountSheet(context, userId: userId);
+                if (created != null) {
+                  setState(() => _selectedAccountId = created);
+                }
+              },
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.add_circle_outline_rounded,
+                        size: 15, color: AppTheme.secondary),
+                    const SizedBox(width: 6),
+                    Text(
+                      'Agregar cuenta',
                       style: GoogleFonts.beVietnamPro(
                         color: AppTheme.secondary,
                         fontSize: 12.5,

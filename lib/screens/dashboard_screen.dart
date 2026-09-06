@@ -6,9 +6,11 @@ import 'dart:async';
 import '../services/auth_service.dart';
 import '../services/transaction_service.dart';
 import '../services/category_service.dart';
+import '../services/account_service.dart';
 import '../models/transaction.dart';
 import '../models/user_model.dart';
 import '../models/category.dart';
+import '../models/account.dart';
 import '../theme/app_theme.dart';
 import '../utils/currency_formatter.dart';
 import '../utils/category_icons.dart';
@@ -41,6 +43,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   final _authService = AuthService();
   final _txService = TransactionService();
   final _categoryService = CategoryService();
+  final _accountService = AccountService();
   StreamSubscription<List<CategoryModel>>? _categorySub;
   int _selectedIndex = 0;
   UserModel? _currentUser;
@@ -385,11 +388,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   // ── DESKTOP HOME ──────────────────────────────────────────────
   Widget _buildDesktopHome(String userId, DateTime now) {
-    return StreamBuilder<List<TransactionModel>>(
-      stream: _txService.getTransactions(userId),
-      builder: (context, allSnap) {
-        final allTx = allSnap.data ?? [];
-        final totalBalance = _txService.calculateBalance(allTx);
+    return StreamBuilder<List<AccountModel>>(
+      stream: _accountService.getAccounts(userId),
+      builder: (context, accSnap) {
+        final totalBalance = _accountService.totalBalance(accSnap.data ?? []);
 
         return StreamBuilder<List<TransactionModel>>(
           stream: _txService.getTransactionsByMonth(userId, now.year, now.month),
@@ -905,7 +907,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         ],
       ),
     );
-    if (confirm == true) await _txService.deleteTransaction(t.id);
+    if (confirm == true) await _txService.deleteTransaction(t);
   }
 
   // ── MOBILE ───────────────────────────────────────────────────
@@ -1006,11 +1008,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Widget _buildMobileHome(String userId, DateTime now) {
-    return StreamBuilder<List<TransactionModel>>(
-      stream: _txService.getTransactions(userId),
-      builder: (context, allSnap) {
-        final allTx = allSnap.data ?? [];
-        final totalBalance = _txService.calculateBalance(allTx);
+    return StreamBuilder<List<AccountModel>>(
+      stream: _accountService.getAccounts(userId),
+      builder: (context, accSnap) {
+        final totalBalance = _accountService.totalBalance(accSnap.data ?? []);
 
         return StreamBuilder<List<TransactionModel>>(
           stream: _txService.getTransactionsByMonth(userId, now.year, now.month),

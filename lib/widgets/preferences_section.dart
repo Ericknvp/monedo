@@ -4,6 +4,7 @@ import '../services/auth_service.dart';
 import '../theme/app_theme.dart';
 import '../utils/currency_formatter.dart';
 import '../screens/categories_screen.dart';
+import '../screens/accounts_screen.dart';
 import '../screens/export_screen.dart';
 import 'currency_picker.dart';
 import 'app_toast.dart';
@@ -66,6 +67,13 @@ class _PreferencesSectionState extends State<PreferencesSection> {
           ),
         ),
         const SizedBox(height: 20),
+        _navRow(
+          context,
+          icon: Icons.account_balance_wallet_outlined,
+          label: 'Mis cuentas',
+          builder: (_) => const AccountsScreen(),
+        ),
+        const SizedBox(height: 10),
         _navRow(
           context,
           icon: Icons.category_outlined,

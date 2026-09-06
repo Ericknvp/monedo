@@ -52,7 +52,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
         ],
       ),
     );
-    if (confirm == true) await _txService.deleteTransaction(t.id);
+    if (confirm == true) await _txService.deleteTransaction(t);
   }
 
   void _setFilter(String f) {

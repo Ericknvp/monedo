@@ -15,7 +15,7 @@ import 'screens/login_screen.dart';
 import 'screens/register_screen.dart';
 import 'screens/dashboard_screen.dart';
 import 'screens/onboarding_screen.dart';
-import 'widgets/currency_gate.dart';
+import 'widgets/setup_gate.dart';
 import 'utils/currency_formatter.dart';
 import 'utils/web_redirect.dart' if (dart.library.io) 'utils/web_redirect_stub.dart';
 
@@ -67,7 +67,7 @@ class AuthWrapper extends StatelessWidget {
         }
 
         if (snapshot.hasData) {
-          return const CurrencyGate(child: DashboardScreen());
+          return const SetupGate(child: DashboardScreen());
         }
 
         // No autenticado: en web redirige a la landing o muestra la pantalla según ?view=

@@ -1,7 +1,15 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../models/account.dart';
+import '../services/account_service.dart';
+import '../services/auth_service.dart';
 import '../theme/app_theme.dart';
+import '../utils/currency_formatter.dart';
+import '../widgets/currency_picker.dart';
+import 'accounts_screen.dart';
 
 class _OnboardingSlide {
   final IconData icon;
@@ -17,7 +25,7 @@ class _OnboardingSlide {
   });
 }
 
-const _slides = [
+const _explanatorySlides = [
   _OnboardingSlide(
     icon: Icons.insights_rounded,
     title: 'Todo tu dinero,\nen un solo lugar',
@@ -34,8 +42,8 @@ const _slides = [
     description: 'Cada movimiento queda registrado en segundos.',
     steps: [
       'Toca el botón + para agregar un movimiento',
-      'Elige si es ingreso o gasto, la categoría y el monto',
-      'Tu balance se actualiza al instante',
+      'Elige la cuenta, la categoría y el monto',
+      'El saldo de tu cuenta se actualiza al instante',
     ],
   ),
   _OnboardingSlide(
@@ -60,10 +68,32 @@ const _slides = [
   ),
 ];
 
+enum _StepKind { welcome, currency, accounts, explanatory }
+
+class _Step {
+  final _StepKind kind;
+  final _OnboardingSlide? slide;
+  const _Step(this.kind, [this.slide]);
+}
+
+/// Asistente de configuración inicial. Según los flags, muestra un
+/// recorrido completo (cuenta nueva) o solo los pasos que falten
+/// (cuenta existente sin moneda y/o sin cuentas configuradas).
 class OnboardingScreen extends StatefulWidget {
   final VoidCallback onFinish;
+  final bool showWelcome;
+  final bool showCurrency;
+  final bool showAccounts;
+  final bool showExplanatory;
 
-  const OnboardingScreen({super.key, required this.onFinish});
+  const OnboardingScreen({
+    super.key,
+    required this.onFinish,
+    this.showWelcome = true,
+    this.showCurrency = false,
+    this.showAccounts = false,
+    this.showExplanatory = true,
+  });
 
   @override
   State<OnboardingScreen> createState() => _OnboardingScreenState();
@@ -71,31 +101,82 @@ class OnboardingScreen extends StatefulWidget {
 
 class _OnboardingScreenState extends State<OnboardingScreen> {
   final _controller = PageController();
-  int _page = 0;
+  final _accountService = AccountService();
+  StreamSubscription<List<AccountModel>>? _accountsSub;
 
-  bool get _isLast => _page == _slides.length - 1;
+  late final List<_Step> _steps = [
+    if (widget.showWelcome) const _Step(_StepKind.welcome),
+    if (widget.showCurrency) const _Step(_StepKind.currency),
+    if (widget.showAccounts) const _Step(_StepKind.accounts),
+    if (widget.showExplanatory)
+      ..._explanatorySlides.map((s) => _Step(_StepKind.explanatory, s)),
+  ];
+
+  int _page = 0;
+  Currency? _selectedCurrency;
+  List<AccountModel> _accounts = [];
+  bool _saving = false;
+
+  bool get _isLast => _page == _steps.length - 1;
+
+  bool get _canProceed {
+    switch (_steps[_page].kind) {
+      case _StepKind.currency:
+        return _selectedCurrency != null;
+      case _StepKind.accounts:
+        return _accounts.isNotEmpty;
+      default:
+        return true;
+    }
+  }
+
+  bool get _showSkip =>
+      _steps[_page].kind == _StepKind.explanatory && !_isLast;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.showAccounts) {
+      final userId = FirebaseAuth.instance.currentUser?.uid ?? '';
+      _accountsSub = _accountService.getAccounts(userId).listen((accounts) {
+        if (mounted) setState(() => _accounts = accounts);
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _accountsSub?.cancel();
+    _controller.dispose();
+    super.dispose();
+  }
 
   Future<void> _complete() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('has_seen_onboarding', true);
+    if (widget.showExplanatory) {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('has_seen_onboarding', true);
+    }
     widget.onFinish();
   }
 
-  void _next() {
+  Future<void> _next() async {
+    if (!_canProceed) return;
+
+    if (_steps[_page].kind == _StepKind.currency) {
+      setState(() => _saving = true);
+      await AuthService().updateCurrency(_selectedCurrency!.code);
+      CurrencyFormatter.setCurrency(_selectedCurrency!.code);
+      if (mounted) setState(() => _saving = false);
+    }
+
     if (_isLast) {
-      _complete();
+      await _complete();
     } else {
       _controller.nextPage(
         duration: const Duration(milliseconds: 350),
         curve: Curves.easeOutCubic,
       );
     }
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
   }
 
   @override
@@ -124,12 +205,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         child: Padding(
                           padding: const EdgeInsets.fromLTRB(24, 12, 24, 0),
                           child: TextButton(
-                            onPressed: _isLast ? null : _complete,
+                            onPressed: _showSkip ? _complete : null,
                             style: TextButton.styleFrom(
                               foregroundColor: Colors.white70,
                             ),
                             child: Text(
-                              _isLast ? '' : 'Saltar',
+                              _showSkip ? 'Saltar' : '',
                               style: GoogleFonts.beVietnamPro(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w600,
@@ -141,9 +222,13 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       Expanded(
                         child: PageView.builder(
                           controller: _controller,
-                          itemCount: _slides.length,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemCount: _steps.length,
                           onPageChanged: (i) => setState(() => _page = i),
-                          itemBuilder: (context, i) => _buildSlide(_slides[i]),
+                          itemBuilder: (context, i) => SingleChildScrollView(
+                            padding: const EdgeInsets.fromLTRB(32, 12, 32, 12),
+                            child: _buildStepContent(_steps[i]),
+                          ),
                         ),
                       ),
                       Padding(
@@ -153,7 +238,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                             Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: List.generate(
-                                _slides.length,
+                                _steps.length,
                                 (i) => AnimatedContainer(
                                   duration: const Duration(milliseconds: 250),
                                   margin:
@@ -173,22 +258,32 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                             SizedBox(
                               width: double.infinity,
                               child: ElevatedButton(
-                                onPressed: _next,
+                                onPressed: _canProceed && !_saving ? _next : null,
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: AppTheme.secondary,
                                   foregroundColor: Colors.white,
+                                  disabledBackgroundColor:
+                                      Colors.white.withOpacity(0.12),
                                   shape: const StadiumBorder(),
                                   padding:
                                       const EdgeInsets.symmetric(vertical: 18),
                                   elevation: 0,
                                 ),
-                                child: Text(
-                                  _isLast ? 'Comenzar' : 'Siguiente',
-                                  style: GoogleFonts.plusJakartaSans(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
+                                child: _saving
+                                    ? const SizedBox(
+                                        width: 22,
+                                        height: 22,
+                                        child: CircularProgressIndicator(
+                                            color: Colors.white,
+                                            strokeWidth: 2.4),
+                                      )
+                                    : Text(
+                                        _isLast ? 'Comenzar' : 'Siguiente',
+                                        style: GoogleFonts.plusJakartaSans(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
                               ),
                             ),
                           ],
@@ -205,21 +300,197 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     );
   }
 
+  Widget _buildStepContent(_Step step) {
+    switch (step.kind) {
+      case _StepKind.welcome:
+        return _buildWelcomeStep();
+      case _StepKind.currency:
+        return _buildCurrencyStep();
+      case _StepKind.accounts:
+        return _buildAccountsStep();
+      case _StepKind.explanatory:
+        return _buildSlide(step.slide!);
+    }
+  }
+
+  Widget _buildWelcomeStep() {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Image.asset(
+          'assets/images/logomonedo_new.png',
+          width: 92,
+          height: 92,
+          fit: BoxFit.contain,
+        ),
+        const SizedBox(height: 32),
+        Text(
+          'Bienvenido a Monedo',
+          textAlign: TextAlign.center,
+          style: GoogleFonts.plusJakartaSans(
+            fontSize: 27,
+            fontWeight: FontWeight.w700,
+            color: Colors.white,
+            letterSpacing: -0.3,
+          ),
+        ),
+        const SizedBox(height: 12),
+        Text(
+          'Tu dinero, por fin tiene sentido.\nConfiguremos todo en un par de pasos.',
+          textAlign: TextAlign.center,
+          style: GoogleFonts.beVietnamPro(
+            fontSize: 14.5,
+            color: AppTheme.onPrimaryContainer,
+            height: 1.6,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildCurrencyStep() {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        _stepIcon(Icons.payments_outlined),
+        const SizedBox(height: 28),
+        Text(
+          '¿Qué moneda usas?',
+          textAlign: TextAlign.center,
+          style: GoogleFonts.plusJakartaSans(
+            fontSize: 25,
+            fontWeight: FontWeight.w700,
+            color: Colors.white,
+            letterSpacing: -0.3,
+          ),
+        ),
+        const SizedBox(height: 12),
+        Text(
+          'Elige tu moneda para que Monedo muestre tus cifras correctamente.',
+          textAlign: TextAlign.center,
+          style: GoogleFonts.beVietnamPro(
+            fontSize: 14.5,
+            color: AppTheme.onPrimaryContainer,
+            height: 1.6,
+          ),
+        ),
+        const SizedBox(height: 28),
+        CurrencyPickerField(
+          selected: _selectedCurrency,
+          onChanged: (c) => setState(() => _selectedCurrency = c),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildAccountsStep() {
+    final userId = FirebaseAuth.instance.currentUser?.uid ?? '';
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        _stepIcon(Icons.account_balance_wallet_outlined),
+        const SizedBox(height: 28),
+        Text(
+          '¿Dónde tienes tu dinero?',
+          textAlign: TextAlign.center,
+          style: GoogleFonts.plusJakartaSans(
+            fontSize: 25,
+            fontWeight: FontWeight.w700,
+            color: Colors.white,
+            letterSpacing: -0.3,
+          ),
+        ),
+        const SizedBox(height: 12),
+        Text(
+          'Agrega tus cuentas (efectivo, bancos, billeteras) para separar tus saldos. Ej: Efectivo, Nu, Nequi.',
+          textAlign: TextAlign.center,
+          style: GoogleFonts.beVietnamPro(
+            fontSize: 14.5,
+            color: AppTheme.onPrimaryContainer,
+            height: 1.6,
+          ),
+        ),
+        const SizedBox(height: 24),
+        if (_accounts.isNotEmpty)
+          Container(
+            width: double.infinity,
+            margin: const EdgeInsets.only(bottom: 16),
+            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.07),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Column(
+              children: [
+                for (int i = 0; i < _accounts.length; i++) ...[
+                  if (i > 0)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      child: Divider(
+                          height: 1, color: Colors.white.withOpacity(0.1)),
+                    ),
+                  Row(
+                    children: [
+                      const Icon(Icons.account_balance_wallet_rounded,
+                          color: AppTheme.secondaryFixed, size: 16),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          _accounts[i].name,
+                          style: GoogleFonts.beVietnamPro(
+                            color: Colors.white,
+                            fontSize: 13.5,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                      Text(
+                        CurrencyFormatter.format(_accounts[i].balance),
+                        style: GoogleFonts.beVietnamPro(
+                          color: Colors.white70,
+                          fontSize: 12.5,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ],
+            ),
+          ),
+        OutlinedButton.icon(
+          onPressed: () => showAddAccountSheet(context, userId: userId),
+          icon: const Icon(Icons.add_rounded, size: 18),
+          label: Text(_accounts.isEmpty ? 'Agregar cuenta' : 'Agregar otra cuenta'),
+          style: OutlinedButton.styleFrom(
+            foregroundColor: Colors.white,
+            side: BorderSide(color: Colors.white.withOpacity(0.4)),
+            shape: const StadiumBorder(),
+            padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 14),
+            textStyle: GoogleFonts.beVietnamPro(
+                fontSize: 14, fontWeight: FontWeight.w600),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _stepIcon(IconData icon) {
+    return Container(
+      width: 84,
+      height: 84,
+      decoration: BoxDecoration(
+        color: AppTheme.secondaryFixed.withOpacity(0.16),
+        shape: BoxShape.circle,
+      ),
+      child: Icon(icon, color: AppTheme.secondaryFixed, size: 38),
+    );
+  }
+
   Widget _buildSlide(_OnboardingSlide slide) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(32, 12, 32, 12),
-      child: Column(
+    return Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Container(
-            width: 84,
-            height: 84,
-            decoration: BoxDecoration(
-              color: AppTheme.secondaryFixed.withOpacity(0.16),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(slide.icon, color: AppTheme.secondaryFixed, size: 38),
-          ),
+          _stepIcon(slide.icon),
           const SizedBox(height: 28),
           Text(
             slide.title,
@@ -304,7 +575,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             ),
           ],
         ],
-      ),
     );
   }
 

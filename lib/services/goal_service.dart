@@ -34,6 +34,7 @@ class GoalService {
   Future<void> addSavingsToGoal({
     required GoalModel goal,
     required double amount,
+    required String accountId,
   }) async {
     final userId = FirebaseAuth.instance.currentUser?.uid ?? '';
 
@@ -50,6 +51,7 @@ class GoalService {
       isIncome: false,
       date: DateTime.now(),
       note: 'Aporte a meta de ahorro',
+      accountId: accountId,
     );
     await _transactionService.addTransaction(transaction);
   }

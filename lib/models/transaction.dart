@@ -13,6 +13,7 @@ class TransactionModel {
   final bool isIncome;       // true = ingreso, false = gasto
   final DateTime date;       // Fecha del movimiento
   final String? note;        // Nota opcional
+  final String? accountId;   // Cuenta de la que sale/entra el dinero
 
   TransactionModel({
     required this.id,
@@ -23,6 +24,7 @@ class TransactionModel {
     required this.isIncome,
     required this.date,
     this.note,
+    this.accountId,
   });
 
   // ---- Convierte un documento de Firestore a TransactionModel ----
@@ -36,6 +38,7 @@ class TransactionModel {
       isIncome: map['isIncome'] ?? false,
       date: DateTime.parse(map['date']),
       note: map['note'],
+      accountId: map['accountId'],
     );
   }
 
@@ -49,6 +52,7 @@ class TransactionModel {
       'isIncome': isIncome,
       'date': date.toIso8601String(),
       'note': note,
+      'accountId': accountId,
     };
   }
 }

@@ -33,7 +33,7 @@ class AuthService {
     required String username,
     required String email,
     required String password,
-    required String currency,
+    String? currency,
   }) async {
     try {
       // Verifica que el nombre de usuario no exista

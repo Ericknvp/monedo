@@ -3,7 +3,9 @@ import 'package:flutter/services.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../services/goal_service.dart';
+import '../services/account_service.dart';
 import '../models/goal.dart';
+import '../models/account.dart';
 import '../theme/app_theme.dart';
 import '../utils/currency_formatter.dart';
 import '../utils/amount_input_formatter.dart';
@@ -534,76 +536,113 @@ class _GoalCardState extends State<_GoalCard> {
 
   void _showAddSavings(BuildContext context) {
     final ctrl = TextEditingController();
+    final accountService = AccountService();
+    final userId = FirebaseAuth.instance.currentUser?.uid ?? '';
+    String? selectedAccountId;
+
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: AppTheme.surfaceContainerLowest,
-        shape:
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text('Agregar ahorro',
-            style: GoogleFonts.plusJakartaSans(
-                color: AppTheme.primary, fontWeight: FontWeight.w700)),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              'Meta: ${widget.goal.title}  •  Falta: ${CurrencyFormatter.format(widget.goal.remaining)}',
-              style: GoogleFonts.beVietnamPro(
-                  color: AppTheme.onSurfaceVariant, fontSize: 13),
-            ),
-            const SizedBox(height: 20),
-            TextField(
-              controller: ctrl,
-              keyboardType:
-                  const TextInputType.numberWithOptions(decimal: true),
-              inputFormatters: [AmountInputFormatter()],
-              style: GoogleFonts.beVietnamPro(color: AppTheme.primary),
-              decoration: InputDecoration(
-                labelText: 'Monto a ahorrar',
-                labelStyle: GoogleFonts.beVietnamPro(
-                    color: AppTheme.onSurfaceVariant),
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialogState) => AlertDialog(
+          backgroundColor: AppTheme.surfaceContainerLowest,
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: Text('Agregar ahorro',
+              style: GoogleFonts.plusJakartaSans(
+                  color: AppTheme.primary, fontWeight: FontWeight.w700)),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'Meta: ${widget.goal.title}  •  Falta: ${CurrencyFormatter.format(widget.goal.remaining)}',
+                style: GoogleFonts.beVietnamPro(
+                    color: AppTheme.onSurfaceVariant, fontSize: 13),
               ),
+              const SizedBox(height: 20),
+              TextField(
+                controller: ctrl,
+                keyboardType:
+                    const TextInputType.numberWithOptions(decimal: true),
+                inputFormatters: [AmountInputFormatter()],
+                style: GoogleFonts.beVietnamPro(color: AppTheme.primary),
+                decoration: InputDecoration(
+                  labelText: 'Monto a ahorrar',
+                  labelStyle: GoogleFonts.beVietnamPro(
+                      color: AppTheme.onSurfaceVariant),
+                ),
+              ),
+              const SizedBox(height: 16),
+              StreamBuilder<List<AccountModel>>(
+                stream: accountService.getAccounts(userId),
+                builder: (context, snap) {
+                  final accounts = snap.data ?? [];
+                  return DropdownButtonFormField<String>(
+                    value: selectedAccountId,
+                    dropdownColor: AppTheme.surfaceContainerLowest,
+                    style: GoogleFonts.beVietnamPro(color: AppTheme.primary),
+                    hint: Text('¿De qué cuenta sale?',
+                        style: GoogleFonts.beVietnamPro(
+                            color: AppTheme.outline, fontSize: 14)),
+                    decoration: InputDecoration(
+                      labelText: 'Cuenta',
+                      labelStyle: GoogleFonts.beVietnamPro(
+                          color: AppTheme.onSurfaceVariant),
+                    ),
+                    items: accounts
+                        .map((a) => DropdownMenuItem(
+                              value: a.id,
+                              child: Text(a.name),
+                            ))
+                        .toList(),
+                    onChanged: (v) =>
+                        setDialogState(() => selectedAccountId = v),
+                  );
+                },
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: Text('Cancelar',
+                  style: TextStyle(color: AppTheme.onSurfaceVariant)),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                final amount = CurrencyFormatter.parse(ctrl.text.trim());
+                if (amount != null && amount > 0 && selectedAccountId != null) {
+                  await widget.goalService.addSavingsToGoal(
+                    goal: widget.goal,
+                    amount: amount,
+                    accountId: selectedAccountId!,
+                  );
+                  if (ctx.mounted) Navigator.pop(ctx);
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Row(
+                          children: [
+                            const Icon(Icons.savings_rounded,
+                                color: Colors.white, size: 18),
+                            const SizedBox(width: 8),
+                            Text(
+                                '${CurrencyFormatter.format(amount)} ahorrado'),
+                          ],
+                        ),
+                        backgroundColor: AppTheme.secondary,
+                      ),
+                    );
+                  }
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.secondary,
+                shape: const StadiumBorder(),
+              ),
+              child: const Text('Ahorrar'),
             ),
           ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text('Cancelar',
-                style: TextStyle(color: AppTheme.onSurfaceVariant)),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              final amount = CurrencyFormatter.parse(ctrl.text.trim());
-              if (amount != null && amount > 0) {
-                await widget.goalService.addSavingsToGoal(
-                    goal: widget.goal, amount: amount);
-                if (ctx.mounted) Navigator.pop(ctx);
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Row(
-                        children: [
-                          const Icon(Icons.savings_rounded,
-                              color: Colors.white, size: 18),
-                          const SizedBox(width: 8),
-                          Text(
-                              '${CurrencyFormatter.format(amount)} ahorrado'),
-                        ],
-                      ),
-                      backgroundColor: AppTheme.secondary,
-                    ),
-                  );
-                }
-              }
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.secondary,
-              shape: const StadiumBorder(),
-            ),
-            child: const Text('Ahorrar'),
-          ),
-        ],
       ),
     );
   }
