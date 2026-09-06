@@ -6,6 +6,7 @@ import '../services/transaction_service.dart';
 import '../models/transaction.dart';
 import '../theme/app_theme.dart';
 import '../utils/currency_formatter.dart';
+import '../utils/category_colors.dart';
 
 class StatisticsScreen extends StatefulWidget {
   const StatisticsScreen({super.key});
@@ -27,17 +28,6 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
   static const _monthsShort = [
     'Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun',
     'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic',
-  ];
-
-  final List<Color> _chartColors = [
-    AppTheme.primary,
-    AppTheme.secondary,
-    const Color(0xFF0EA5E9),
-    const Color(0xFF14B8A6),
-    const Color(0xFF06B6D4),
-    const Color(0xFFF59E0B),
-    const Color(0xFFEC4899),
-    const Color(0xFF8B5CF6),
   ];
 
   void _prevMonth() => setState(() {
@@ -393,9 +383,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
             Builder(builder: (context) {
               final top = categoryData.entries
                   .reduce((a, b) => a.value >= b.value ? a : b);
-              final topColor = _chartColors[
-                  categoryData.keys.toList().indexOf(top.key) %
-                      _chartColors.length];
+              final topColor = CategoryColors.forCategory(top.key);
               return Container(
                 width: double.infinity,
                 padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
@@ -459,9 +447,8 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
             final hasTouch =
                 _touchedIndex != null && _touchedIndex! < entries.length;
             final touchedEntry = hasTouch ? entries[_touchedIndex!] : null;
-            final touchedColor = hasTouch
-                ? _chartColors[_touchedIndex! % _chartColors.length]
-                : null;
+            final touchedColor =
+                hasTouch ? CategoryColors.forCategory(touchedEntry!.key) : null;
 
             return Column(
               children: [
@@ -493,7 +480,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                               title: expenses > 0
                                   ? '${(cat.value / expenses * 100).toStringAsFixed(0)}%'
                                   : '',
-                              color: _chartColors[idx % _chartColors.length],
+                              color: CategoryColors.forCategory(cat.key),
                               radius: isTouched ? 98 : 90,
                               titleStyle: GoogleFonts.plusJakartaSans(
                                 color: Colors.white,
@@ -605,7 +592,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                               width: 10,
                               height: 10,
                               decoration: BoxDecoration(
-                                color: _chartColors[idx % _chartColors.length],
+                                color: CategoryColors.forCategory(cat.key),
                                 shape: BoxShape.circle,
                               ),
                             ),

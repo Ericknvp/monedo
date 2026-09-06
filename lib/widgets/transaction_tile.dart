@@ -4,6 +4,7 @@ import '../models/transaction.dart';
 import '../theme/app_theme.dart';
 import '../utils/currency_formatter.dart';
 import '../utils/category_icons.dart';
+import '../utils/category_colors.dart';
 
 class TransactionTile extends StatefulWidget {
   final TransactionModel transaction;
@@ -31,14 +32,11 @@ class _TransactionTileState extends State<TransactionTile> {
     final amountColor = t.isTransfer
         ? AppTheme.onSurfaceVariant
         : (isIncome ? AppTheme.onSecondaryContainer : AppTheme.primary);
-    final iconBg = t.isTransfer
-        ? AppTheme.surfaceContainerHighest
-        : (isIncome
-            ? AppTheme.secondaryContainer.withOpacity(0.4)
-            : AppTheme.surfaceContainerHighest);
-    final iconColor = t.isTransfer
-        ? AppTheme.onSurfaceVariant
-        : (isIncome ? AppTheme.onSecondaryContainer : AppTheme.primary);
+    // El ícono se colorea por categoría (para distinguirlas de un vistazo);
+    // "Transferencia" ya cae en el tono neutro de CategoryColors.
+    final categoryColor = CategoryColors.forCategory(t.category);
+    final iconBg = categoryColor.withOpacity(0.14);
+    final iconColor = categoryColor;
 
     final isDesktop = MediaQuery.of(context).size.width >= 900;
 

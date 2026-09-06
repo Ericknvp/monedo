@@ -10,6 +10,7 @@ import '../theme/app_theme.dart';
 import '../utils/amount_input_formatter.dart';
 import '../utils/currency_formatter.dart';
 import '../utils/category_icons.dart';
+import '../utils/category_colors.dart';
 import 'categories_screen.dart';
 import 'accounts_screen.dart';
 import '../widgets/app_toast.dart';
@@ -622,8 +623,8 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                 labelText: 'Categoría',
                 labelStyle: GoogleFonts.beVietnamPro(
                     color: AppTheme.onSurfaceVariant, fontSize: 13),
-                prefixIcon: const Icon(Icons.category_outlined,
-                    color: AppTheme.secondary, size: 20),
+                prefixIcon: Icon(CategoryIconRegistry.iconFor(_selectedCategory),
+                    color: CategoryColors.forCategory(_selectedCategory), size: 20),
               ),
               items: allNames
                   .map((c) => DropdownMenuItem(
@@ -632,7 +633,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Icon(CategoryIconRegistry.iconFor(c),
-                                size: 18, color: AppTheme.onSurfaceVariant),
+                                size: 18, color: CategoryColors.forCategory(c)),
                             const SizedBox(width: 10),
                             Text(c),
                           ],

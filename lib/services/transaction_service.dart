@@ -138,10 +138,11 @@ class TransactionService {
     }
   }
 
-  // ---- Calcula el balance total ----
+  // ---- Calcula el balance total (excluye transferencias entre cuentas propias) ----
   double calculateBalance(List<TransactionModel> transactions) {
     double balance = 0;
     for (var t in transactions) {
+      if (t.isTransfer) continue;
       if (t.isIncome) {
         balance += t.amount;
       } else {

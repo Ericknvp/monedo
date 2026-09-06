@@ -5,6 +5,7 @@ import '../models/category.dart';
 import '../services/category_service.dart';
 import '../theme/app_theme.dart';
 import '../utils/category_icons.dart';
+import '../utils/category_colors.dart';
 import '../widgets/icon_picker.dart';
 
 /// Abre la hoja para crear una categoría propia. Devuelve el nombre de la
@@ -322,6 +323,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
     required String name,
     VoidCallback? onDelete,
   }) {
+    final color = CategoryColors.forCategory(name);
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -336,10 +338,10 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: AppTheme.secondary.withOpacity(0.1),
+              color: color.withOpacity(0.14),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Icon(icon, color: AppTheme.secondary, size: 20),
+            child: Icon(icon, color: color, size: 20),
           ),
           const SizedBox(width: 14),
           Expanded(
