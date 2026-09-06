@@ -8,6 +8,8 @@ import 'currency_formatter.dart';
 
 const _brandPrimary = PdfColor.fromInt(0xFF001F2D);
 const _brandSecondary = PdfColor.fromInt(0xFF006C4B);
+const _incomeRowBg = PdfColor.fromInt(0xFFEAF6F0);
+const _expenseRowBg = PdfColor.fromInt(0xFFFCEEED);
 
 String _dateStr(DateTime d) =>
     '${d.day.toString().padLeft(2, '0')}/${d.month.toString().padLeft(2, '0')}/${d.year}';
@@ -151,6 +153,21 @@ Future<Uint8List> buildPdfBytes({
             2: const pw.FlexColumnWidth(1.8),
             3: const pw.FlexColumnWidth(1.2),
             4: const pw.FlexColumnWidth(1.4),
+          },
+          cellDecoration: (index, data, rowNum) {
+            final t = sorted[rowNum - 1];
+            return pw.BoxDecoration(
+              color: t.isIncome ? _incomeRowBg : _expenseRowBg,
+            );
+          },
+          textStyleBuilder: (index, data, rowNum) {
+            if (index != 3 && index != 4) return const pw.TextStyle(fontSize: 9);
+            final t = sorted[rowNum - 1];
+            return pw.TextStyle(
+              fontSize: 9,
+              fontWeight: pw.FontWeight.bold,
+              color: t.isIncome ? _brandSecondary : PdfColors.red800,
+            );
           },
         ),
       ],

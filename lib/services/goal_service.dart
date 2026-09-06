@@ -57,6 +57,14 @@ class GoalService {
     await _transactionService.addTransaction(transaction);
   }
 
+  // ---- Ajusta el monto ahorrado de una meta de forma atómica ----
+  Future<void> adjustSavedAmount(String goalId, double delta) async {
+    if (delta == 0) return;
+    await _goals.doc(goalId).update({
+      'savedAmount': FieldValue.increment(delta),
+    });
+  }
+
   // ---- Elimina una meta (no devuelve el dinero al balance) ----
   Future<void> deleteGoal(String goalId) async {
     await _goals.doc(goalId).delete();

@@ -65,6 +65,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
   @override
   Widget build(BuildContext context) {
     final userId = FirebaseAuth.instance.currentUser?.uid ?? '';
+    final isDesktop = MediaQuery.of(context).size.width >= 900;
 
     return StreamBuilder<List<TransactionModel>>(
       stream: _txService.getTransactions(userId),
@@ -131,24 +132,55 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                     ),
                   ),
                   const SizedBox(width: 8),
-                  Tooltip(
-                    message: 'Exportar datos',
-                    child: InkWell(
+                  if (isDesktop)
+                    InkWell(
                       borderRadius: BorderRadius.circular(100),
                       onTap: () => openExportScreen(context),
                       child: Container(
-                        width: 38,
                         height: 38,
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
                         decoration: BoxDecoration(
-                          shape: BoxShape.circle,
+                          borderRadius: BorderRadius.circular(100),
                           color: AppTheme.surfaceContainer,
                           border: Border.all(color: AppTheme.outlineVariant),
                         ),
-                        child: const Icon(Icons.ios_share_rounded,
-                            size: 17, color: AppTheme.primary),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.ios_share_rounded,
+                                size: 17, color: AppTheme.primary),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Exportar datos',
+                              style: GoogleFonts.beVietnamPro(
+                                color: AppTheme.primary,
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    )
+                  else
+                    Tooltip(
+                      message: 'Exportar datos',
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(100),
+                        onTap: () => openExportScreen(context),
+                        child: Container(
+                          width: 38,
+                          height: 38,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: AppTheme.surfaceContainer,
+                            border: Border.all(color: AppTheme.outlineVariant),
+                          ),
+                          child: const Icon(Icons.ios_share_rounded,
+                              size: 17, color: AppTheme.primary),
+                        ),
                       ),
                     ),
-                  ),
                 ],
               ),
             ),

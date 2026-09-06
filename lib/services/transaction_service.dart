@@ -9,6 +9,17 @@ class TransactionService {
 
   CollectionReference get _transactions =>
       _firestore.collection('transactions');
+  CollectionReference get _goals => _firestore.collection('goals');
+
+  // ---- Ajusta el monto ahorrado de una meta de forma atómica ----
+  // (Se implementa aquí en vez de reutilizar GoalService para evitar una
+  // dependencia circular: GoalService también depende de TransactionService.)
+  Future<void> _adjustGoalSaved(String goalId, double delta) async {
+    if (delta == 0) return;
+    await _goals.doc(goalId).update({
+      'savedAmount': FieldValue.increment(delta),
+    });
+  }
 
   double _signedAmount(TransactionModel t) => t.isIncome ? t.amount : -t.amount;
 
@@ -88,14 +99,34 @@ class TransactionService {
             newTransaction.accountId!, _signedAmount(newTransaction));
       }
     }
+
+    if (oldTransaction.goalId == newTransaction.goalId) {
+      if (oldTransaction.goalId != null) {
+        final delta = newTransaction.amount - oldTransaction.amount;
+        await _adjustGoalSaved(oldTransaction.goalId!, delta);
+      }
+    } else {
+      if (oldTransaction.goalId != null) {
+        await _adjustGoalSaved(
+            oldTransaction.goalId!, -oldTransaction.amount);
+      }
+      if (newTransaction.goalId != null) {
+        await _adjustGoalSaved(
+            newTransaction.goalId!, newTransaction.amount);
+      }
+    }
   }
 
-  // ---- Elimina una transacción y revierte su efecto en la cuenta ----
+  // ---- Elimina una transacción y revierte su efecto en la cuenta y la meta ----
   Future<void> deleteTransaction(TransactionModel transaction) async {
     await _transactions.doc(transaction.id).delete();
     if (transaction.accountId != null) {
       await _accountService.adjustBalance(
           transaction.accountId!, -_signedAmount(transaction));
+    }
+    if (transaction.goalId != null) {
+      await _adjustGoalSaved(
+          transaction.goalId!, -transaction.amount);
     }
   }
 

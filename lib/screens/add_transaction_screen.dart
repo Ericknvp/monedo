@@ -219,6 +219,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
       date: _selectedDate,
       note: _noteCtrl.text.trim().isEmpty ? null : _noteCtrl.text.trim(),
       accountId: _selectedAccountId,
+      goalId: widget.transaction?.goalId,
     );
     if (widget.transaction != null) {
       await _txService.updateTransaction(widget.transaction!, tx);
