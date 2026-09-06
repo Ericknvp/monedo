@@ -4,7 +4,7 @@
   <meta charset="utf-8"/>
   <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
   <title>Monedo — Controla tus finanzas personales, gratis</title>
-  <meta name="description" content="Monedo es una app de finanzas personales 100% gratuita. Registra ingresos y gastos, visualiza estadísticas mensuales y cumple tus metas de ahorro. Sin costo, para siempre."/>
+  <meta name="description" content="Monedo es una app de finanzas personales 100% gratuita. Organiza tu dinero en cuentas, registra ingresos y gastos, visualiza estadísticas mensuales, cumple tus metas de ahorro y exporta tus datos a Excel o PDF. Sin costo, para siempre."/>
   <link rel="icon" type="image/png" href="favicon.png"/>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Be+Vietnam+Pro:wght@400;500;600&display=swap" rel="stylesheet"/>
@@ -120,7 +120,7 @@
         <span class="text-secondary">gratis, para siempre.</span>
       </h1>
       <p class="text-on-surface-variant text-lg md:text-xl leading-relaxed max-w-2xl mx-auto">
-        Monedo es tu app de finanzas personales para registrar ingresos y gastos, ver estadísticas por mes y alcanzar tus metas de ahorro. Todo en un solo lugar, sin costo.
+        Monedo es tu app de finanzas personales para organizar tu dinero en cuentas, registrar ingresos y gastos, ver estadísticas por mes y alcanzar tus metas de ahorro. Todo en un solo lugar, sin costo.
       </p>
       <div class="flex flex-wrap justify-center gap-4 pt-2">
         <a href="/?view=register"
@@ -177,12 +177,34 @@
   <div class="grid md:grid-cols-3 gap-6">
     <div class="card-hover bg-surface-container-lowest p-8 rounded-2xl border border-outline-variant/40 flex flex-col gap-5 reveal">
       <div class="w-14 h-14 bg-secondary-container rounded-2xl flex items-center justify-center">
-        <span class="material-symbols-outlined text-on-secondary-container text-[28px]">receipt_long</span>
+        <span class="material-symbols-outlined text-on-secondary-container text-[28px]">account_balance_wallet</span>
+      </div>
+      <div>
+        <h3 class="font-display text-lg font-bold text-primary mb-2">Cuentas y Transferencias</h3>
+        <p class="text-on-surface-variant text-sm leading-relaxed">
+          Organiza tu dinero en cuentas: efectivo, bancos o billeteras. Mira cuánto tienes en cada una y transfiere entre ellas cuando quieras.
+        </p>
+      </div>
+    </div>
+    <div class="card-hover bg-surface-container-lowest p-8 rounded-2xl border border-outline-variant/40 flex flex-col gap-5 reveal">
+      <div class="w-14 h-14 bg-primary-container rounded-2xl flex items-center justify-center">
+        <span class="material-symbols-outlined text-on-primary-container text-[28px]">receipt_long</span>
       </div>
       <div>
         <h3 class="font-display text-lg font-bold text-primary mb-2">Ingresos y Gastos</h3>
         <p class="text-on-surface-variant text-sm leading-relaxed">
-          Registra cada movimiento con categorías. Distingue entre ingresos y egresos de un vistazo. Simple de agregar, fácil de revisar.
+          Registra cada movimiento con categorías personalizables. Distingue entre ingresos y egresos de un vistazo, desde la cuenta que quieras.
+        </p>
+      </div>
+    </div>
+    <div class="card-hover bg-surface-container-lowest p-8 rounded-2xl border border-outline-variant/40 flex flex-col gap-5 reveal">
+      <div class="w-14 h-14 bg-secondary-container rounded-2xl flex items-center justify-center">
+        <span class="material-symbols-outlined text-on-secondary-container text-[28px]">currency_exchange</span>
+      </div>
+      <div>
+        <h3 class="font-display text-lg font-bold text-primary mb-2">Multi-moneda</h3>
+        <p class="text-on-surface-variant text-sm leading-relaxed">
+          Elige entre varias monedas (COP, USD, EUR y más) y Monedo formatea todas tus cifras automáticamente.
         </p>
       </div>
     </div>
@@ -205,6 +227,17 @@
         <h3 class="font-display text-lg font-bold text-primary mb-2">Metas de Ahorro</h3>
         <p class="text-on-surface-variant text-sm leading-relaxed">
           Define una meta con un monto objetivo y ve tu progreso en tiempo real. Desde un fondo de emergencia hasta ese viaje que tienes pendiente.
+        </p>
+      </div>
+    </div>
+    <div class="card-hover bg-surface-container-lowest p-8 rounded-2xl border border-outline-variant/40 flex flex-col gap-5 reveal">
+      <div class="w-14 h-14 bg-primary-container rounded-2xl flex items-center justify-center">
+        <span class="material-symbols-outlined text-on-primary-container text-[28px]">ios_share</span>
+      </div>
+      <div>
+        <h3 class="font-display text-lg font-bold text-primary mb-2">Exportar tus datos</h3>
+        <p class="text-on-surface-variant text-sm leading-relaxed">
+          Descarga tus movimientos en Excel o PDF cuando quieras, listos para analizar o compartir donde prefieras.
         </p>
       </div>
     </div>
@@ -262,11 +295,75 @@
             <div class="flex items-center justify-between p-3 bg-surface-container rounded-xl">
               <div class="flex items-center gap-3">
                 <div class="w-9 h-9 bg-secondary-container rounded-full flex items-center justify-center">
+                  <span class="material-symbols-outlined text-on-secondary-container text-[18px]">payments</span>
+                </div>
+                <p class="text-sm font-semibold text-primary">Efectivo</p>
+              </div>
+              <span class="text-sm font-bold text-primary">$250.000</span>
+            </div>
+            <div class="flex items-center justify-between p-3 bg-surface-container rounded-xl">
+              <div class="flex items-center gap-3">
+                <div class="w-9 h-9 bg-primary-container rounded-full flex items-center justify-center">
+                  <span class="material-symbols-outlined text-on-primary-container text-[18px]">account_balance</span>
+                </div>
+                <p class="text-sm font-semibold text-primary">Mi banco</p>
+              </div>
+              <span class="text-sm font-bold text-primary">$1.180.000</span>
+            </div>
+            <div class="flex items-center justify-between p-3 bg-surface-container rounded-xl">
+              <div class="flex items-center gap-3">
+                <div class="w-9 h-9 bg-secondary-container rounded-full flex items-center justify-center">
+                  <span class="material-symbols-outlined text-on-secondary-container text-[18px]">account_balance_wallet</span>
+                </div>
+                <p class="text-sm font-semibold text-primary">PayPal</p>
+              </div>
+              <span class="text-sm font-bold text-primary">$95.000</span>
+            </div>
+            <div class="flex items-center justify-center gap-2 p-2.5 border border-dashed border-outline-variant rounded-xl text-on-surface-variant text-xs font-semibold">
+              <span class="material-symbols-outlined text-[16px]">swap_horiz</span>
+              Transferir entre cuentas
+            </div>
+          </div>
+        </div>
+        <div class="order-1 md:order-2 bg-surface-container-lowest rounded-2xl p-8 border border-outline-variant/30">
+          <span class="inline-block px-3 py-1 bg-primary-container text-on-primary-container rounded-full text-xs font-bold mb-5">PASO 02</span>
+          <h3 class="font-display text-xl font-bold text-primary mb-3">Organiza tu dinero en cuentas</h3>
+          <p class="text-on-surface-variant text-sm leading-relaxed mb-5">
+            Crea una cuenta por cada lugar donde tienes dinero: efectivo, banco, billeteras digitales. Ve cuánto hay en cada una y transfiere entre ellas cuando lo necesites.
+          </p>
+          <div class="flex items-center gap-2 text-secondary text-sm font-semibold">
+            <span class="material-symbols-outlined text-[18px]" style="font-variation-settings:'FILL' 1;">account_balance_wallet</span>
+            Todas tus cuentas, en un solo lugar
+          </div>
+        </div>
+      </div>
+
+      <!-- Paso 3 -->
+      <div class="grid md:grid-cols-2 gap-10 items-center reveal">
+        <div class="bg-surface-container-lowest rounded-2xl p-8 border border-outline-variant/30">
+          <span class="inline-block px-3 py-1 bg-secondary-container text-on-secondary-container rounded-full text-xs font-bold mb-5">PASO 03</span>
+          <h3 class="font-display text-xl font-bold text-primary mb-3">Registra tus movimientos</h3>
+          <p class="text-on-surface-variant text-sm leading-relaxed mb-5">
+            Agrega ingresos y gastos fácilmente. Elige la cuenta, la categoría, el monto y la fecha. Tus movimientos quedan guardados en la nube para verlos desde cualquier dispositivo.
+          </p>
+          <div class="flex flex-wrap gap-2">
+            <span class="px-3 py-1 bg-secondary-container text-on-secondary-container rounded-full text-xs font-semibold">Comida</span>
+            <span class="px-3 py-1 bg-primary-fixed text-on-primary-fixed rounded-full text-xs font-semibold">Servicios</span>
+            <span class="px-3 py-1 bg-secondary-fixed text-on-secondary-fixed rounded-full text-xs font-semibold">Transporte</span>
+            <span class="px-3 py-1 bg-surface-container-high text-on-surface rounded-full text-xs font-semibold">Salud</span>
+            <span class="px-3 py-1 bg-surface-container-high text-on-surface rounded-full text-xs font-semibold">Ocio</span>
+          </div>
+        </div>
+        <div class="bg-surface-container-lowest rounded-2xl p-8 border border-outline-variant/30">
+          <div class="space-y-3">
+            <div class="flex items-center justify-between p-3 bg-surface-container rounded-xl">
+              <div class="flex items-center gap-3">
+                <div class="w-9 h-9 bg-secondary-container rounded-full flex items-center justify-center">
                   <span class="material-symbols-outlined text-on-secondary-container text-[16px]">restaurant</span>
                 </div>
                 <div>
                   <p class="text-sm font-semibold text-primary">Almuerzo</p>
-                  <p class="text-xs text-on-surface-variant">Comida</p>
+                  <p class="text-xs text-on-surface-variant">Comida · Efectivo</p>
                 </div>
               </div>
               <span class="text-sm font-bold text-primary">-$12.50</span>
@@ -278,7 +375,7 @@
                 </div>
                 <div>
                   <p class="text-sm font-semibold text-primary">Sueldo</p>
-                  <p class="text-xs text-on-surface-variant">Ingresos</p>
+                  <p class="text-xs text-on-surface-variant">Ingresos · Mi banco</p>
                 </div>
               </div>
               <span class="text-sm font-bold text-secondary">+$850.00</span>
@@ -290,43 +387,18 @@
                 </div>
                 <div>
                   <p class="text-sm font-semibold text-primary">Electricidad</p>
-                  <p class="text-xs text-on-surface-variant">Servicios</p>
+                  <p class="text-xs text-on-surface-variant">Servicios · Mi banco</p>
                 </div>
               </div>
               <span class="text-sm font-bold text-primary">-$35.00</span>
             </div>
           </div>
         </div>
-        <div class="order-1 md:order-2 bg-surface-container-lowest rounded-2xl p-8 border border-outline-variant/30">
-          <span class="inline-block px-3 py-1 bg-primary-container text-on-primary-container rounded-full text-xs font-bold mb-5">PASO 02</span>
-          <h3 class="font-display text-xl font-bold text-primary mb-3">Registra tus movimientos</h3>
-          <p class="text-on-surface-variant text-sm leading-relaxed mb-5">
-            Agrega ingresos y gastos fácilmente. Elige la categoría, el monto y la fecha. Tus movimientos quedan guardados en la nube para verlos desde cualquier dispositivo.
-          </p>
-          <div class="flex flex-wrap gap-2">
-            <span class="px-3 py-1 bg-secondary-container text-on-secondary-container rounded-full text-xs font-semibold">Comida</span>
-            <span class="px-3 py-1 bg-primary-fixed text-on-primary-fixed rounded-full text-xs font-semibold">Servicios</span>
-            <span class="px-3 py-1 bg-secondary-fixed text-on-secondary-fixed rounded-full text-xs font-semibold">Transporte</span>
-            <span class="px-3 py-1 bg-surface-container-high text-on-surface rounded-full text-xs font-semibold">Salud</span>
-            <span class="px-3 py-1 bg-surface-container-high text-on-surface rounded-full text-xs font-semibold">Ocio</span>
-          </div>
-        </div>
       </div>
 
-      <!-- Paso 3 -->
+      <!-- Paso 4 -->
       <div class="grid md:grid-cols-2 gap-10 items-center reveal">
-        <div class="bg-surface-container-lowest rounded-2xl p-8 border border-outline-variant/30">
-          <span class="inline-block px-3 py-1 bg-secondary-container text-on-secondary-container rounded-full text-xs font-bold mb-5">PASO 03</span>
-          <h3 class="font-display text-xl font-bold text-primary mb-3">Visualiza tus estadísticas</h3>
-          <p class="text-on-surface-variant text-sm leading-relaxed mb-5">
-            Cada mes, ve exactamente en qué gastaste más y cuánto ingresaste. Gráficas simples que te dan una foto clara de tu situación financiera.
-          </p>
-          <div class="flex items-center gap-2 text-secondary text-sm font-semibold">
-            <span class="material-symbols-outlined text-[18px]" style="font-variation-settings:'FILL' 1;">trending_up</span>
-            Historial mes a mes
-          </div>
-        </div>
-        <div class="bg-surface-container-lowest rounded-2xl p-6 border border-outline-variant/30">
+        <div class="order-2 md:order-1 bg-surface-container-lowest rounded-2xl p-6 border border-outline-variant/30">
           <!-- Header -->
           <div class="flex items-center justify-between mb-1">
             <p class="text-sm font-bold text-primary">Ingresos vs Gastos</p>
@@ -396,11 +468,33 @@
             </span>
           </div>
         </div>
+        <div class="order-1 md:order-2 bg-surface-container-lowest rounded-2xl p-8 border border-outline-variant/30">
+          <span class="inline-block px-3 py-1 bg-primary-container text-on-primary-container rounded-full text-xs font-bold mb-5">PASO 04</span>
+          <h3 class="font-display text-xl font-bold text-primary mb-3">Visualiza tus estadísticas</h3>
+          <p class="text-on-surface-variant text-sm leading-relaxed mb-5">
+            Cada mes, ve exactamente en qué gastaste más y cuánto ingresaste. Gráficas simples que te dan una foto clara de tu situación financiera.
+          </p>
+          <div class="flex items-center gap-2 text-secondary text-sm font-semibold">
+            <span class="material-symbols-outlined text-[18px]" style="font-variation-settings:'FILL' 1;">trending_up</span>
+            Historial mes a mes
+          </div>
+        </div>
       </div>
 
-      <!-- Paso 4 -->
+      <!-- Paso 5 -->
       <div class="grid md:grid-cols-2 gap-10 items-center reveal">
-        <div class="order-2 md:order-1 bg-surface-container-lowest rounded-2xl p-8 border border-outline-variant/30">
+        <div class="bg-surface-container-lowest rounded-2xl p-8 border border-outline-variant/30">
+          <span class="inline-block px-3 py-1 bg-secondary-container text-on-secondary-container rounded-full text-xs font-bold mb-5">PASO 05</span>
+          <h3 class="font-display text-xl font-bold text-primary mb-3">Crea y sigue tus metas</h3>
+          <p class="text-on-surface-variant text-sm leading-relaxed mb-5">
+            Ponle nombre y monto objetivo a cada meta. Aporta desde cualquiera de tus cuentas y ve tu progreso en tiempo real. Ya sea un fondo de emergencia, un viaje o cualquier cosa que quieras lograr.
+          </p>
+          <div class="flex items-center gap-2 text-secondary text-sm font-semibold">
+            <span class="material-symbols-outlined text-[18px]" style="font-variation-settings:'FILL' 1;">flag</span>
+            Sin límite de metas
+          </div>
+        </div>
+        <div class="bg-surface-container-lowest rounded-2xl p-8 border border-outline-variant/30">
           <div class="space-y-6">
             <div class="space-y-2">
               <div class="flex justify-between text-sm font-semibold">
@@ -424,15 +518,47 @@
             </div>
           </div>
         </div>
+      </div>
+
+      <!-- Paso 6 -->
+      <div class="grid md:grid-cols-2 gap-10 items-center reveal">
+        <div class="order-2 md:order-1 bg-surface-container-lowest rounded-2xl p-8 border border-outline-variant/30">
+          <div class="space-y-3">
+            <div class="flex items-center justify-between p-4 bg-surface-container rounded-xl">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-secondary-container rounded-xl flex items-center justify-center">
+                  <span class="material-symbols-outlined text-on-secondary-container text-[20px]">table_chart</span>
+                </div>
+                <div>
+                  <p class="text-sm font-semibold text-primary">movimientos_mayo.xlsx</p>
+                  <p class="text-xs text-on-surface-variant">Excel</p>
+                </div>
+              </div>
+              <span class="material-symbols-outlined text-on-surface-variant text-[18px]">download</span>
+            </div>
+            <div class="flex items-center justify-between p-4 bg-surface-container rounded-xl">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-primary-container rounded-xl flex items-center justify-center">
+                  <span class="material-symbols-outlined text-on-primary-container text-[20px]">picture_as_pdf</span>
+                </div>
+                <div>
+                  <p class="text-sm font-semibold text-primary">reporte_mayo.pdf</p>
+                  <p class="text-xs text-on-surface-variant">PDF</p>
+                </div>
+              </div>
+              <span class="material-symbols-outlined text-on-surface-variant text-[18px]">download</span>
+            </div>
+          </div>
+        </div>
         <div class="order-1 md:order-2 bg-surface-container-lowest rounded-2xl p-8 border border-outline-variant/30">
-          <span class="inline-block px-3 py-1 bg-secondary-container text-on-secondary-container rounded-full text-xs font-bold mb-5">PASO 04</span>
-          <h3 class="font-display text-xl font-bold text-primary mb-3">Crea y sigue tus metas</h3>
+          <span class="inline-block px-3 py-1 bg-primary-container text-on-primary-container rounded-full text-xs font-bold mb-5">PASO 06</span>
+          <h3 class="font-display text-xl font-bold text-primary mb-3">Exporta tus datos cuando quieras</h3>
           <p class="text-on-surface-variant text-sm leading-relaxed mb-5">
-            Ponle nombre y monto objetivo a cada meta. Ve tu progreso en tiempo real. Ya sea un fondo de emergencia, un viaje o cualquier cosa que quieras lograr.
+            Descarga tus movimientos en Excel o PDF, con la marca Monedo lista para compartir, imprimir o analizar donde prefieras.
           </p>
           <div class="flex items-center gap-2 text-secondary text-sm font-semibold">
-            <span class="material-symbols-outlined text-[18px]" style="font-variation-settings:'FILL' 1;">flag</span>
-            Sin límite de metas
+            <span class="material-symbols-outlined text-[18px]" style="font-variation-settings:'FILL' 1;">ios_share</span>
+            Tus datos, siempre tuyos
           </div>
         </div>
       </div>

@@ -208,14 +208,18 @@ class AboutScreen extends StatelessWidget {
 
   Widget _featureRow(IconData icon, String text) {
     return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Icon(icon, color: AppTheme.secondary, size: 18),
         const SizedBox(width: 10),
-        Text(
-          text,
-          style: GoogleFonts.beVietnamPro(
-            color: AppTheme.onSurfaceVariant,
-            fontSize: 14,
+        Expanded(
+          child: Text(
+            text,
+            style: GoogleFonts.beVietnamPro(
+              color: AppTheme.onSurfaceVariant,
+              fontSize: 14,
+              height: 1.4,
+            ),
           ),
         ),
       ],
