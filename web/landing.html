@@ -56,6 +56,43 @@
       opacity: 0.16;
       border-radius: 9999px;
       pointer-events: none;
+      animation: float-blob 14s ease-in-out infinite alternate;
+    }
+    .blob-delay {
+      animation-delay: -7s;
+      animation-duration: 18s;
+    }
+    @keyframes float-blob {
+      from { transform: translate(0, 0) scale(1); }
+      to   { transform: translate(36px, -28px) scale(1.08); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .blob, .float-icon, .marquee-track { animation: none !important; }
+    }
+    .float-icon {
+      animation: float-icon 5s ease-in-out infinite;
+    }
+    .float-icon.delay {
+      animation-delay: 1.4s;
+    }
+    @keyframes float-icon {
+      0%, 100% { transform: translateY(0) rotate(0deg); }
+      50%      { transform: translateY(-14px) rotate(-4deg); }
+    }
+    .marquee-wrap {
+      overflow: hidden;
+      -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+      mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+    }
+    .marquee-track {
+      display: flex;
+      width: max-content;
+      animation: marquee 26s linear infinite;
+    }
+    .marquee-track:hover { animation-play-state: paused; }
+    @keyframes marquee {
+      from { transform: translateX(0); }
+      to   { transform: translateX(-50%); }
     }
     .card-hover {
       transition: transform 0.3s ease, box-shadow 0.3s ease;
@@ -89,6 +126,7 @@
     <div class="hidden md:flex items-center gap-8 text-sm font-semibold text-on-surface-variant">
       <a href="#caracteristicas" class="hover:text-primary transition-colors">Características</a>
       <a href="#como-funciona"   class="hover:text-primary transition-colors">Cómo funciona</a>
+      <a href="#descargar"       class="hover:text-primary transition-colors">Android</a>
       <a href="#gratis"          class="hover:text-secondary transition-colors">100% Gratis</a>
     </div>
     <div class="flex items-center gap-2">
@@ -108,7 +146,9 @@
 
 <header class="relative overflow-hidden">
   <div class="blob w-[560px] h-[560px] bg-secondary-container top-0 -left-40"></div>
-  <div class="blob w-[420px] h-[420px] bg-primary-container bottom-0 -right-16"></div>
+  <div class="blob blob-delay w-[420px] h-[420px] bg-primary-container bottom-0 -right-16"></div>
+  <span class="float-icon material-symbols-outlined hidden md:block absolute top-24 left-[10%] text-secondary/25 text-[40px] z-0" style="font-variation-settings:'FILL' 1;">account_balance_wallet</span>
+  <span class="float-icon delay material-symbols-outlined hidden md:block absolute bottom-16 right-[12%] text-primary/20 text-[34px] z-0" style="font-variation-settings:'FILL' 1;">savings</span>
   <div class="max-w-6xl mx-auto px-6 md:px-10 py-24 md:py-36 relative z-10">
     <div class="max-w-3xl mx-auto text-center space-y-7">
       <div class="inline-flex items-center gap-2 bg-secondary-container/50 px-4 py-1.5 rounded-full text-on-secondary-container text-sm font-semibold">
@@ -128,10 +168,10 @@
           Crear cuenta
           <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
         </a>
-        <a href="#como-funciona"
+        <a href="#descargar"
            class="border-2 border-primary/20 text-primary h-12 px-8 rounded-full font-semibold flex items-center gap-2 hover:bg-primary/5 active:scale-95 transition-all text-sm">
-          Ver cómo funciona
-          <span class="material-symbols-outlined text-[18px]">expand_more</span>
+          <span class="material-symbols-outlined text-[18px]">android</span>
+          Descargar para Android
         </a>
       </div>
     </div>
@@ -161,6 +201,41 @@
     <div class="flex items-center gap-2">
       <span class="material-symbols-outlined text-secondary text-[18px]" style="font-variation-settings:'FILL' 1;">check_circle</span>
       Open source
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ MARQUEE ═══════════ -->
+
+<div class="marquee-wrap bg-primary py-4">
+  <div class="marquee-track">
+    <div class="flex items-center gap-10 pr-10 text-secondary-fixed/90 font-display font-bold text-sm uppercase tracking-wide whitespace-nowrap">
+      <span class="flex items-center gap-2"><span class="material-symbols-outlined text-[18px]">account_balance_wallet</span>Cuentas y transferencias</span>
+      <span class="opacity-30">·</span>
+      <span class="flex items-center gap-2"><span class="material-symbols-outlined text-[18px]">currency_exchange</span>Multi-moneda</span>
+      <span class="opacity-30">·</span>
+      <span class="flex items-center gap-2"><span class="material-symbols-outlined text-[18px]">analytics</span>Estadísticas mensuales</span>
+      <span class="opacity-30">·</span>
+      <span class="flex items-center gap-2"><span class="material-symbols-outlined text-[18px]">savings</span>Metas de ahorro</span>
+      <span class="opacity-30">·</span>
+      <span class="flex items-center gap-2"><span class="material-symbols-outlined text-[18px]">ios_share</span>Exportar a Excel y PDF</span>
+      <span class="opacity-30">·</span>
+      <span class="flex items-center gap-2"><span class="material-symbols-outlined text-[18px]">category</span>Categorías personalizadas</span>
+      <span class="opacity-30">·</span>
+    </div>
+    <div class="flex items-center gap-10 pr-10 text-secondary-fixed/90 font-display font-bold text-sm uppercase tracking-wide whitespace-nowrap" aria-hidden="true">
+      <span class="flex items-center gap-2"><span class="material-symbols-outlined text-[18px]">account_balance_wallet</span>Cuentas y transferencias</span>
+      <span class="opacity-30">·</span>
+      <span class="flex items-center gap-2"><span class="material-symbols-outlined text-[18px]">currency_exchange</span>Multi-moneda</span>
+      <span class="opacity-30">·</span>
+      <span class="flex items-center gap-2"><span class="material-symbols-outlined text-[18px]">analytics</span>Estadísticas mensuales</span>
+      <span class="opacity-30">·</span>
+      <span class="flex items-center gap-2"><span class="material-symbols-outlined text-[18px]">savings</span>Metas de ahorro</span>
+      <span class="opacity-30">·</span>
+      <span class="flex items-center gap-2"><span class="material-symbols-outlined text-[18px]">ios_share</span>Exportar a Excel y PDF</span>
+      <span class="opacity-30">·</span>
+      <span class="flex items-center gap-2"><span class="material-symbols-outlined text-[18px]">category</span>Categorías personalizadas</span>
+      <span class="opacity-30">·</span>
     </div>
   </div>
 </div>
@@ -239,6 +314,50 @@
         <p class="text-on-surface-variant text-sm leading-relaxed">
           Descarga tus movimientos en Excel o PDF cuando quieras, listos para analizar o compartir donde prefieras.
         </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ PRÓXIMAMENTE: IA ═══════════ -->
+<section id="proximamente" class="py-24 px-6 md:px-10 relative overflow-hidden">
+  <div class="max-w-6xl mx-auto reveal">
+    <div class="relative overflow-hidden bg-primary rounded-[32px] px-8 py-16 md:px-16 md:py-20 text-center">
+      <div class="blob w-[420px] h-[420px] bg-secondary-fixed top-[-140px] left-[-100px] opacity-[0.18]"></div>
+      <div class="blob w-[360px] h-[360px] bg-secondary bottom-[-140px] right-[-90px] opacity-[0.22]"></div>
+
+      <div class="relative z-10 max-w-2xl mx-auto">
+        <div class="inline-flex items-center gap-2 bg-white/8 border border-white/15 px-5 py-2 rounded-full text-secondary-fixed font-bold text-xs tracking-wide uppercase mb-8">
+          <span class="material-symbols-outlined text-[16px]" style="font-variation-settings:'FILL' 1;">auto_awesome</span>
+          Próximamente
+        </div>
+        <h2 class="font-display text-3xl md:text-[44px] font-extrabold text-white mb-6 leading-tight tracking-tight">
+          Recomendaciones inteligentes<br class="hidden md:block"/> con <span class="text-secondary-fixed">IA</span>
+        </h2>
+        <p class="text-white/70 text-base md:text-lg leading-relaxed mb-12 max-w-xl mx-auto">
+          Monedo aprenderá de tus hábitos financieros para sugerirte, de forma personalizada, en qué optimizar tus gastos y cómo alcanzar tus metas de ahorro más rápido.
+        </p>
+
+        <div class="grid sm:grid-cols-3 gap-6 text-left">
+          <div class="flex items-start gap-3">
+            <div class="w-9 h-9 rounded-lg bg-white/8 flex items-center justify-center flex-none">
+              <span class="material-symbols-outlined text-secondary-fixed text-[18px]">query_stats</span>
+            </div>
+            <p class="text-white/80 text-sm leading-snug">Detecta patrones en tus gastos</p>
+          </div>
+          <div class="flex items-start gap-3">
+            <div class="w-9 h-9 rounded-lg bg-white/8 flex items-center justify-center flex-none">
+              <span class="material-symbols-outlined text-secondary-fixed text-[18px]">tips_and_updates</span>
+            </div>
+            <p class="text-white/80 text-sm leading-snug">Sugerencias hechas a tu medida</p>
+          </div>
+          <div class="flex items-start gap-3">
+            <div class="w-9 h-9 rounded-lg bg-white/8 flex items-center justify-center flex-none">
+              <span class="material-symbols-outlined text-secondary-fixed text-[18px]">savings</span>
+            </div>
+            <p class="text-white/80 text-sm leading-snug">Alertas para ahorrar más</p>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -566,45 +685,31 @@
   </div>
 </section>
 
-<!-- ═══════════ PRÓXIMAMENTE: IA ═══════════ -->
-<section id="proximamente" class="py-24 px-6 md:px-10 relative overflow-hidden">
-  <div class="max-w-6xl mx-auto reveal">
-    <div class="relative overflow-hidden bg-primary rounded-[32px] px-8 py-16 md:px-16 md:py-20 text-center">
-      <div class="blob w-[420px] h-[420px] bg-secondary-fixed top-[-140px] left-[-100px] opacity-[0.18]"></div>
-      <div class="blob w-[360px] h-[360px] bg-secondary bottom-[-140px] right-[-90px] opacity-[0.22]"></div>
-
-      <div class="relative z-10 max-w-2xl mx-auto">
-        <div class="inline-flex items-center gap-2 bg-white/8 border border-white/15 px-5 py-2 rounded-full text-secondary-fixed font-bold text-xs tracking-wide uppercase mb-8">
-          <span class="material-symbols-outlined text-[16px]" style="font-variation-settings:'FILL' 1;">auto_awesome</span>
-          Próximamente
+<!-- ═══════════ DESCARGAR PARA ANDROID ═══════════ -->
+<section id="descargar" class="py-24 px-6 md:px-10">
+  <div class="max-w-5xl mx-auto reveal">
+    <div class="relative overflow-hidden bg-surface-container-lowest border border-outline-variant/40 rounded-[32px] px-8 py-14 md:px-16 md:py-16 flex flex-col md:flex-row items-center gap-10">
+      <div class="blob w-[280px] h-[280px] bg-secondary-container top-[-80px] right-[-60px] opacity-[0.35]"></div>
+      <div class="relative z-10 flex-1 text-center md:text-left">
+        <div class="inline-flex items-center gap-2 bg-secondary-container/60 px-4 py-1.5 rounded-full text-on-secondary-container text-xs font-bold uppercase tracking-wide mb-5">
+          <span class="material-symbols-outlined text-[16px]">android</span>
+          App nativa para Android
         </div>
-        <h2 class="font-display text-3xl md:text-[44px] font-extrabold text-white mb-6 leading-tight tracking-tight">
-          Recomendaciones inteligentes<br class="hidden md:block"/> con <span class="text-secondary-fixed">IA</span>
+        <h2 class="font-display text-3xl md:text-4xl font-extrabold text-primary mb-4 leading-tight">
+          Llévate Monedo<br class="hidden md:block"/> en tu bolsillo
         </h2>
-        <p class="text-white/70 text-base md:text-lg leading-relaxed mb-12 max-w-xl mx-auto">
-          Monedo aprenderá de tus hábitos financieros para sugerirte, de forma personalizada, en qué optimizar tus gastos y cómo alcanzar tus metas de ahorro más rápido.
+        <p class="text-on-surface-variant text-base leading-relaxed mb-8 max-w-md mx-auto md:mx-0">
+          Descarga el APK e instálalo directamente en tu Android — próximamente también en Play Store. Sin cuentas nuevas: entra con el mismo usuario que ya tienes.
         </p>
-
-        <div class="grid sm:grid-cols-3 gap-6 text-left">
-          <div class="flex items-start gap-3">
-            <div class="w-9 h-9 rounded-lg bg-white/8 flex items-center justify-center flex-none">
-              <span class="material-symbols-outlined text-secondary-fixed text-[18px]">query_stats</span>
-            </div>
-            <p class="text-white/80 text-sm leading-snug">Detecta patrones en tus gastos</p>
-          </div>
-          <div class="flex items-start gap-3">
-            <div class="w-9 h-9 rounded-lg bg-white/8 flex items-center justify-center flex-none">
-              <span class="material-symbols-outlined text-secondary-fixed text-[18px]">tips_and_updates</span>
-            </div>
-            <p class="text-white/80 text-sm leading-snug">Sugerencias hechas a tu medida</p>
-          </div>
-          <div class="flex items-start gap-3">
-            <div class="w-9 h-9 rounded-lg bg-white/8 flex items-center justify-center flex-none">
-              <span class="material-symbols-outlined text-secondary-fixed text-[18px]">savings</span>
-            </div>
-            <p class="text-white/80 text-sm leading-snug">Alertas para ahorrar más</p>
-          </div>
-        </div>
+        <a href="https://github.com/Ericknvp/monedo/releases/download/v2.2.0/monedo.apk" download
+           class="inline-flex items-center gap-3 bg-secondary text-on-secondary h-14 px-8 rounded-full font-semibold text-base shadow-lg shadow-secondary/25 hover:scale-105 active:scale-95 transition-all">
+          <span class="material-symbols-outlined text-[22px]">download</span>
+          Descargar APK
+        </a>
+        <p class="mt-4 text-on-surface-variant text-xs">v2.2.0 · ~62 MB · Android 6.0 o superior</p>
+      </div>
+      <div class="relative z-10 flex-none">
+        <span class="float-icon material-symbols-outlined text-secondary text-[120px] md:text-[160px]" style="font-variation-settings:'FILL' 1;">android</span>
       </div>
     </div>
   </div>

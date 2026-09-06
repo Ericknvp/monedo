@@ -32,8 +32,8 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
   final List<Color> _chartColors = [
     AppTheme.primary,
     AppTheme.secondary,
-    const Color(0xFF3F6376),
-    AppTheme.secondaryFixed,
+    const Color(0xFF0EA5E9),
+    const Color(0xFF14B8A6),
     const Color(0xFF06B6D4),
     const Color(0xFFF59E0B),
     const Color(0xFFEC4899),
@@ -48,6 +48,13 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
           _selectedMonth--;
         }
       });
+
+  /// Cambio porcentual de [current] respecto a [previous]. Null si no hay
+  /// una base válida para comparar (mes anterior en cero).
+  double? _pctChange(double current, double previous) {
+    if (previous == 0) return null;
+    return ((current - previous) / previous) * 100;
+  }
 
   void _nextMonth() => setState(() {
         if (_selectedMonth == 12) {
@@ -83,12 +90,32 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
               final balance = income - expenses;
               final categoryData = _txService.getExpensesByCategory(tx);
 
-              if (isDesktop) {
-                return _buildDesktopLayout(
-                    userId, income, expenses, balance, categoryData);
-              }
-              return _buildMobileLayout(
-                  userId, income, expenses, balance, categoryData);
+              final prevMonthDate =
+                  DateTime(_selectedYear, _selectedMonth - 1, 1);
+
+              return StreamBuilder<List<TransactionModel>>(
+                stream: _txService.getTransactionsByMonth(
+                    userId, prevMonthDate.year, prevMonthDate.month),
+                builder: (context, prevSnap) {
+                  final prevTx = prevSnap.data ?? [];
+                  final prevIncome = _txService.calculateIncome(prevTx);
+                  final prevExpenses = _txService.calculateExpenses(prevTx);
+                  final prevBalance = prevIncome - prevExpenses;
+
+                  final incomeChange = _pctChange(income, prevIncome);
+                  final expensesChange = _pctChange(expenses, prevExpenses);
+                  final balanceChange = _pctChange(balance, prevBalance);
+
+                  if (isDesktop) {
+                    return _buildDesktopLayout(userId, income, expenses,
+                        balance, categoryData, incomeChange, expensesChange,
+                        balanceChange);
+                  }
+                  return _buildMobileLayout(userId, income, expenses, balance,
+                      categoryData, incomeChange, expensesChange,
+                      balanceChange);
+                },
+              );
             },
           ),
         ],
@@ -170,6 +197,9 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
     double expenses,
     double balance,
     Map<String, double> categoryData,
+    double? incomeChange,
+    double? expensesChange,
+    double? balanceChange,
   ) {
     return Column(
       children: [
@@ -188,20 +218,23 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
               child: Column(
                 children: [
                   _summaryCard('Ingresos', income, Icons.trending_up_rounded,
-                      AppTheme.secondaryContainer.withOpacity(0.5),
-                      AppTheme.onSecondaryContainer),
+                      AppTheme.secondaryContainer.withOpacity(0.7),
+                      AppTheme.onSecondaryContainer,
+                      changePercent: incomeChange),
                   const SizedBox(height: 16),
                   _summaryCard('Gastos', expenses, Icons.trending_down_rounded,
-                      AppTheme.errorContainer.withOpacity(0.3), AppTheme.errorRed),
+                      AppTheme.errorContainer.withOpacity(0.45), AppTheme.errorRed,
+                      changePercent: expensesChange, higherIsBetter: false),
                   const SizedBox(height: 16),
                   _summaryCard(
                     'Balance',
                     balance,
                     Icons.account_balance_wallet_rounded,
                     balance >= 0
-                        ? AppTheme.secondaryContainer.withOpacity(0.4)
-                        : AppTheme.errorContainer.withOpacity(0.3),
+                        ? AppTheme.secondaryContainer.withOpacity(0.6)
+                        : AppTheme.errorContainer.withOpacity(0.45),
                     balance >= 0 ? AppTheme.secondary : AppTheme.errorRed,
+                    changePercent: balanceChange,
                   ),
                 ],
               ),
@@ -220,22 +253,30 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
     double expenses,
     double balance,
     Map<String, double> categoryData,
+    double? incomeChange,
+    double? expensesChange,
+    double? balanceChange,
   ) {
     return Column(
       children: [
-        Row(
-          children: [
-            Expanded(
-              child: _summaryCard('Ingresos', income, Icons.trending_up_rounded,
-                  AppTheme.secondaryContainer.withOpacity(0.5),
-                  AppTheme.onSecondaryContainer),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _summaryCard('Gastos', expenses, Icons.trending_down_rounded,
-                  AppTheme.errorContainer.withOpacity(0.3), AppTheme.errorRed),
-            ),
-          ],
+        IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Expanded(
+                child: _summaryCard('Ingresos', income, Icons.trending_up_rounded,
+                    AppTheme.secondaryContainer.withOpacity(0.7),
+                    AppTheme.onSecondaryContainer,
+                    changePercent: incomeChange),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _summaryCard('Gastos', expenses, Icons.trending_down_rounded,
+                    AppTheme.errorContainer.withOpacity(0.45), AppTheme.errorRed,
+                    changePercent: expensesChange, higherIsBetter: false),
+              ),
+            ],
+          ),
         ),
         const SizedBox(height: 12),
         _summaryCard(
@@ -243,9 +284,10 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
           balance,
           Icons.account_balance_wallet_rounded,
           balance >= 0
-              ? AppTheme.secondaryContainer.withOpacity(0.4)
-              : AppTheme.errorContainer.withOpacity(0.3),
+              ? AppTheme.secondaryContainer.withOpacity(0.6)
+              : AppTheme.errorContainer.withOpacity(0.45),
           balance >= 0 ? AppTheme.secondary : AppTheme.errorRed,
+          changePercent: balanceChange,
         ),
         const SizedBox(height: 24),
         _buildDonutCard(income, expenses, categoryData),
@@ -303,6 +345,54 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
               ),
             ],
           ),
+          if (categoryData.isNotEmpty) ...[
+            const SizedBox(height: 14),
+            Builder(builder: (context) {
+              final top = categoryData.entries
+                  .reduce((a, b) => a.value >= b.value ? a : b);
+              final topColor = _chartColors[
+                  categoryData.keys.toList().indexOf(top.key) %
+                      _chartColors.length];
+              return Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                decoration: BoxDecoration(
+                  color: topColor.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.local_fire_department_rounded,
+                        color: topColor, size: 18),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text.rich(
+                        TextSpan(
+                          style: GoogleFonts.beVietnamPro(
+                            color: AppTheme.onSurfaceVariant,
+                            fontSize: 13,
+                          ),
+                          children: [
+                            TextSpan(
+                              text: top.key,
+                              style: const TextStyle(fontWeight: FontWeight.w700),
+                            ),
+                            const TextSpan(text: ' es tu mayor gasto: '),
+                            TextSpan(
+                              text: CurrencyFormatter.format(top.value),
+                              style: TextStyle(
+                                  fontWeight: FontWeight.w700, color: topColor),
+                            ),
+                          ],
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }),
+          ],
           const SizedBox(height: 28),
           Builder(builder: (context) {
             final entries = categoryData.entries.toList();
@@ -487,17 +577,38 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
   }
 
   Widget _summaryCard(
-      String title, double amount, IconData icon, Color bg, Color color) {
+    String title,
+    double amount,
+    IconData icon,
+    Color bg,
+    Color color, {
+    double? changePercent,
+    bool higherIsBetter = true,
+  }) {
+    final hasChange = changePercent != null && changePercent.isFinite;
+    final isGood = hasChange &&
+        (higherIsBetter ? changePercent >= 0 : changePercent <= 0);
+
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.fromLTRB(14, 18, 18, 18),
       decoration: BoxDecoration(
         color: AppTheme.surfaceContainerLow,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: AppTheme.surfaceVariant),
       ),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          Container(
+            width: 4,
+            height: 44,
+            margin: const EdgeInsets.only(right: 12),
+            decoration: BoxDecoration(
+              color: color,
+              borderRadius: BorderRadius.circular(4),
+            ),
+          ),
           Container(
             width: 44,
             height: 44,
@@ -505,22 +616,55 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
             child: Icon(icon, color: color, size: 22),
           ),
           const SizedBox(width: 14),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(title,
-                  style: GoogleFonts.beVietnamPro(
-                      color: AppTheme.onSurfaceVariant, fontSize: 12)),
-              const SizedBox(height: 2),
-              Text(
-                CurrencyFormatter.format(amount),
-                style: GoogleFonts.plusJakartaSans(
-                  color: color,
-                  fontSize: 18,
-                  fontWeight: FontWeight.w700,
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title,
+                    style: GoogleFonts.beVietnamPro(
+                        color: AppTheme.onSurfaceVariant,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600)),
+                const SizedBox(height: 3),
+                Text(
+                  CurrencyFormatter.format(amount),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: GoogleFonts.plusJakartaSans(
+                    color: color,
+                    fontSize: 20,
+                    fontWeight: FontWeight.w800,
+                  ),
                 ),
-              ),
-            ],
+                if (hasChange) ...[
+                  const SizedBox(height: 4),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        changePercent >= 0
+                            ? Icons.arrow_upward_rounded
+                            : Icons.arrow_downward_rounded,
+                        size: 13,
+                        color: isGood ? AppTheme.secondary : AppTheme.errorRed,
+                      ),
+                      const SizedBox(width: 2),
+                      Flexible(
+                        child: Text(
+                          '${changePercent.abs().toStringAsFixed(0)}% vs mes ant.',
+                          overflow: TextOverflow.ellipsis,
+                          style: GoogleFonts.beVietnamPro(
+                            color: isGood ? AppTheme.secondary : AppTheme.errorRed,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ],
+            ),
           ),
         ],
       ),

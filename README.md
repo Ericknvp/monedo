@@ -16,25 +16,30 @@ Monedo permite registrar y visualizar movimientos financieros de forma clara e i
 
 ## Funcionalidades
 
-- Registro de ingresos y gastos con categoría, fecha y nota opcional
+- Cuentas de dinero (efectivo, banco, billeteras) con saldo propio, transferencias entre ellas y resumen "Dónde está tu dinero" en el dashboard
+- Registro de ingresos y gastos con cuenta, categoría, fecha y nota opcional
+- Categorías personalizadas con selector de ícono, además de las categorías por defecto
+- Advertencia de fondos insuficientes al registrar un gasto que dejaría una cuenta en negativo
 - Edición y eliminación de movimientos
 - Filtros por tipo: Todos, Ingresos, Gastos
 - Balance actual con desglose mensual de ingresos y gastos
 - Estadísticas mensuales con selector de mes
 - Gráfica de torta de gastos por categoría
 - Estadísticas semanales
-- Metas de ahorro con progreso visual y descuento automático del balance
+- Metas de ahorro con progreso visual, descuento automático del balance de la cuenta elegida e historial de aportes por meta
+- Exportación de movimientos a Excel y PDF, con la marca Monedo
 - Selector de moneda (USD, COP, EUR, MXN, ARS, CLP, PEN, BRL, GBP) al registrarse, editable luego desde "Acerca de" y aplicado en tiempo real a toda la app
 - Formato de moneda con separador de miles, incluido en vivo mientras se escribe un monto
-- Onboarding con slides explicativos de cada sección (Dashboard, Transacciones, Estadísticas, Metas), una vez por dispositivo y siempre tras un registro nuevo
-- Notificaciones flotantes (toast) con animación, arriba a la derecha en escritorio y arriba centradas en móvil
+- Onboarding con bienvenida y tour explicativo antes de crear la cuenta, seguido de selección de moneda y primeras cuentas al terminar el registro
+- Notificaciones flotantes (toast) con animación, arriba a la derecha en escritorio y arriba centradas en móvil, en toda la app
+- "Mis cuentas", "Mis categorías" y "Exportar datos" se abren como ventana modal centrada en escritorio, y a pantalla completa en móvil
 - Confirmación antes de cerrar sesión y al eliminar movimientos
-- Landing page pública con presentación de características, sección "Cómo funciona" y sección "Próximamente" (recomendaciones con IA)
+- Landing page pública con características, sección "Cómo funciona" (incluye cuentas y exportación), y sección "Próximamente" (recomendaciones con IA)
 - Redirección automática a landing en web cuando no hay sesión activa
 - Pantalla "Acerca de" con información del creador, enlaces externos y preferencias de moneda
 - Diseño responsive — funciona en Android y Web
-- Ícono de Android adaptativo (se adapta a la forma del launcher del dispositivo)
-- Soporte PWA con favicon e iconos de aplicación personalizados
+- Ícono de Android adaptativo con fondo blanco para resaltar el logo
+- Soporte PWA con favicon e iconos de aplicación personalizados; ícono de iPhone (acceso directo desde Safari) con fondo blanco a juego con el de Android
 
 ## Paleta de colores
 
@@ -75,6 +80,26 @@ Tipografía: **Plus Jakarta Sans** (encabezados y cuerpo) / **Be Vietnam Pro** (
 [Descargar Monedo v1.0](https://github.com/Ericknvp/monedo/releases/tag/v1.0)
 
 ## Changelog
+
+### v2.2.0 — Septiembre 2026
+
+- **Cuentas**: nuevo sistema de cuentas de dinero (efectivo, banco, billeteras) con saldo propio; cada movimiento se registra desde una cuenta específica y se puede transferir entre cuentas
+- Migración automática del saldo histórico al crear la primera cuenta, para que el dinero registrado antes de esta función no desaparezca
+- Advertencia de fondos insuficientes al registrar un gasto que dejaría una cuenta en negativo
+- Resumen "Dónde está tu dinero" en el dashboard, con acceso directo para agregar o editar cuentas
+- Categorías personalizadas con selector de ícono propio
+- Exportación de movimientos a Excel y PDF con la marca Monedo
+- Historial de aportes por meta: al tocar una meta se ve la fecha y el monto de cada abono, con el nombre de la meta en el encabezado
+- Onboarding reordenado: bienvenida y tour explicativo antes de crear la cuenta de usuario; selección de moneda y primeras cuentas de dinero justo después del registro
+- Usuarios existentes sin moneda o cuentas configuradas reciben el mismo flujo de configuración una sola vez, al iniciar sesión
+- Todas las notificaciones de la app (errores, validaciones, confirmaciones) migradas al sistema de toasts, reemplazando los SnackBar
+- "Mis cuentas", "Mis categorías" y "Exportar datos" ahora se abren como ventana modal centrada en escritorio, en vez de pantalla completa
+- Corregida la alineación entre los campos de Categoría y Fecha en Nuevo/Editar movimiento
+- Corregido un desbordamiento visual en las tarjetas de cuentas del dashboard
+- Ícono de Android con fondo blanco para que el logo resalte (antes se veía como un círculo verde sólido)
+- Ícono de iPhone (acceso directo desde Safari) con el mismo tratamiento de fondo blanco; el favicon y los íconos de Android/Chrome conservan el diseño original
+- Landing page: nuevas secciones de características (Cuentas y Transferencias, Multi-moneda, Exportar tus datos) y nuevos pasos en "Cómo funciona"
+- Corregido texto que se salía del contenedor en la sección "Sobre Monedo" en pantallas angostas de Android
 
 ### v2.1.0 — Septiembre 2026
 
