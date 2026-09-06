@@ -18,6 +18,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
   final _txService = TransactionService();
   int _selectedMonth = DateTime.now().month;
   int _selectedYear = DateTime.now().year;
+  int? _touchedIndex;
 
   static const _months = [
     'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
@@ -303,95 +304,183 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
             ],
           ),
           const SizedBox(height: 28),
-          SizedBox(
-            height: 260,
-            child: Stack(
+          Builder(builder: (context) {
+            final entries = categoryData.entries.toList();
+            final hasTouch =
+                _touchedIndex != null && _touchedIndex! < entries.length;
+            final touchedEntry = hasTouch ? entries[_touchedIndex!] : null;
+            final touchedColor = hasTouch
+                ? _chartColors[_touchedIndex! % _chartColors.length]
+                : null;
+
+            return Column(
               children: [
-                PieChart(
-                  PieChartData(
-                    sections: categoryData.entries
-                        .toList()
-                        .asMap()
-                        .entries
-                        .map((e) {
-                      final idx = e.key;
-                      final cat = e.value;
-                      return PieChartSectionData(
-                        value: cat.value,
-                        title: expenses > 0
-                            ? '${(cat.value / expenses * 100).toStringAsFixed(0)}%'
-                            : '',
-                        color: _chartColors[idx % _chartColors.length],
-                        radius: 90,
-                        titleStyle: GoogleFonts.plusJakartaSans(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w700,
-                          fontSize: 12,
-                        ),
-                      );
-                    }).toList(),
-                    sectionsSpace: 2,
-                    centerSpaceRadius: 60,
-                  ),
-                ),
-                // Center text
-                Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
+                SizedBox(
+                  height: 260,
+                  child: Stack(
                     children: [
-                      Text(
-                        'Total gastado',
-                        style: GoogleFonts.beVietnamPro(
-                          color: AppTheme.onSurfaceVariant,
-                          fontSize: 11,
-                          letterSpacing: 0.5,
+                      PieChart(
+                        PieChartData(
+                          pieTouchData: PieTouchData(
+                            touchCallback: (event, response) {
+                              final idx =
+                                  response?.touchedSection?.touchedSectionIndex;
+                              setState(() {
+                                _touchedIndex = (event.isInterestedForInteractions &&
+                                        idx != null &&
+                                        idx >= 0)
+                                    ? idx
+                                    : null;
+                              });
+                            },
+                          ),
+                          sections: entries.asMap().entries.map((e) {
+                            final idx = e.key;
+                            final cat = e.value;
+                            final isTouched = idx == _touchedIndex;
+                            return PieChartSectionData(
+                              value: cat.value,
+                              title: expenses > 0
+                                  ? '${(cat.value / expenses * 100).toStringAsFixed(0)}%'
+                                  : '',
+                              color: _chartColors[idx % _chartColors.length],
+                              radius: isTouched ? 98 : 90,
+                              titleStyle: GoogleFonts.plusJakartaSans(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w700,
+                                fontSize: isTouched ? 13 : 12,
+                              ),
+                            );
+                          }).toList(),
+                          sectionsSpace: 2,
+                          centerSpaceRadius: 60,
                         ),
                       ),
-                      const SizedBox(height: 4),
-                      Text(
-                        CurrencyFormatter.format(expenses),
-                        style: GoogleFonts.plusJakartaSans(
-                          color: AppTheme.primary,
-                          fontSize: 18,
-                          fontWeight: FontWeight.w700,
-                        ),
+                      // Center text: detalle de la categoría en hover/tap,
+                      // o el total gastado por defecto.
+                      Center(
+                        child: touchedEntry != null
+                            ? Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Container(
+                                    width: 10,
+                                    height: 10,
+                                    decoration: BoxDecoration(
+                                      color: touchedColor,
+                                      shape: BoxShape.circle,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 6),
+                                  Text(
+                                    touchedEntry.key,
+                                    textAlign: TextAlign.center,
+                                    style: GoogleFonts.beVietnamPro(
+                                      color: AppTheme.onSurfaceVariant,
+                                      fontSize: 11,
+                                      letterSpacing: 0.5,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    CurrencyFormatter.format(touchedEntry.value),
+                                    style: GoogleFonts.plusJakartaSans(
+                                      color: AppTheme.primary,
+                                      fontSize: 17,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                  Text(
+                                    expenses > 0
+                                        ? '${(touchedEntry.value / expenses * 100).toStringAsFixed(0)}% del total'
+                                        : '',
+                                    style: GoogleFonts.beVietnamPro(
+                                      color: AppTheme.outline,
+                                      fontSize: 10,
+                                    ),
+                                  ),
+                                ],
+                              )
+                            : Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    'Total gastado',
+                                    style: GoogleFonts.beVietnamPro(
+                                      color: AppTheme.onSurfaceVariant,
+                                      fontSize: 11,
+                                      letterSpacing: 0.5,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    CurrencyFormatter.format(expenses),
+                                    style: GoogleFonts.plusJakartaSans(
+                                      color: AppTheme.primary,
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                ],
+                              ),
                       ),
                     ],
                   ),
                 ),
+                const SizedBox(height: 24),
+                Wrap(
+                  spacing: 16,
+                  runSpacing: 10,
+                  children: entries.asMap().entries.map((e) {
+                    final idx = e.key;
+                    final cat = e.value;
+                    final isTouched = idx == _touchedIndex;
+                    return GestureDetector(
+                      onTap: () => setState(
+                          () => _touchedIndex = isTouched ? null : idx),
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 150),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: isTouched
+                              ? AppTheme.surfaceContainer
+                              : Colors.transparent,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              width: 10,
+                              height: 10,
+                              decoration: BoxDecoration(
+                                color: _chartColors[idx % _chartColors.length],
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              '${cat.key}: ${CurrencyFormatter.format(cat.value)}',
+                              style: GoogleFonts.beVietnamPro(
+                                color: isTouched
+                                    ? AppTheme.primary
+                                    : AppTheme.onSurfaceVariant,
+                                fontSize: 12,
+                                fontWeight: isTouched
+                                    ? FontWeight.w700
+                                    : FontWeight.w400,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                ),
               ],
-            ),
-          ),
-          const SizedBox(height: 24),
-          Wrap(
-            spacing: 16,
-            runSpacing: 10,
-            children: categoryData.entries.toList().asMap().entries.map((e) {
-              final idx = e.key;
-              final cat = e.value;
-              return Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    width: 10,
-                    height: 10,
-                    decoration: BoxDecoration(
-                      color: _chartColors[idx % _chartColors.length],
-                      shape: BoxShape.circle,
-                    ),
-                  ),
-                  const SizedBox(width: 6),
-                  Text(
-                    '${cat.key}: ${CurrencyFormatter.format(cat.value)}',
-                    style: GoogleFonts.beVietnamPro(
-                      color: AppTheme.onSurfaceVariant,
-                      fontSize: 12,
-                    ),
-                  ),
-                ],
-              );
-            }).toList(),
-          ),
+            );
+          }),
         ],
       ),
     );

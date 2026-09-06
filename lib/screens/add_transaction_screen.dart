@@ -219,6 +219,22 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      Container(
+                        width: 48,
+                        height: 48,
+                        decoration: BoxDecoration(
+                          color: AppTheme.secondary.withOpacity(0.12),
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        child: Icon(
+                          isEditing
+                              ? Icons.edit_note_rounded
+                              : Icons.receipt_long_rounded,
+                          color: AppTheme.secondary,
+                          size: 24,
+                        ),
+                      ),
+                      const SizedBox(width: 16),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -307,7 +323,10 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
 
               _textField(_noteCtrl, 'Nota (opcional)',
                   icon: Icons.note_outlined, maxLines: 3),
-              const SizedBox(height: 32),
+              const SizedBox(height: 28),
+
+              Divider(height: 1, color: AppTheme.surfaceVariant),
+              const SizedBox(height: 24),
 
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
@@ -394,16 +413,46 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
   }
 
   Widget _buildTypeSelector() {
+    final selectedColor = _isIncome ? AppTheme.secondary : AppTheme.errorRed;
     return Container(
+      height: 52,
       decoration: BoxDecoration(
         color: AppTheme.surfaceContainer,
         borderRadius: BorderRadius.circular(100),
       ),
       padding: const EdgeInsets.all(4),
-      child: Row(
+      child: Stack(
         children: [
-          Expanded(child: _typeBtn('Gasto', false)),
-          Expanded(child: _typeBtn('Ingreso', true)),
+          LayoutBuilder(
+            builder: (context, constraints) {
+              return AnimatedAlign(
+                duration: const Duration(milliseconds: 280),
+                curve: Curves.easeOutCubic,
+                alignment:
+                    _isIncome ? Alignment.centerRight : Alignment.centerLeft,
+                child: Container(
+                  width: constraints.maxWidth / 2,
+                  decoration: BoxDecoration(
+                    color: selectedColor,
+                    borderRadius: BorderRadius.circular(100),
+                    boxShadow: [
+                      BoxShadow(
+                        color: selectedColor.withOpacity(0.35),
+                        blurRadius: 10,
+                        offset: const Offset(0, 3),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+          Row(
+            children: [
+              Expanded(child: _typeBtn('Gasto', false)),
+              Expanded(child: _typeBtn('Ingreso', true)),
+            ],
+          ),
         ],
       ),
     );
@@ -411,26 +460,34 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
 
   Widget _typeBtn(String label, bool isIncome) {
     final isSelected = _isIncome == isIncome;
-    final selectedBg = isIncome ? AppTheme.secondary : AppTheme.errorRed;
+    final icon =
+        isIncome ? Icons.trending_up_rounded : Icons.trending_down_rounded;
     return GestureDetector(
       onTap: () => setState(() => _isIncome = isIncome),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 180),
-        padding: const EdgeInsets.symmetric(vertical: 13),
-        decoration: BoxDecoration(
-          color: isSelected ? selectedBg : Colors.transparent,
-          borderRadius: BorderRadius.circular(100),
-        ),
-        child: Center(
-          child: Text(
-            label,
+      behavior: HitTestBehavior.opaque,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          AnimatedSwitcher(
+            duration: const Duration(milliseconds: 200),
+            child: Icon(
+              icon,
+              key: ValueKey(isSelected),
+              size: 16,
+              color: isSelected ? Colors.white : AppTheme.onSurfaceVariant,
+            ),
+          ),
+          const SizedBox(width: 6),
+          AnimatedDefaultTextStyle(
+            duration: const Duration(milliseconds: 200),
             style: GoogleFonts.plusJakartaSans(
               color: isSelected ? Colors.white : AppTheme.onSurfaceVariant,
               fontWeight: FontWeight.w700,
               fontSize: 14,
             ),
+            child: Text(label),
           ),
-        ),
+        ],
       ),
     );
   }
