@@ -10,6 +10,7 @@ import '../theme/app_theme.dart';
 import '../utils/currency_formatter.dart';
 import '../utils/category_colors.dart';
 import '../utils/category_icons.dart';
+import 'budgets_screen.dart';
 
 class StatisticsScreen extends StatefulWidget {
   const StatisticsScreen({super.key});
@@ -338,12 +339,82 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
     );
   }
 
+  // Nadie tiene presupuestos configurados todavía: en vez de ocultar la
+  // sección, recomienda la función para que la gente sepa que existe.
+  Widget _buildBudgetsPromoCard() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: AppTheme.secondaryContainer.withOpacity(0.2),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppTheme.secondary.withOpacity(0.3)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              color: AppTheme.secondary.withOpacity(0.15),
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: const Icon(Icons.pie_chart_outline_rounded,
+                color: AppTheme.secondary, size: 22),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Prueba los presupuestos por categoría',
+                  style: GoogleFonts.plusJakartaSans(
+                    color: AppTheme.primary,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Fija un límite mensual a las categorías que quieras y aquí verás tu progreso, con aviso cuando te acerques o lo superes.',
+                  style: GoogleFonts.beVietnamPro(
+                    color: AppTheme.onSurfaceVariant,
+                    fontSize: 13,
+                    height: 1.4,
+                  ),
+                ),
+                const SizedBox(height: 14),
+                ElevatedButton.icon(
+                  onPressed: () => openBudgetsScreen(context),
+                  icon: const Icon(Icons.add_circle_outline_rounded, size: 17),
+                  label: const Text('Configurar presupuestos'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppTheme.secondary,
+                    foregroundColor: Colors.white,
+                    shape: const StadiumBorder(),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                    elevation: 0,
+                    textStyle: GoogleFonts.beVietnamPro(
+                        fontSize: 13, fontWeight: FontWeight.w600),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildBudgetsCard(String userId, Map<String, double> categoryData) {
     return StreamBuilder<List<BudgetModel>>(
       stream: _budgetService.getBudgets(userId),
       builder: (context, snap) {
         final budgets = snap.data ?? [];
-        if (budgets.isEmpty) return const SizedBox.shrink();
+        if (budgets.isEmpty) return _buildBudgetsPromoCard();
 
         return Container(
           width: double.infinity,
