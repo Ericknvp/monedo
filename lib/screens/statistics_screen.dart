@@ -124,7 +124,50 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
   }
 
   Widget _buildMonthSelector(bool isDesktop) {
-    final now = DateTime.now();
+    // En móvil no hay espacio para las 5 píldoras del selector de
+    // escritorio (la última se sale del contenedor); se usa un selector
+    // compacto de flechas en su lugar.
+    if (!isDesktop) {
+      return Center(
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
+          decoration: BoxDecoration(
+            color: AppTheme.surfaceContainer,
+            borderRadius: BorderRadius.circular(100),
+            border: Border.all(color: AppTheme.outlineVariant.withOpacity(0.3)),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              IconButton(
+                onPressed: _prevMonth,
+                icon: const Icon(Icons.chevron_left_rounded),
+                color: AppTheme.onSurfaceVariant,
+                visualDensity: VisualDensity.compact,
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 4),
+                child: Text(
+                  '${_months[_selectedMonth - 1]} $_selectedYear',
+                  style: GoogleFonts.beVietnamPro(
+                    color: AppTheme.primary,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+              IconButton(
+                onPressed: _nextMonth,
+                icon: const Icon(Icons.chevron_right_rounded),
+                color: AppTheme.onSurfaceVariant,
+                visualDensity: VisualDensity.compact,
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
     final prev1 = DateTime(_selectedYear, _selectedMonth - 1, 1);
     final prev2 = DateTime(_selectedYear, _selectedMonth - 2, 1);
     final next1 = DateTime(_selectedYear, _selectedMonth + 1, 1);
@@ -259,24 +302,23 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
   ) {
     return Column(
       children: [
-        IntrinsicHeight(
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Expanded(
-                child: _summaryCard('Ingresos', income, Icons.trending_up_rounded,
-                    AppTheme.secondaryContainer.withOpacity(0.7),
-                    AppTheme.onSecondaryContainer,
-                    changePercent: incomeChange),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _summaryCard('Gastos', expenses, Icons.trending_down_rounded,
-                    AppTheme.errorContainer.withOpacity(0.45), AppTheme.errorRed,
-                    changePercent: expensesChange, higherIsBetter: false),
-              ),
-            ],
-          ),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: _summaryCard('Ingresos', income, Icons.trending_up_rounded,
+                  AppTheme.secondaryContainer.withOpacity(0.7),
+                  AppTheme.onSecondaryContainer,
+                  changePercent: incomeChange, compact: true),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: _summaryCard('Gastos', expenses, Icons.trending_down_rounded,
+                  AppTheme.errorContainer.withOpacity(0.45), AppTheme.errorRed,
+                  changePercent: expensesChange, higherIsBetter: false,
+                  compact: true),
+            ),
+          ],
         ),
         const SizedBox(height: 12),
         _summaryCard(
@@ -288,6 +330,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
               : AppTheme.errorContainer.withOpacity(0.45),
           balance >= 0 ? AppTheme.secondary : AppTheme.errorRed,
           changePercent: balanceChange,
+          compact: true,
         ),
         const SizedBox(height: 24),
         _buildDonutCard(income, expenses, categoryData),
@@ -361,31 +404,48 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Icon(Icons.local_fire_department_rounded,
                         color: topColor, size: 18),
                     const SizedBox(width: 10),
                     Expanded(
-                      child: Text.rich(
-                        TextSpan(
-                          style: GoogleFonts.beVietnamPro(
-                            color: AppTheme.onSurfaceVariant,
-                            fontSize: 13,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text.rich(
+                            TextSpan(
+                              style: GoogleFonts.beVietnamPro(
+                                color: AppTheme.onSurfaceVariant,
+                                fontSize: 13,
+                                fontWeight: FontWeight.w400,
+                              ),
+                              children: [
+                                TextSpan(
+                                  text: top.key,
+                                  style:
+                                      const TextStyle(fontWeight: FontWeight.w700),
+                                ),
+                                const TextSpan(text: ' es tu mayor gasto'),
+                              ],
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
                           ),
-                          children: [
-                            TextSpan(
-                              text: top.key,
-                              style: const TextStyle(fontWeight: FontWeight.w700),
+                          const SizedBox(height: 2),
+                          FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                              CurrencyFormatter.format(top.value),
+                              style: GoogleFonts.plusJakartaSans(
+                                color: topColor,
+                                fontSize: 15,
+                                fontWeight: FontWeight.w700,
+                              ),
                             ),
-                            const TextSpan(text: ' es tu mayor gasto: '),
-                            TextSpan(
-                              text: CurrencyFormatter.format(top.value),
-                              style: TextStyle(
-                                  fontWeight: FontWeight.w700, color: topColor),
-                            ),
-                          ],
-                        ),
-                        overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
                       ),
                     ),
                   ],
@@ -584,14 +644,43 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
     Color color, {
     double? changePercent,
     bool higherIsBetter = true,
+    bool compact = false,
   }) {
     final hasChange = changePercent != null && changePercent.isFinite;
     final isGood = hasChange &&
         (higherIsBetter ? changePercent >= 0 : changePercent <= 0);
 
+    final trendRow = FittedBox(
+      fit: BoxFit.scaleDown,
+      alignment: Alignment.centerLeft,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            (changePercent ?? 0) >= 0
+                ? Icons.arrow_upward_rounded
+                : Icons.arrow_downward_rounded,
+            size: 13,
+            color: isGood ? AppTheme.secondary : AppTheme.errorRed,
+          ),
+          const SizedBox(width: 2),
+          Text(
+            compact
+                ? '${(changePercent ?? 0).abs().toStringAsFixed(0)}%'
+                : '${(changePercent ?? 0).abs().toStringAsFixed(0)}% vs mes anterior',
+            style: GoogleFonts.beVietnamPro(
+              color: isGood ? AppTheme.secondary : AppTheme.errorRed,
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
+    );
+
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(14, 18, 18, 18),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: AppTheme.surfaceContainerLow,
         borderRadius: BorderRadius.circular(16),
@@ -602,20 +691,20 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
         children: [
           Container(
             width: 4,
-            height: 44,
-            margin: const EdgeInsets.only(right: 12),
+            height: 36,
+            margin: const EdgeInsets.only(right: 10),
             decoration: BoxDecoration(
               color: color,
               borderRadius: BorderRadius.circular(4),
             ),
           ),
           Container(
-            width: 44,
-            height: 44,
+            width: 36,
+            height: 36,
             decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(100)),
-            child: Icon(icon, color: color, size: 22),
+            child: Icon(icon, color: color, size: 18),
           ),
-          const SizedBox(width: 14),
+          const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -626,43 +715,26 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                         fontSize: 12,
                         fontWeight: FontWeight.w600)),
                 const SizedBox(height: 3),
-                Text(
-                  CurrencyFormatter.format(amount),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: GoogleFonts.plusJakartaSans(
-                    color: color,
-                    fontSize: 20,
-                    fontWeight: FontWeight.w800,
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    CurrencyFormatter.format(amount),
+                    style: GoogleFonts.plusJakartaSans(
+                      color: color,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w800,
+                    ),
                   ),
                 ),
-                if (hasChange) ...[
-                  const SizedBox(height: 4),
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        changePercent >= 0
-                            ? Icons.arrow_upward_rounded
-                            : Icons.arrow_downward_rounded,
-                        size: 13,
-                        color: isGood ? AppTheme.secondary : AppTheme.errorRed,
-                      ),
-                      const SizedBox(width: 2),
-                      Flexible(
-                        child: Text(
-                          '${changePercent.abs().toStringAsFixed(0)}% vs mes ant.',
-                          overflow: TextOverflow.ellipsis,
-                          style: GoogleFonts.beVietnamPro(
-                            color: isGood ? AppTheme.secondary : AppTheme.errorRed,
-                            fontSize: 11,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
+                // Alto siempre reservado para esta línea (haya o no dato del
+                // mes anterior) para que las cajas de Ingresos y Gastos, una
+                // al lado de la otra, siempre queden con la misma altura.
+                const SizedBox(height: 4),
+                SizedBox(
+                  height: 15,
+                  child: hasChange ? trendRow : null,
+                ),
               ],
             ),
           ),
