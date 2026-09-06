@@ -75,6 +75,15 @@ class CategoryService {
     for (final doc in colorSnap.docs) {
       await doc.reference.update({'category': newName});
     }
+
+    final budgetSnap = await _firestore
+        .collection('budgets')
+        .where('userId', isEqualTo: userId)
+        .where('category', isEqualTo: oldName)
+        .get();
+    for (final doc in budgetSnap.docs) {
+      await doc.reference.update({'category': newName});
+    }
   }
 
   // ---- Elimina una categoría personalizada ----

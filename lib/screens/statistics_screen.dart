@@ -11,6 +11,7 @@ import '../utils/currency_formatter.dart';
 import '../utils/category_colors.dart';
 import '../utils/category_icons.dart';
 import 'budgets_screen.dart';
+import '../widgets/budget_editor.dart';
 
 class StatisticsScreen extends StatefulWidget {
   const StatisticsScreen({super.key});
@@ -465,58 +466,70 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                         ? const Color(0xFFC98500)
                         : CategoryColors.forCategory(b.category));
 
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Icon(CategoryIconRegistry.iconFor(b.category),
-                              size: 16, color: barColor),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Text(
-                              b.category,
-                              style: GoogleFonts.beVietnamPro(
-                                color: AppTheme.primary,
-                                fontSize: 13,
-                                fontWeight: FontWeight.w600,
+                return InkWell(
+                  borderRadius: BorderRadius.circular(12),
+                  onTap: () => showBudgetEditor(
+                    context,
+                    userId: userId,
+                    category: b.category,
+                    current: b,
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.only(bottom: 16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(CategoryIconRegistry.iconFor(b.category),
+                                size: 16, color: barColor),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                b.category,
+                                style: GoogleFonts.beVietnamPro(
+                                  color: AppTheme.primary,
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                ),
                               ),
                             ),
+                            Text(
+                              '${CurrencyFormatter.format(spent)} / ${CurrencyFormatter.format(b.monthlyLimit)}',
+                              style: GoogleFonts.beVietnamPro(
+                                color: barColor,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            const SizedBox(width: 4),
+                            const Icon(Icons.chevron_right_rounded,
+                                color: AppTheme.onSurfaceVariant, size: 16),
+                          ],
+                        ),
+                        const SizedBox(height: 6),
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(100),
+                          child: LinearProgressIndicator(
+                            value: ratio.clamp(0, 1),
+                            minHeight: 8,
+                            backgroundColor: barColor.withOpacity(0.12),
+                            valueColor: AlwaysStoppedAnimation<Color>(barColor),
                           ),
+                        ),
+                        if (isOver) ...[
+                          const SizedBox(height: 4),
                           Text(
-                            '${CurrencyFormatter.format(spent)} / ${CurrencyFormatter.format(b.monthlyLimit)}',
+                            'Superado por ${CurrencyFormatter.format(spent - b.monthlyLimit)}',
                             style: GoogleFonts.beVietnamPro(
-                              color: barColor,
-                              fontSize: 12,
-                              fontWeight: FontWeight.w700,
+                              color: AppTheme.errorRed,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
                             ),
                           ),
                         ],
-                      ),
-                      const SizedBox(height: 6),
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(100),
-                        child: LinearProgressIndicator(
-                          value: ratio.clamp(0, 1),
-                          minHeight: 8,
-                          backgroundColor: barColor.withOpacity(0.12),
-                          valueColor: AlwaysStoppedAnimation<Color>(barColor),
-                        ),
-                      ),
-                      if (isOver) ...[
-                        const SizedBox(height: 4),
-                        Text(
-                          'Superado por ${CurrencyFormatter.format(spent - b.monthlyLimit)}',
-                          style: GoogleFonts.beVietnamPro(
-                            color: AppTheme.errorRed,
-                            fontSize: 11,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
                       ],
-                    ],
+                    ),
                   ),
                 );
               }),
