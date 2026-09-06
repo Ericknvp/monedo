@@ -15,6 +15,7 @@ import '../theme/app_theme.dart';
 import '../utils/currency_formatter.dart';
 import '../utils/category_icons.dart';
 import '../widgets/balance_card.dart';
+import '../widgets/accounts_summary.dart';
 import '../widgets/transaction_tile.dart';
 import 'add_transaction_screen.dart';
 import 'transactions_screen.dart';
@@ -418,6 +419,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 children: [
                   // Hero card
                   _buildHeroCard(totalBalance, income, expenses),
+                  const SizedBox(height: 24),
+
+                  AccountsSummaryCard(accounts: accSnap.data ?? []),
                   const SizedBox(height: 24),
 
                   // Stat cards row
@@ -1044,6 +1048,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       balance: totalBalance,
                       income: income,
                       expenses: expenses),
+                  const SizedBox(height: 20),
+                  AccountsSummaryCard(accounts: accSnap.data ?? []),
                   const SizedBox(height: 28),
                   Text(
                     'Últimos movimientos',

@@ -357,24 +357,54 @@ class _AddAccountSheet extends StatefulWidget {
   State<_AddAccountSheet> createState() => _AddAccountSheetState();
 }
 
+enum _AccountKind { cash, bank }
+
 class _AddAccountSheetState extends State<_AddAccountSheet> {
   final _accountService = AccountService();
   final _nameCtrl = TextEditingController();
   final _balanceCtrl = TextEditingController();
+  final _nameFocus = FocusNode();
   bool _saving = false;
   String? _error;
+  _AccountKind? _kind;
 
   @override
   void dispose() {
     _nameCtrl.dispose();
     _balanceCtrl.dispose();
+    _nameFocus.dispose();
     super.dispose();
   }
 
+  void _pickCash() {
+    setState(() {
+      _kind = _AccountKind.cash;
+      _nameCtrl.text = 'Efectivo';
+      _error = null;
+    });
+  }
+
+  void _pickBank() {
+    setState(() {
+      _kind = _AccountKind.bank;
+      _nameCtrl.clear();
+      _error = null;
+    });
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _nameFocus.requestFocus();
+    });
+  }
+
   Future<void> _save() async {
+    if (_kind == null) {
+      setState(() => _error = 'Elige una opción para continuar');
+      return;
+    }
     final name = _nameCtrl.text.trim();
     if (name.isEmpty) {
-      setState(() => _error = 'Ponle un nombre a la cuenta');
+      setState(() => _error = _kind == _AccountKind.cash
+          ? 'Ponle un nombre a la cuenta'
+          : 'Escribe el nombre de tu banco o billetera');
       return;
     }
     final balance = _balanceCtrl.text.trim().isEmpty
@@ -430,29 +460,58 @@ class _AddAccountSheetState extends State<_AddAccountSheet> {
           ),
           const SizedBox(height: 6),
           Text(
-            'Ej: Efectivo, Nu, Nequi, Bancolombia...',
+            '¿Dónde tienes tu dinero?',
             style: GoogleFonts.beVietnamPro(
                 color: AppTheme.onSurfaceVariant, fontSize: 13),
           ),
-          const SizedBox(height: 24),
-          TextField(
-            controller: _nameCtrl,
-            autofocus: true,
-            style: GoogleFonts.beVietnamPro(color: AppTheme.primary, fontSize: 15),
-            decoration: InputDecoration(
-              labelText: 'Nombre de la cuenta',
-              labelStyle: GoogleFonts.beVietnamPro(
-                  color: AppTheme.onSurfaceVariant, fontSize: 13),
-              filled: true,
-              fillColor: AppTheme.surfaceContainerLow,
-              contentPadding:
-                  const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(16),
-                borderSide: BorderSide.none,
+          const SizedBox(height: 20),
+          Row(
+            children: [
+              Expanded(
+                child: _kindCard(
+                  label: 'Efectivo',
+                  description: 'El dinero que tienes a la mano',
+                  icon: Icons.payments_rounded,
+                  selected: _kind == _AccountKind.cash,
+                  onTap: _pickCash,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _kindCard(
+                  label: 'Banco o billetera',
+                  description: 'Ej: PayPal, tu banco...',
+                  icon: Icons.account_balance_rounded,
+                  selected: _kind == _AccountKind.bank,
+                  onTap: _pickBank,
+                ),
+              ),
+            ],
+          ),
+          if (_kind == _AccountKind.bank) ...[
+            const SizedBox(height: 16),
+            TextField(
+              controller: _nameCtrl,
+              focusNode: _nameFocus,
+              autofocus: true,
+              style:
+                  GoogleFonts.beVietnamPro(color: AppTheme.primary, fontSize: 15),
+              decoration: InputDecoration(
+                labelText: 'Nombre del banco o billetera',
+                hintText: 'Ej: PayPal, mi banco...',
+                labelStyle: GoogleFonts.beVietnamPro(
+                    color: AppTheme.onSurfaceVariant, fontSize: 13),
+                filled: true,
+                fillColor: AppTheme.surfaceContainerLow,
+                contentPadding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  borderSide: BorderSide.none,
+                ),
               ),
             ),
-          ),
+          ],
           const SizedBox(height: 16),
           TextField(
             controller: _balanceCtrl,
@@ -505,6 +564,58 @@ class _AddAccountSheetState extends State<_AddAccountSheet> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _kindCard({
+    required String label,
+    required String description,
+    required IconData icon,
+    required bool selected,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(16),
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 160),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 18),
+        decoration: BoxDecoration(
+          color: selected
+              ? AppTheme.secondary.withOpacity(0.08)
+              : AppTheme.surfaceContainerLow,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: selected ? AppTheme.secondary : AppTheme.outlineVariant,
+            width: selected ? 1.6 : 1,
+          ),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(icon,
+                color: selected ? AppTheme.secondary : AppTheme.onSurfaceVariant,
+                size: 24),
+            const SizedBox(height: 10),
+            Text(
+              label,
+              style: GoogleFonts.beVietnamPro(
+                color: selected ? AppTheme.secondary : AppTheme.primary,
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            const SizedBox(height: 2),
+            Text(
+              description,
+              style: GoogleFonts.beVietnamPro(
+                color: AppTheme.onSurfaceVariant,
+                fontSize: 11,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

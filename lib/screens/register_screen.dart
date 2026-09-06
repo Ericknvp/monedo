@@ -451,9 +451,14 @@ class _PostRegisterOnboardingState extends State<_PostRegisterOnboarding> {
   @override
   Widget build(BuildContext context) {
     if (_done) return const DashboardScreen();
+    // La bienvenida y los slides explicativos ya se muestran antes de
+    // registrarse (OnboardingGate delante de RegisterScreen). Aquí, con la
+    // cuenta recién creada, solo falta moneda y cuentas.
     return OnboardingScreen(
+      showWelcome: false,
       showCurrency: true,
       showAccounts: true,
+      showExplanatory: false,
       onFinish: () => setState(() => _done = true),
     );
   }
