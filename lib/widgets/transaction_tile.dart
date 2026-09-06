@@ -46,7 +46,6 @@ class _TransactionTileState extends State<TransactionTile> {
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         margin: const EdgeInsets.only(bottom: 8),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         decoration: BoxDecoration(
           color: _hovered ? AppTheme.surfaceContainerLowest : AppTheme.surfaceContainerLow,
           borderRadius: BorderRadius.circular(16),
@@ -63,7 +62,16 @@ class _TransactionTileState extends State<TransactionTile> {
                 ]
               : [],
         ),
-        child: Row(
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            // Tocar el movimiento completo abre editarlo, no solo el lápiz.
+            // Las transferencias no se editan (ver nota más abajo).
+            onTap: t.isTransfer ? null : widget.onEdit,
+            borderRadius: BorderRadius.circular(16),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              child: Row(
           children: [
             // Icon
             Container(
@@ -194,6 +202,9 @@ class _TransactionTileState extends State<TransactionTile> {
               ],
             ),
           ],
+              ),
+            ),
+          ),
         ),
       ),
     );

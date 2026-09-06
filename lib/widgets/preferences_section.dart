@@ -5,6 +5,7 @@ import '../theme/app_theme.dart';
 import '../utils/currency_formatter.dart';
 import '../screens/categories_screen.dart';
 import '../screens/accounts_screen.dart';
+import '../screens/budgets_screen.dart';
 import '../screens/export_screen.dart';
 import 'currency_picker.dart';
 import 'app_toast.dart';
@@ -81,6 +82,14 @@ class _PreferencesSectionState extends State<PreferencesSection> {
           label: 'Mis categorías',
           builder: (_) => const CategoriesScreen(),
           onTap: () => openCategoriesScreen(context),
+        ),
+        const SizedBox(height: 10),
+        _navRow(
+          context,
+          icon: Icons.pie_chart_outline_rounded,
+          label: 'Presupuestos',
+          builder: (_) => const BudgetsScreen(),
+          onTap: () => openBudgetsScreen(context),
         ),
         const SizedBox(height: 10),
         _navRow(

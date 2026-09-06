@@ -3,10 +3,13 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../services/transaction_service.dart';
+import '../services/budget_service.dart';
 import '../models/transaction.dart';
+import '../models/budget.dart';
 import '../theme/app_theme.dart';
 import '../utils/currency_formatter.dart';
 import '../utils/category_colors.dart';
+import '../utils/category_icons.dart';
 
 class StatisticsScreen extends StatefulWidget {
   const StatisticsScreen({super.key});
@@ -17,6 +20,7 @@ class StatisticsScreen extends StatefulWidget {
 
 class _StatisticsScreenState extends State<StatisticsScreen> {
   final _txService = TransactionService();
+  final _budgetService = BudgetService();
   int _selectedMonth = DateTime.now().month;
   int _selectedYear = DateTime.now().year;
   int? _touchedIndex;
@@ -275,6 +279,8 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
           ],
         ),
         const SizedBox(height: 24),
+        _buildBudgetsCard(userId, categoryData),
+        const SizedBox(height: 24),
         _buildWeeklySection(userId),
       ],
     );
@@ -325,8 +331,110 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
         const SizedBox(height: 24),
         _buildDonutCard(income, expenses, categoryData),
         const SizedBox(height: 24),
+        _buildBudgetsCard(userId, categoryData),
+        const SizedBox(height: 24),
         _buildWeeklySection(userId),
       ],
+    );
+  }
+
+  Widget _buildBudgetsCard(String userId, Map<String, double> categoryData) {
+    return StreamBuilder<List<BudgetModel>>(
+      stream: _budgetService.getBudgets(userId),
+      builder: (context, snap) {
+        final budgets = snap.data ?? [];
+        if (budgets.isEmpty) return const SizedBox.shrink();
+
+        return Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: AppTheme.surfaceContainerLowest,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: AppTheme.surfaceVariant),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Presupuestos del mes',
+                style: GoogleFonts.plusJakartaSans(
+                  color: AppTheme.primary,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 18),
+              ...budgets.map((b) {
+                final spent = categoryData[b.category] ?? 0;
+                final ratio = b.monthlyLimit > 0 ? spent / b.monthlyLimit : 0.0;
+                final isOver = ratio > 1;
+                final isWarning = ratio >= 0.8 && ratio <= 1;
+                final barColor = isOver
+                    ? AppTheme.errorRed
+                    : (isWarning
+                        ? const Color(0xFFC98500)
+                        : CategoryColors.forCategory(b.category));
+
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(CategoryIconRegistry.iconFor(b.category),
+                              size: 16, color: barColor),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              b.category,
+                              style: GoogleFonts.beVietnamPro(
+                                color: AppTheme.primary,
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                          Text(
+                            '${CurrencyFormatter.format(spent)} / ${CurrencyFormatter.format(b.monthlyLimit)}',
+                            style: GoogleFonts.beVietnamPro(
+                              color: barColor,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 6),
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(100),
+                        child: LinearProgressIndicator(
+                          value: ratio.clamp(0, 1),
+                          minHeight: 8,
+                          backgroundColor: barColor.withOpacity(0.12),
+                          valueColor: AlwaysStoppedAnimation<Color>(barColor),
+                        ),
+                      ),
+                      if (isOver) ...[
+                        const SizedBox(height: 4),
+                        Text(
+                          'Superado por ${CurrencyFormatter.format(spent - b.monthlyLimit)}',
+                          style: GoogleFonts.beVietnamPro(
+                            color: AppTheme.errorRed,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                );
+              }),
+            ],
+          ),
+        );
+      },
     );
   }
 
