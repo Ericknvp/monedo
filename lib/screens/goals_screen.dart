@@ -303,6 +303,40 @@ class _GoalCardState extends State<_GoalCard> {
   bool _hovered = false;
   final _txService = TransactionService();
 
+  Future<bool> _confirmInsufficientFunds(
+      BuildContext context, String accountName, double balance) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppTheme.surfaceContainerLowest,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Text('Fondos insuficientes',
+            style: GoogleFonts.plusJakartaSans(
+                color: AppTheme.primary, fontWeight: FontWeight.w700)),
+        content: Text(
+          '"$accountName" tiene ${CurrencyFormatter.format(balance)}. Este ahorro dejaría la cuenta en negativo. ¿Quieres continuar de todas formas?',
+          style: GoogleFonts.beVietnamPro(color: AppTheme.onSurfaceVariant),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text('Cancelar',
+                style: TextStyle(color: AppTheme.onSurfaceVariant)),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppTheme.errorRed,
+              shape: const StadiumBorder(),
+            ),
+            child: const Text('Continuar'),
+          ),
+        ],
+      ),
+    );
+    return confirm == true;
+  }
+
   void _showHistory(BuildContext context) {
     showDialog(
       context: context,
@@ -683,6 +717,7 @@ class _GoalCardState extends State<_GoalCard> {
     final accountService = AccountService();
     final userId = FirebaseAuth.instance.currentUser?.uid ?? '';
     String? selectedAccountId;
+    List<AccountModel> accountsCache = [];
 
     showDialog(
       context: context,
@@ -720,6 +755,7 @@ class _GoalCardState extends State<_GoalCard> {
                 stream: accountService.getAccounts(userId),
                 builder: (context, snap) {
                   final accounts = snap.data ?? [];
+                  accountsCache = accounts;
                   return DropdownButtonFormField<String>(
                     value: selectedAccountId,
                     dropdownColor: AppTheme.surfaceContainerLowest,
@@ -755,6 +791,18 @@ class _GoalCardState extends State<_GoalCard> {
               onPressed: () async {
                 final amount = CurrencyFormatter.parse(ctrl.text.trim());
                 if (amount != null && amount > 0 && selectedAccountId != null) {
+                  AccountModel? account;
+                  for (final a in accountsCache) {
+                    if (a.id == selectedAccountId) {
+                      account = a;
+                      break;
+                    }
+                  }
+                  if (account != null && amount > account.balance) {
+                    final proceed = await _confirmInsufficientFunds(
+                        context, account.name, account.balance);
+                    if (!proceed) return;
+                  }
                   await widget.goalService.addSavingsToGoal(
                     goal: widget.goal,
                     amount: amount,
