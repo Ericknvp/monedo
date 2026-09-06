@@ -341,11 +341,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
           const Spacer(),
           ElevatedButton.icon(
-            onPressed: () => Navigator.push(
-              context,
-              MaterialPageRoute(
-                  builder: (_) => const AddTransactionScreen()),
-            ),
+            onPressed: () => openAddTransaction(context),
             icon: const Icon(Icons.add_rounded, size: 18),
             label: const Text('Agregar movimiento'),
             style: ElevatedButton.styleFrom(
@@ -840,11 +836,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           else
             ...monthTx.take(7).map((t) => TransactionTile(
                   transaction: t,
-                  onEdit: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (_) => AddTransactionScreen(transaction: t)),
-                  ),
+                  onEdit: () => openAddTransaction(context, transaction: t),
                   onDelete: () => _deleteTransaction(t),
                 )),
           const SizedBox(height: 8),
@@ -936,11 +928,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ? FloatingActionButton(
               backgroundColor: AppTheme.secondary,
               foregroundColor: Colors.white,
-              onPressed: () => Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (_) => const AddTransactionScreen()),
-              ),
+              onPressed: () => openAddTransaction(context),
               child: const Icon(Icons.add_rounded),
             )
           : null,
@@ -1050,12 +1038,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   else
                     ...monthTx.take(5).map((t) => TransactionTile(
                           transaction: t,
-                          onEdit: () => Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (_) =>
-                                    AddTransactionScreen(transaction: t)),
-                          ),
+                          onEdit: () =>
+                              openAddTransaction(context, transaction: t),
                           onDelete: () => _deleteTransaction(t),
                         )),
                 ],

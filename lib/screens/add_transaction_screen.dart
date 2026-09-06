@@ -8,10 +8,56 @@ import '../theme/app_theme.dart';
 import '../utils/amount_input_formatter.dart';
 import '../utils/currency_formatter.dart';
 
+/// Abre el formulario de movimiento: como una ventana modal centrada (con
+/// fondo oscurecido) en escritorio, o a pantalla completa en móvil.
+Future<void> openAddTransaction(
+  BuildContext context, {
+  TransactionModel? transaction,
+}) {
+  final isDesktop = MediaQuery.of(context).size.width >= 900;
+
+  if (isDesktop) {
+    return showGeneralDialog(
+      context: context,
+      barrierDismissible: true,
+      barrierLabel: 'Cerrar',
+      barrierColor: Colors.black.withOpacity(0.55),
+      transitionDuration: const Duration(milliseconds: 220),
+      pageBuilder: (_, __, ___) =>
+          AddTransactionScreen(transaction: transaction, isDialog: true),
+      transitionBuilder: (context, animation, secondaryAnimation, child) {
+        final curved = CurvedAnimation(
+          parent: animation,
+          curve: Curves.easeOutCubic,
+        );
+        return FadeTransition(
+          opacity: curved,
+          child: ScaleTransition(
+            scale: Tween<double>(begin: 0.94, end: 1).animate(curved),
+            child: child,
+          ),
+        );
+      },
+    );
+  }
+
+  return Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (_) => AddTransactionScreen(transaction: transaction),
+    ),
+  );
+}
+
 class AddTransactionScreen extends StatefulWidget {
   final TransactionModel? transaction;
+  final bool isDialog;
 
-  const AddTransactionScreen({super.key, this.transaction});
+  const AddTransactionScreen({
+    super.key,
+    this.transaction,
+    this.isDialog = false,
+  });
 
   @override
   State<AddTransactionScreen> createState() => _AddTransactionScreenState();
@@ -122,7 +168,10 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
   @override
   Widget build(BuildContext context) {
     final isEditing = widget.transaction != null;
-    final isDesktop = MediaQuery.of(context).size.width >= 900;
+
+    if (widget.isDialog) {
+      return _buildDialog(isEditing);
+    }
 
     return Scaffold(
       backgroundColor: AppTheme.background,
@@ -142,41 +191,80 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
           ),
         ),
       ),
-      body: isDesktop ? _buildDesktop(isEditing) : _buildMobile(isEditing),
+      body: _buildMobile(isEditing),
     );
   }
 
-  Widget _buildDesktop(bool isEditing) {
-    return Center(
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 24),
-        child: Container(
-          width: 720,
-          padding: const EdgeInsets.all(40),
-          decoration: BoxDecoration(
+  /// Ventana modal centrada (escritorio): misma tarjeta de formulario que
+  /// antes ocupaba toda la pantalla, ahora flotando sobre el fondo
+  /// oscurecido, con un botón de cierre en vez de una AppBar completa.
+  Widget _buildDialog(bool isEditing) {
+    return Dialog(
+      backgroundColor: Colors.transparent,
+      insetPadding: const EdgeInsets.all(24),
+      child: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 680, maxHeight: 760),
+          child: Material(
             color: AppTheme.surfaceContainerLowest,
-            borderRadius: BorderRadius.circular(24),
-            border: Border.all(color: AppTheme.surfaceVariant),
+            borderRadius: BorderRadius.circular(28),
+            clipBehavior: Clip.antiAlias,
+            elevation: 24,
+            shadowColor: Colors.black.withOpacity(0.4),
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.fromLTRB(36, 32, 36, 36),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              isEditing
+                                  ? 'Editar movimiento'
+                                  : 'Registrar movimiento',
+                              style: GoogleFonts.plusJakartaSans(
+                                color: AppTheme.primary,
+                                fontSize: 22,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              'Completa los datos del movimiento',
+                              style: GoogleFonts.beVietnamPro(
+                                  color: AppTheme.onSurfaceVariant,
+                                  fontSize: 14),
+                            ),
+                          ],
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.close_rounded,
+                            color: AppTheme.onSurfaceVariant),
+                        onPressed: () => Navigator.pop(context),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 24),
+                  _buildFormFields(isEditing),
+                ],
+              ),
+            ),
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                isEditing ? 'Editar movimiento' : 'Registrar movimiento',
-                style: GoogleFonts.plusJakartaSans(
-                  color: AppTheme.primary,
-                  fontSize: 22,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                'Completa los datos del movimiento',
-                style: GoogleFonts.beVietnamPro(
-                    color: AppTheme.onSurfaceVariant, fontSize: 14),
-              ),
-              const SizedBox(height: 32),
+        ),
+      ),
+    );
+  }
 
+  Widget _buildFormFields(bool isEditing) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
               _buildTypeSelector(),
               const SizedBox(height: 28),
 
@@ -253,10 +341,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                   ),
                 ],
               ),
-            ],
-          ),
-        ),
-      ),
+      ],
     );
   }
 

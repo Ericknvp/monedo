@@ -162,13 +162,8 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                         final t = pageItems[i];
                         return TransactionTile(
                           transaction: t,
-                          onEdit: () => Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) =>
-                                  AddTransactionScreen(transaction: t),
-                            ),
-                          ),
+                          onEdit: () =>
+                              openAddTransaction(context, transaction: t),
                           onDelete: () => _delete(t),
                         );
                       },
