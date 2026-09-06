@@ -888,7 +888,13 @@ class _GoalSheetState extends State<_GoalSheet> {
   late final TextEditingController _targetCtrl;
   late final TextEditingController _imageCtrl;
   late final TextEditingController _noteCtrl;
+  late final TextEditingController _initialSavedCtrl;
   bool _isLoading = false;
+  // Solo aplica al crear una meta nueva: si ya tenía ahorros previos (fuera
+  // de la app) para esto, ese monto inicial se guarda tal cual en la meta
+  // SIN descontarlo de ninguna cuenta ni registrar un movimiento, porque no
+  // es dinero que esté saliendo ahora del balance.
+  bool _hasExistingSavings = false;
 
   bool get _isEditing => widget.existing != null;
 
@@ -901,6 +907,7 @@ class _GoalSheetState extends State<_GoalSheet> {
         text: g != null ? CurrencyFormatter.formatNumber(g.targetAmount) : '');
     _imageCtrl = TextEditingController(text: g?.imageUrl ?? '');
     _noteCtrl = TextEditingController(text: g?.note ?? '');
+    _initialSavedCtrl = TextEditingController();
   }
 
   Future<void> _save() async {
@@ -932,12 +939,15 @@ class _GoalSheetState extends State<_GoalSheet> {
         note: _noteCtrl.text.trim().isEmpty ? null : _noteCtrl.text.trim(),
       ));
     } else {
+      final initialSaved = _hasExistingSavings
+          ? (CurrencyFormatter.parse(_initialSavedCtrl.text.trim()) ?? 0)
+          : 0.0;
       await widget.goalService.addGoal(GoalModel(
         id: '',
         userId: widget.userId,
         title: _titleCtrl.text.trim(),
         targetAmount: target,
-        savedAmount: 0,
+        savedAmount: initialSaved,
         imageUrl: _imageCtrl.text.trim().isEmpty ? null : _imageCtrl.text.trim(),
         note: _noteCtrl.text.trim().isEmpty ? null : _noteCtrl.text.trim(),
         createdAt: DateTime.now(),
@@ -953,6 +963,7 @@ class _GoalSheetState extends State<_GoalSheet> {
     _targetCtrl.dispose();
     _imageCtrl.dispose();
     _noteCtrl.dispose();
+    _initialSavedCtrl.dispose();
     super.dispose();
   }
 
@@ -996,6 +1007,54 @@ class _GoalSheetState extends State<_GoalSheet> {
                     const TextInputType.numberWithOptions(decimal: true),
                 inputFormatters: [AmountInputFormatter()],
                 hint: 'Ej: 7000000'),
+            if (!_isEditing) ...[
+              const SizedBox(height: 20),
+              Text(
+                '¿Ya tienes algo ahorrado para esto, o es una meta nueva?',
+                style: GoogleFonts.beVietnamPro(
+                  color: AppTheme.onSurfaceVariant,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 10),
+              Row(
+                children: [
+                  Expanded(
+                    child: _savingsChoiceChip(
+                      label: 'Meta nueva',
+                      selected: !_hasExistingSavings,
+                      onTap: () => setState(() => _hasExistingSavings = false),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: _savingsChoiceChip(
+                      label: 'Ya tengo ahorros',
+                      selected: _hasExistingSavings,
+                      onTap: () => setState(() => _hasExistingSavings = true),
+                    ),
+                  ),
+                ],
+              ),
+              if (_hasExistingSavings) ...[
+                const SizedBox(height: 16),
+                _field(_initialSavedCtrl, 'Cuánto ya tienes ahorrado',
+                    keyboardType:
+                        const TextInputType.numberWithOptions(decimal: true),
+                    inputFormatters: [AmountInputFormatter()],
+                    hint: 'Ej: 500000'),
+                const SizedBox(height: 8),
+                Text(
+                  'Este monto se suma a la meta directamente, sin descontarse de ninguna cuenta.',
+                  style: GoogleFonts.beVietnamPro(
+                    color: AppTheme.onSurfaceVariant,
+                    fontSize: 12,
+                    height: 1.4,
+                  ),
+                ),
+              ],
+            ],
             const SizedBox(height: 20),
             _field(_imageCtrl, 'URL de imagen (opcional)',
                 hint: 'https://...'),
@@ -1023,6 +1082,36 @@ class _GoalSheetState extends State<_GoalSheet> {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _savingsChoiceChip({
+    required String label,
+    required bool selected,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 160),
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: selected ? AppTheme.secondary : AppTheme.surfaceContainerLow,
+          borderRadius: BorderRadius.circular(100),
+          border: Border.all(
+            color: selected ? AppTheme.secondary : AppTheme.outlineVariant,
+          ),
+        ),
+        child: Text(
+          label,
+          style: GoogleFonts.beVietnamPro(
+            color: selected ? Colors.white : AppTheme.onSurfaceVariant,
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+          ),
         ),
       ),
     );

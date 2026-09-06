@@ -7,6 +7,7 @@ import '../services/account_service.dart';
 import '../theme/app_theme.dart';
 import '../utils/amount_input_formatter.dart';
 import '../utils/currency_formatter.dart';
+import '../widgets/app_toast.dart';
 
 /// Abre la hoja para crear una cuenta nueva (ej. Efectivo, Nu, Nequi).
 /// Devuelve el id de la cuenta creada, o null si se canceló.
@@ -777,7 +778,16 @@ class _TransferSheetState extends State<_TransferSheet> {
       toAccountId: _toId!,
       amount: amount,
     );
-    if (mounted) Navigator.pop(context);
+    if (!mounted) return;
+    final to = widget.accounts.firstWhere((a) => a.id == _toId);
+    showAppToast(
+      context,
+      message:
+          'Transferiste ${CurrencyFormatter.format(amount)} de ${from.name} a ${to.name}',
+      icon: Icons.swap_horiz_rounded,
+      accentColor: AppTheme.secondary,
+    );
+    Navigator.pop(context);
   }
 
   Widget _accountDropdown({

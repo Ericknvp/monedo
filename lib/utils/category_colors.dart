@@ -1,15 +1,25 @@
 import 'package:flutter/material.dart';
 
+/// Colores elegidos a mano por el usuario para una categoría (por nombre),
+/// sincronizados en vivo desde Firestore por [CategoryColorService]. Vive
+/// aparte de [CategoryColors] para que cualquier pantalla que ya llama
+/// `CategoryColors.forCategory` reciba el override sin cambios adicionales.
+class CategoryColorRegistry {
+  static final ValueNotifier<Map<String, Color>> customColors =
+      ValueNotifier<Map<String, Color>>({});
+}
+
 /// Asigna un color estable a cada categoría, para distinguirlas de un
 /// vistazo (íconos de movimientos, chips de categoría y gráficas), siempre
 /// acompañado del ícono y el nombre — nunca solo por color.
 ///
-/// Las categorías predeterminadas tienen un color fijo elegido a mano, a
-/// partir de una paleta validada para daltonismo (ver skill de dataviz:
-/// `validate_palette.js`). Las categorías propias del usuario reciben un
-/// color estable de una paleta extendida, calculado a partir de un hash
-/// propio del nombre (no `String.hashCode`, que no está garantizado estable
-/// entre plataformas).
+/// Orden de resolución: color elegido por el usuario (si lo hay) > color fijo
+/// de una categoría predeterminada > color estable por hash para categorías
+/// propias sin color elegido. Los colores fijos y la paleta de swatches
+/// vienen de una paleta validada para daltonismo (ver skill de dataviz:
+/// `validate_palette.js`); un hash propio del nombre (no `String.hashCode`,
+/// que no está garantizado estable entre plataformas) reparte la paleta
+/// extendida entre categorías propias.
 class CategoryColors {
   CategoryColors._();
 
@@ -34,8 +44,9 @@ class CategoryColors {
   };
 
   /// Paleta extendida (mismos tonos que las categorías fijas, más algunos
-  /// adicionales) para repartir entre categorías propias del usuario.
-  static const List<Color> _extended = [
+  /// adicionales): reparte de forma estable entre categorías propias sin
+  /// color elegido, y es la lista de swatches que se ofrece al elegir color.
+  static const List<Color> swatches = [
     Color(0xFF2A78D6),
     Color(0xFFEB6834),
     Color(0xFF1BAF7A),
@@ -52,9 +63,13 @@ class CategoryColors {
     Color(0xFF5E60CE),
     Color(0xFFBF4E82),
     Color(0xFF4F8A6D),
+    neutral,
   ];
 
   static Color forCategory(String category) {
+    final custom = CategoryColorRegistry.customColors.value[category];
+    if (custom != null) return custom;
+
     final fixed = _fixed[category];
     if (fixed != null) return fixed;
 
@@ -62,6 +77,6 @@ class CategoryColors {
     for (final unit in category.codeUnits) {
       hash = (hash * 31 + unit) & 0x7fffffff;
     }
-    return _extended[hash % _extended.length];
+    return swatches[hash % swatches.length];
   }
 }

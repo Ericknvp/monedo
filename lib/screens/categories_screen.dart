@@ -3,10 +3,12 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../models/category.dart';
 import '../services/category_service.dart';
+import '../services/category_color_service.dart';
 import '../theme/app_theme.dart';
 import '../utils/category_icons.dart';
 import '../utils/category_colors.dart';
 import '../widgets/icon_picker.dart';
+import '../widgets/category_color_picker.dart';
 
 /// Abre la hoja para crear una categoría propia. Devuelve el nombre de la
 /// categoría creada (para poder seleccionarla al instante donde se llamó),
@@ -323,7 +325,6 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
     required String name,
     VoidCallback? onDelete,
   }) {
-    final color = CategoryColors.forCategory(name);
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -334,14 +335,31 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
       ),
       child: Row(
         children: [
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: color.withOpacity(0.14),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Icon(icon, color: color, size: 20),
+          ValueListenableBuilder<Map<String, Color>>(
+            valueListenable: CategoryColorRegistry.customColors,
+            builder: (context, _, __) {
+              final color = CategoryColors.forCategory(name);
+              return Tooltip(
+                message: 'Cambiar color',
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(12),
+                  onTap: () => showCategoryColorPicker(
+                    context,
+                    userId: _userId,
+                    category: name,
+                  ),
+                  child: Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: color.withOpacity(0.14),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Icon(icon, color: color, size: 20),
+                  ),
+                ),
+              );
+            },
           ),
           const SizedBox(width: 14),
           Expanded(
