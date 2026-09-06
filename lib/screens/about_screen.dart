@@ -5,6 +5,7 @@ import '../theme/app_theme.dart';
 import '../utils/currency_formatter.dart';
 import '../utils/web_redirect.dart' if (dart.library.io) '../utils/web_redirect_stub.dart';
 import '../widgets/currency_picker.dart';
+import '../widgets/app_toast.dart';
 
 class AboutScreen extends StatefulWidget {
   const AboutScreen({super.key});
@@ -27,11 +28,11 @@ class _AboutScreenState extends State<AboutScreen> {
       _savingCurrency = false;
     });
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Moneda actualizada a ${currency.code}'),
-          backgroundColor: AppTheme.secondary,
-        ),
+      showAppToast(
+        context,
+        message: 'Moneda actualizada a ${currency.code}',
+        icon: Icons.check_circle_rounded,
+        accentColor: AppTheme.secondary,
       );
     }
   }

@@ -64,14 +64,29 @@ class BalanceCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 10),
-              Text(
-                CurrencyFormatter.format(balance),
-                style: GoogleFonts.plusJakartaSans(
-                  color: Colors.white,
-                  fontSize: 34,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: -0.68,
-                ),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.baseline,
+                textBaseline: TextBaseline.alphabetic,
+                children: [
+                  Text(
+                    CurrencyFormatter.format(balance),
+                    style: GoogleFonts.plusJakartaSans(
+                      color: Colors.white,
+                      fontSize: 34,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: -0.68,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    CurrencyFormatter.current.code,
+                    style: GoogleFonts.beVietnamPro(
+                      color: AppTheme.secondaryFixed,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ],
               ),
               const SizedBox(height: 20),
               Wrap(
