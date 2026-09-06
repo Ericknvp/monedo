@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../services/goal_service.dart';
 import '../models/goal.dart';
 import '../theme/app_theme.dart';
 import '../utils/currency_formatter.dart';
+import '../utils/amount_input_formatter.dart';
 
 class GoalsScreen extends StatelessWidget {
   const GoalsScreen({super.key});
@@ -554,6 +556,7 @@ class _GoalCardState extends State<_GoalCard> {
               controller: ctrl,
               keyboardType:
                   const TextInputType.numberWithOptions(decimal: true),
+              inputFormatters: [AmountInputFormatter()],
               style: GoogleFonts.beVietnamPro(color: AppTheme.primary),
               decoration: InputDecoration(
                 labelText: 'Monto a ahorrar',
@@ -571,7 +574,7 @@ class _GoalCardState extends State<_GoalCard> {
           ),
           ElevatedButton(
             onPressed: () async {
-              final amount = double.tryParse(ctrl.text.trim());
+              final amount = CurrencyFormatter.parse(ctrl.text.trim());
               if (amount != null && amount > 0) {
                 await widget.goalService.addSavingsToGoal(
                     goal: widget.goal, amount: amount);
@@ -671,7 +674,7 @@ class _GoalSheetState extends State<_GoalSheet> {
     final g = widget.existing;
     _titleCtrl = TextEditingController(text: g?.title ?? '');
     _targetCtrl = TextEditingController(
-        text: g != null ? g.targetAmount.toStringAsFixed(0) : '');
+        text: g != null ? CurrencyFormatter.formatNumber(g.targetAmount) : '');
     _imageCtrl = TextEditingController(text: g?.imageUrl ?? '');
     _noteCtrl = TextEditingController(text: g?.note ?? '');
   }
@@ -686,7 +689,7 @@ class _GoalSheetState extends State<_GoalSheet> {
       );
       return;
     }
-    final target = double.tryParse(_targetCtrl.text.trim());
+    final target = CurrencyFormatter.parse(_targetCtrl.text.trim());
     if (target == null || target <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -767,6 +770,7 @@ class _GoalSheetState extends State<_GoalSheet> {
             _field(_targetCtrl, 'Precio de la meta',
                 keyboardType:
                     const TextInputType.numberWithOptions(decimal: true),
+                inputFormatters: [AmountInputFormatter()],
                 hint: 'Ej: 7000000'),
             const SizedBox(height: 20),
             _field(_imageCtrl, 'URL de imagen (opcional)',
@@ -806,11 +810,13 @@ class _GoalSheetState extends State<_GoalSheet> {
     String? hint,
     int maxLines = 1,
     TextInputType? keyboardType,
+    List<TextInputFormatter>? inputFormatters,
   }) {
     return TextField(
       controller: ctrl,
       maxLines: maxLines,
       keyboardType: keyboardType,
+      inputFormatters: inputFormatters,
       style: GoogleFonts.beVietnamPro(color: AppTheme.primary, fontSize: 15),
       decoration: InputDecoration(
         labelText: label,

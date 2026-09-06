@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../services/transaction_service.dart';
 import '../models/transaction.dart';
 import '../theme/app_theme.dart';
+import '../utils/amount_input_formatter.dart';
+import '../utils/currency_formatter.dart';
 
 class AddTransactionScreen extends StatefulWidget {
   final TransactionModel? transaction;
@@ -37,7 +40,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
     if (widget.transaction != null) {
       final t = widget.transaction!;
       _titleCtrl.text = t.title;
-      _amountCtrl.text = t.amount.toString();
+      _amountCtrl.text = CurrencyFormatter.formatNumber(t.amount);
       _noteCtrl.text = t.note ?? '';
       _isIncome = t.isIncome;
       _selectedDate = t.date;
@@ -76,7 +79,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
       );
       return;
     }
-    final amount = double.tryParse(_amountCtrl.text.trim());
+    final amount = CurrencyFormatter.parse(_amountCtrl.text.trim());
     if (amount == null || amount <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -197,6 +200,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                       icon: Icons.attach_money_rounded,
                       keyboardType:
                           const TextInputType.numberWithOptions(decimal: true),
+                      inputFormatters: [AmountInputFormatter()],
                     ),
                   ),
                 ],
@@ -270,7 +274,8 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
           _textField(_amountCtrl, 'Monto',
               icon: Icons.attach_money_rounded,
               keyboardType:
-                  const TextInputType.numberWithOptions(decimal: true)),
+                  const TextInputType.numberWithOptions(decimal: true),
+              inputFormatters: [AmountInputFormatter()]),
           const SizedBox(height: 16),
           _buildCategoryDropdown(),
           const SizedBox(height: 16),
@@ -351,11 +356,13 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
     IconData? icon,
     int maxLines = 1,
     TextInputType? keyboardType,
+    List<TextInputFormatter>? inputFormatters,
   }) {
     return TextField(
       controller: ctrl,
       maxLines: maxLines,
       keyboardType: keyboardType,
+      inputFormatters: inputFormatters,
       style: GoogleFonts.beVietnamPro(color: AppTheme.primary, fontSize: 15),
       decoration: InputDecoration(
         labelText: label,

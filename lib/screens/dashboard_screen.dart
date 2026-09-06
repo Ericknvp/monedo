@@ -504,13 +504,27 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 ),
               ),
               const SizedBox(height: 10),
-              Text(
-                'Balance total: ${CurrencyFormatter.format(balance)}',
-                style: GoogleFonts.plusJakartaSans(
-                  color: Colors.white,
-                  fontSize: 36,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: -0.72,
+              RichText(
+                text: TextSpan(
+                  children: [
+                    TextSpan(
+                      text: 'Balance total: ${CurrencyFormatter.format(balance)}',
+                      style: GoogleFonts.plusJakartaSans(
+                        color: Colors.white,
+                        fontSize: 36,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: -0.72,
+                      ),
+                    ),
+                    TextSpan(
+                      text: ' ${CurrencyFormatter.current.code}',
+                      style: GoogleFonts.beVietnamPro(
+                        color: AppTheme.secondaryFixed,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
                 ),
               ),
               const SizedBox(height: 20),
