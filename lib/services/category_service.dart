@@ -38,8 +38,9 @@ class CategoryService {
 
   // ---- Edita una categoría personalizada existente ----
   //
-  // Si cambia el nombre, migra los movimientos que ya usaban el nombre
-  // anterior (y su color elegido, si tenía uno) para no dejarlos huérfanos.
+  // Si cambia el nombre, migra los movimientos, el color elegido y el
+  // presupuesto (si tenía alguno) que ya usaban el nombre anterior, para
+  // que no queden huérfanos ni descuadrados en Estadísticas.
   Future<void> updateCategory({
     required String id,
     required String userId,

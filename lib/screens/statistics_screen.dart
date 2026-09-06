@@ -427,15 +427,33 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                'Presupuestos del mes',
-                style: GoogleFonts.plusJakartaSans(
-                  color: AppTheme.primary,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      'Presupuestos del mes',
+                      style: GoogleFonts.plusJakartaSans(
+                        color: AppTheme.primary,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                  TextButton.icon(
+                    onPressed: () => openBudgetsScreen(context),
+                    icon: const Icon(Icons.add_circle_outline_rounded, size: 16),
+                    label: const Text('Agregar límite'),
+                    style: TextButton.styleFrom(
+                      foregroundColor: AppTheme.secondary,
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 6),
+                      textStyle: GoogleFonts.beVietnamPro(
+                          fontSize: 12.5, fontWeight: FontWeight.w600),
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(height: 18),
+              const SizedBox(height: 10),
               ...budgets.map((b) {
                 final spent = categoryData[b.category] ?? 0;
                 final ratio = b.monthlyLimit > 0 ? spent / b.monthlyLimit : 0.0;
