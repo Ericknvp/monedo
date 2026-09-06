@@ -24,12 +24,16 @@ Monedo permite registrar y visualizar movimientos financieros de forma clara e i
 - Gráfica de torta de gastos por categoría
 - Estadísticas semanales
 - Metas de ahorro con progreso visual y descuento automático del balance
-- Formato de moneda con separador de miles
+- Selector de moneda (USD, COP, EUR, MXN, ARS, CLP, PEN, BRL, GBP) al registrarse, editable luego desde "Acerca de" y aplicado en tiempo real a toda la app
+- Formato de moneda con separador de miles, incluido en vivo mientras se escribe un monto
+- Onboarding con slides explicativos de cada sección (Dashboard, Transacciones, Estadísticas, Metas), una vez por dispositivo y siempre tras un registro nuevo
+- Notificaciones flotantes (toast) con animación, arriba a la derecha en escritorio y arriba centradas en móvil
 - Confirmación antes de cerrar sesión y al eliminar movimientos
-- Landing page pública con presentación de características y sección "Cómo funciona"
+- Landing page pública con presentación de características, sección "Cómo funciona" y sección "Próximamente" (recomendaciones con IA)
 - Redirección automática a landing en web cuando no hay sesión activa
-- Pantalla "Acerca de" con información del creador y enlaces externos
+- Pantalla "Acerca de" con información del creador, enlaces externos y preferencias de moneda
 - Diseño responsive — funciona en Android y Web
+- Ícono de Android adaptativo (se adapta a la forma del launcher del dispositivo)
 - Soporte PWA con favicon e iconos de aplicación personalizados
 
 ## Paleta de colores
@@ -71,6 +75,19 @@ Tipografía: **Plus Jakarta Sans** (encabezados y cuerpo) / **Be Vietnam Pro** (
 [Descargar Monedo v1.0](https://github.com/Ericknvp/monedo/releases/tag/v1.0)
 
 ## Changelog
+
+### v2.1.0 — Septiembre 2026
+
+- Selector de moneda al registrarse (USD, COP, EUR, MXN, ARS, CLP, PEN, BRL, GBP); editable luego desde "Acerca de" y aplicado en tiempo real a toda la app, incluidas las pestañas ya abiertas
+- Cuentas creadas antes de esta función eligen su moneda una única vez al iniciar sesión
+- Onboarding con slides explicativos de cada sección (Dashboard, Transacciones, Estadísticas, Metas), con pasos numerados; se muestra una vez por dispositivo y siempre después de un registro nuevo
+- Rediseño de Login y Register en móvil: héroe con blobs decorativos y logo, tarjeta inferior con campos rellenos y redondeados (antes solo un fondo verde con líneas)
+- Ícono de Android adaptativo (fondo + logo), reemplazando el ícono cuadrado anterior
+- Notificaciones tipo toast con animación de entrada/salida, arriba a la derecha en escritorio y arriba centradas en móvil
+- Formato de miles en vivo en los campos de monto de Transacciones y Metas
+- Sección "Próximamente" en la landing anunciando recomendaciones de optimización financiera con IA
+- Corregido: el inicio de sesión ahora respeta el chequeo de moneda para cuentas existentes (antes solo se validaba al abrir la app por primera vez, no al iniciar sesión manualmente)
+- Actualización de Gradle a 9.1.0 para compatibilidad con JDK 25
 
 ### v1.3.0 — Mayo 2026
 
