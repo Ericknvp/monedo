@@ -6,6 +6,7 @@ import '../utils/currency_formatter.dart';
 import '../utils/web_redirect.dart' if (dart.library.io) '../utils/web_redirect_stub.dart';
 import '../widgets/currency_picker.dart';
 import '../widgets/app_toast.dart';
+import 'categories_screen.dart';
 
 class AboutScreen extends StatefulWidget {
   const AboutScreen({super.key});
@@ -162,6 +163,43 @@ class _AboutScreenState extends State<AboutScreen> {
                         color: AppTheme.onSurfaceVariant,
                         fontSize: 12,
                         height: 1.4,
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    InkWell(
+                      borderRadius: BorderRadius.circular(16),
+                      onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) => const CategoriesScreen()),
+                      ),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 20, vertical: 16),
+                        decoration: BoxDecoration(
+                          color: AppTheme.surfaceContainerLow,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: AppTheme.outlineVariant),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.category_outlined,
+                                color: AppTheme.onSurfaceVariant, size: 20),
+                            const SizedBox(width: 14),
+                            Expanded(
+                              child: Text(
+                                'Mis categorías',
+                                style: GoogleFonts.beVietnamPro(
+                                  color: AppTheme.primary,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                            const Icon(Icons.chevron_right_rounded,
+                                color: AppTheme.onSurfaceVariant),
+                          ],
+                        ),
                       ),
                     ),
                   ],

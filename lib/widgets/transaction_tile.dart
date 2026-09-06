@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../models/transaction.dart';
 import '../theme/app_theme.dart';
 import '../utils/currency_formatter.dart';
+import '../utils/category_icons.dart';
 
 class TransactionTile extends StatefulWidget {
   final TransactionModel transaction;
@@ -22,23 +23,6 @@ class TransactionTile extends StatefulWidget {
 
 class _TransactionTileState extends State<TransactionTile> {
   bool _hovered = false;
-
-  IconData _icon(String cat) {
-    switch (cat) {
-      case 'Alimentación': return Icons.restaurant_rounded;
-      case 'Transporte': return Icons.directions_car_rounded;
-      case 'Entretenimiento': return Icons.movie_rounded;
-      case 'Salud': return Icons.health_and_safety_rounded;
-      case 'Educación': return Icons.school_rounded;
-      case 'Ropa': return Icons.checkroom_rounded;
-      case 'Hogar': return Icons.home_rounded;
-      case 'Trabajo': return Icons.work_rounded;
-      case 'Inversión': return Icons.trending_up_rounded;
-      case 'Ahorro': return Icons.savings_rounded;
-      case 'Ocio': return Icons.celebration_rounded;
-      default: return Icons.attach_money_rounded;
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -87,7 +71,14 @@ class _TransactionTileState extends State<TransactionTile> {
                 color: iconBg,
                 borderRadius: BorderRadius.circular(14),
               ),
-              child: Icon(_icon(t.category), color: iconColor, size: 20),
+              child: ValueListenableBuilder<Map<String, IconData>>(
+                valueListenable: CategoryIconRegistry.customIcons,
+                builder: (context, _, __) => Icon(
+                  CategoryIconRegistry.iconFor(t.category),
+                  color: iconColor,
+                  size: 20,
+                ),
+              ),
             ),
             const SizedBox(width: 14),
 

@@ -7,6 +7,8 @@ import '../models/transaction.dart';
 import '../theme/app_theme.dart';
 import '../utils/amount_input_formatter.dart';
 import '../utils/currency_formatter.dart';
+import '../utils/category_icons.dart';
+import 'categories_screen.dart';
 
 /// Abre el formulario de movimiento: como una ventana modal centrada (con
 /// fondo oscurecido) en escritorio, o a pantalla completa en móvil.
@@ -422,6 +424,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
       ),
       padding: const EdgeInsets.all(4),
       child: Stack(
+        alignment: Alignment.center,
         children: [
           LayoutBuilder(
             builder: (context, constraints) {
@@ -518,21 +521,87 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
   }
 
   Widget _buildCategoryDropdown() {
-    return DropdownButtonFormField<String>(
-      value: _selectedCategory,
-      dropdownColor: AppTheme.surfaceContainerLowest,
-      style: GoogleFonts.beVietnamPro(color: AppTheme.primary, fontSize: 15),
-      decoration: InputDecoration(
-        labelText: 'Categoría',
-        labelStyle: GoogleFonts.beVietnamPro(
-            color: AppTheme.onSurfaceVariant, fontSize: 13),
-        prefixIcon: const Icon(Icons.category_outlined,
-            color: AppTheme.secondary, size: 20),
-      ),
-      items: _categories
-          .map((c) => DropdownMenuItem(value: c, child: Text(c)))
-          .toList(),
-      onChanged: (v) => setState(() => _selectedCategory = v!),
+    return ValueListenableBuilder<Map<String, IconData>>(
+      valueListenable: CategoryIconRegistry.customIcons,
+      builder: (context, customIcons, _) {
+        final customNames = customIcons.keys
+            .where((n) => !_categories.contains(n))
+            .toList()
+          ..sort();
+        final allNames = <String>{
+          ..._categories,
+          ...customNames,
+          _selectedCategory,
+        }.toList();
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            DropdownButtonFormField<String>(
+              value: _selectedCategory,
+              dropdownColor: AppTheme.surfaceContainerLowest,
+              style: GoogleFonts.beVietnamPro(
+                  color: AppTheme.primary, fontSize: 15),
+              decoration: InputDecoration(
+                labelText: 'Categoría',
+                labelStyle: GoogleFonts.beVietnamPro(
+                    color: AppTheme.onSurfaceVariant, fontSize: 13),
+                prefixIcon: const Icon(Icons.category_outlined,
+                    color: AppTheme.secondary, size: 20),
+              ),
+              items: allNames
+                  .map((c) => DropdownMenuItem(
+                        value: c,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(CategoryIconRegistry.iconFor(c),
+                                size: 18, color: AppTheme.onSurfaceVariant),
+                            const SizedBox(width: 10),
+                            Text(c),
+                          ],
+                        ),
+                      ))
+                  .toList(),
+              onChanged: (v) => setState(() => _selectedCategory = v!),
+            ),
+            const SizedBox(height: 6),
+            InkWell(
+              borderRadius: BorderRadius.circular(8),
+              onTap: () async {
+                final userId = FirebaseAuth.instance.currentUser?.uid ?? '';
+                final created = await showAddCategorySheet(
+                  context,
+                  userId: userId,
+                  existingNames: {..._categories, ...customNames},
+                );
+                if (created != null) {
+                  setState(() => _selectedCategory = created);
+                }
+              },
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.add_circle_outline_rounded,
+                        size: 15, color: AppTheme.secondary),
+                    const SizedBox(width: 6),
+                    Text(
+                      'Agregar categoría',
+                      style: GoogleFonts.beVietnamPro(
+                        color: AppTheme.secondary,
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 

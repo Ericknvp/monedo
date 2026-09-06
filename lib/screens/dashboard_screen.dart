@@ -2,12 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'dart:async';
 import '../services/auth_service.dart';
 import '../services/transaction_service.dart';
+import '../services/category_service.dart';
 import '../models/transaction.dart';
 import '../models/user_model.dart';
+import '../models/category.dart';
 import '../theme/app_theme.dart';
 import '../utils/currency_formatter.dart';
+import '../utils/category_icons.dart';
 import '../widgets/balance_card.dart';
 import '../widgets/transaction_tile.dart';
 import 'add_transaction_screen.dart';
@@ -35,6 +39,8 @@ class DashboardScreen extends StatefulWidget {
 class _DashboardScreenState extends State<DashboardScreen> {
   final _authService = AuthService();
   final _txService = TransactionService();
+  final _categoryService = CategoryService();
+  StreamSubscription<List<CategoryModel>>? _categorySub;
   int _selectedIndex = 0;
   UserModel? _currentUser;
   late final Future<List<_MonthData>> _chartFuture;
@@ -61,6 +67,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
     _loadUser();
     final uid = FirebaseAuth.instance.currentUser?.uid ?? '';
     _chartFuture = _loadChartData(uid);
+    _categorySub = _categoryService.getCategories(uid).listen((categories) {
+      CategoryIconRegistry.customIcons.value = {
+        for (final c in categories) c.name: c.icon,
+      };
+    });
+  }
+
+  @override
+  void dispose() {
+    _categorySub?.cancel();
+    super.dispose();
   }
 
   Future<void> _loadUser() async {
