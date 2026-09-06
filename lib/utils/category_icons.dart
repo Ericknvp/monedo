@@ -14,6 +14,7 @@ const Map<String, IconData> kDefaultCategoryIcons = {
   'Ahorro': Icons.savings_rounded,
   'Ocio': Icons.celebration_rounded,
   'Otros': Icons.attach_money_rounded,
+  'Transferencia': Icons.swap_horiz_rounded,
 };
 
 /// Librería extensa de íconos para elegir al crear una categoría propia,

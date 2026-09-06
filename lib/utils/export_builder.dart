@@ -10,6 +10,10 @@ const _brandPrimary = PdfColor.fromInt(0xFF001F2D);
 const _brandSecondary = PdfColor.fromInt(0xFF006C4B);
 const _incomeRowBg = PdfColor.fromInt(0xFFEAF6F0);
 const _expenseRowBg = PdfColor.fromInt(0xFFFCEEED);
+const _transferRowBg = PdfColor.fromInt(0xFFF2F2F2);
+
+String _typeLabel(TransactionModel t) =>
+    t.isTransfer ? 'Transferencia' : (t.isIncome ? 'Ingreso' : 'Gasto');
 
 String _dateStr(DateTime d) =>
     '${d.day.toString().padLeft(2, '0')}/${d.month.toString().padLeft(2, '0')}/${d.year}';
@@ -34,16 +38,18 @@ Uint8List buildExcelBytes(List<TransactionModel> transactions) {
   double income = 0;
   double expenses = 0;
   for (final t in sorted) {
-    if (t.isIncome) {
-      income += t.amount;
-    } else {
-      expenses += t.amount;
+    if (!t.isTransfer) {
+      if (t.isIncome) {
+        income += t.amount;
+      } else {
+        expenses += t.amount;
+      }
     }
     sheet.appendRow([
       xls.TextCellValue(_dateStr(t.date)),
       xls.TextCellValue(t.title),
       xls.TextCellValue(t.category),
-      xls.TextCellValue(t.isIncome ? 'Ingreso' : 'Gasto'),
+      xls.TextCellValue(_typeLabel(t)),
       xls.DoubleCellValue(t.amount),
       xls.TextCellValue(t.note ?? ''),
     ]);
@@ -73,10 +79,12 @@ Future<Uint8List> buildPdfBytes({
   required String periodLabel,
 }) async {
   final sorted = [...transactions]..sort((a, b) => b.date.compareTo(a.date));
-  final income =
-      sorted.where((t) => t.isIncome).fold(0.0, (s, t) => s + t.amount);
-  final expenses =
-      sorted.where((t) => !t.isIncome).fold(0.0, (s, t) => s + t.amount);
+  final income = sorted
+      .where((t) => t.isIncome && !t.isTransfer)
+      .fold(0.0, (s, t) => s + t.amount);
+  final expenses = sorted
+      .where((t) => !t.isIncome && !t.isTransfer)
+      .fold(0.0, (s, t) => s + t.amount);
 
   final logoBytes = await rootBundle.load('assets/images/logomonedo_new.png');
   final logo = pw.MemoryImage(logoBytes.buffer.asUint8List());
@@ -139,7 +147,7 @@ Future<Uint8List> buildPdfBytes({
                     _dateStr(t.date),
                     t.title,
                     t.category,
-                    t.isIncome ? 'Ingreso' : 'Gasto',
+                    _typeLabel(t),
                     CurrencyFormatter.format(t.amount),
                   ])
               .toList(),
@@ -157,12 +165,21 @@ Future<Uint8List> buildPdfBytes({
           cellDecoration: (index, data, rowNum) {
             final t = sorted[rowNum - 1];
             return pw.BoxDecoration(
-              color: t.isIncome ? _incomeRowBg : _expenseRowBg,
+              color: t.isTransfer
+                  ? _transferRowBg
+                  : (t.isIncome ? _incomeRowBg : _expenseRowBg),
             );
           },
           textStyleBuilder: (index, data, rowNum) {
             if (index != 3 && index != 4) return const pw.TextStyle(fontSize: 9);
             final t = sorted[rowNum - 1];
+            if (t.isTransfer) {
+              return pw.TextStyle(
+                fontSize: 9,
+                fontWeight: pw.FontWeight.bold,
+                color: PdfColors.grey700,
+              );
+            }
             return pw.TextStyle(
               fontSize: 9,
               fontWeight: pw.FontWeight.bold,

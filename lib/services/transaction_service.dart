@@ -118,11 +118,19 @@ class TransactionService {
   }
 
   // ---- Elimina una transacción y revierte su efecto en la cuenta y la meta ----
+  //
+  // La UI no ofrece eliminar transferencias (se revierten haciendo otra en
+  // sentido contrario), pero si algo llega a invocarlo igual se revierte el
+  // saldo de ambas cuentas involucradas para no dejar la transferencia a medias.
   Future<void> deleteTransaction(TransactionModel transaction) async {
     await _transactions.doc(transaction.id).delete();
     if (transaction.accountId != null) {
       await _accountService.adjustBalance(
           transaction.accountId!, -_signedAmount(transaction));
+    }
+    if (transaction.isTransfer && transaction.transferAccountId != null) {
+      await _accountService.adjustBalance(
+          transaction.transferAccountId!, -transaction.amount);
     }
     if (transaction.goalId != null) {
       await _adjustGoalSaved(
@@ -143,25 +151,25 @@ class TransactionService {
     return balance;
   }
 
-  // ---- Calcula el total de ingresos ----
+  // ---- Calcula el total de ingresos (excluye transferencias entre cuentas propias) ----
   double calculateIncome(List<TransactionModel> transactions) {
     return transactions
-        .where((t) => t.isIncome)
+        .where((t) => t.isIncome && !t.isTransfer)
         .fold(0.0, (sum, t) => sum + t.amount);
   }
 
-  // ---- Calcula el total de gastos (incluye ahorros) ----
+  // ---- Calcula el total de gastos (incluye ahorros, excluye transferencias) ----
   double calculateExpenses(List<TransactionModel> transactions) {
     return transactions
-        .where((t) => !t.isIncome)
+        .where((t) => !t.isIncome && !t.isTransfer)
         .fold(0.0, (sum, t) => sum + t.amount);
   }
 
-  // ---- Agrupa gastos por categoría para las gráficas ----
+  // ---- Agrupa gastos por categoría para las gráficas (excluye transferencias) ----
   Map<String, double> getExpensesByCategory(
       List<TransactionModel> transactions) {
     final Map<String, double> categoryMap = {};
-    for (var t in transactions.where((t) => !t.isIncome)) {
+    for (var t in transactions.where((t) => !t.isIncome && !t.isTransfer)) {
       categoryMap[t.category] =
           (categoryMap[t.category] ?? 0) + t.amount;
     }

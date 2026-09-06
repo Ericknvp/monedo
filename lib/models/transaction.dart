@@ -15,6 +15,8 @@ class TransactionModel {
   final String? note;        // Nota opcional
   final String? accountId;   // Cuenta de la que sale/entra el dinero
   final String? goalId;      // Meta de ahorro a la que pertenece (si aplica)
+  final bool isTransfer;         // true si es una transferencia entre cuentas propias
+  final String? transferAccountId; // Cuenta destino de la transferencia (accountId es la de origen)
 
   TransactionModel({
     required this.id,
@@ -27,6 +29,8 @@ class TransactionModel {
     this.note,
     this.accountId,
     this.goalId,
+    this.isTransfer = false,
+    this.transferAccountId,
   });
 
   // ---- Convierte un documento de Firestore a TransactionModel ----
@@ -42,6 +46,8 @@ class TransactionModel {
       note: map['note'],
       accountId: map['accountId'],
       goalId: map['goalId'],
+      isTransfer: map['isTransfer'] ?? false,
+      transferAccountId: map['transferAccountId'],
     );
   }
 
@@ -57,6 +63,8 @@ class TransactionModel {
       'note': note,
       'accountId': accountId,
       'goalId': goalId,
+      'isTransfer': isTransfer,
+      'transferAccountId': transferAccountId,
     };
   }
 }

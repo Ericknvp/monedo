@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../models/account.dart';
 
 class AccountService {
@@ -92,25 +93,48 @@ class AccountService {
   }
 
   // ---- Transfiere dinero entre dos cuentas propias, de forma atómica ----
+  //
+  // Además de ajustar ambos saldos, deja registrado un único movimiento de
+  // tipo transferencia (con la cuenta origen en `accountId` y la destino en
+  // `transferAccountId`) para que quede visible en el historial, las
+  // estadísticas y las exportaciones, en vez de desaparecer silenciosamente.
   Future<void> transferBetweenAccounts({
     required String fromAccountId,
     required String toAccountId,
     required double amount,
   }) async {
     if (fromAccountId == toAccountId || amount <= 0) return;
+    final userId = FirebaseAuth.instance.currentUser?.uid ?? '';
+    final txRef = _transactions.doc();
+
     await _firestore.runTransaction((txn) async {
       final fromRef = _accounts.doc(fromAccountId);
       final toRef = _accounts.doc(toAccountId);
       final fromSnap = await txn.get(fromRef);
       final toSnap = await txn.get(toRef);
-      final fromBalance =
-          ((fromSnap.data() as Map<String, dynamic>?)?['balance'] ?? 0)
-              .toDouble();
-      final toBalance =
-          ((toSnap.data() as Map<String, dynamic>?)?['balance'] ?? 0)
-              .toDouble();
+      final fromData = fromSnap.data() as Map<String, dynamic>?;
+      final toData = toSnap.data() as Map<String, dynamic>?;
+      final fromBalance = (fromData?['balance'] ?? 0).toDouble();
+      final toBalance = (toData?['balance'] ?? 0).toDouble();
+      final fromName = fromData?['name'] ?? '';
+      final toName = toData?['name'] ?? '';
+
       txn.update(fromRef, {'balance': fromBalance - amount});
       txn.update(toRef, {'balance': toBalance + amount});
+
+      txn.set(txRef, {
+        'userId': userId,
+        'title': 'Transferencia: $fromName → $toName',
+        'amount': amount,
+        'category': 'Transferencia',
+        'isIncome': false,
+        'date': DateTime.now().toIso8601String(),
+        'note': null,
+        'accountId': fromAccountId,
+        'goalId': null,
+        'isTransfer': true,
+        'transferAccountId': toAccountId,
+      });
     });
   }
 

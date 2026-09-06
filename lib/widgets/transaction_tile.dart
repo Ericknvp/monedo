@@ -28,13 +28,17 @@ class _TransactionTileState extends State<TransactionTile> {
   Widget build(BuildContext context) {
     final t = widget.transaction;
     final isIncome = t.isIncome;
-    final amountColor =
-        isIncome ? AppTheme.onSecondaryContainer : AppTheme.primary;
-    final iconBg = isIncome
-        ? AppTheme.secondaryContainer.withOpacity(0.4)
-        : AppTheme.surfaceContainerHighest;
-    final iconColor =
-        isIncome ? AppTheme.onSecondaryContainer : AppTheme.primary;
+    final amountColor = t.isTransfer
+        ? AppTheme.onSurfaceVariant
+        : (isIncome ? AppTheme.onSecondaryContainer : AppTheme.primary);
+    final iconBg = t.isTransfer
+        ? AppTheme.surfaceContainerHighest
+        : (isIncome
+            ? AppTheme.secondaryContainer.withOpacity(0.4)
+            : AppTheme.surfaceContainerHighest);
+    final iconColor = t.isTransfer
+        ? AppTheme.onSurfaceVariant
+        : (isIncome ? AppTheme.onSecondaryContainer : AppTheme.primary);
 
     final isDesktop = MediaQuery.of(context).size.width >= 900;
 
@@ -122,17 +126,21 @@ class _TransactionTileState extends State<TransactionTile> {
                     padding:
                         const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
                     decoration: BoxDecoration(
-                      color: isIncome
-                          ? AppTheme.secondaryContainer.withOpacity(0.5)
-                          : AppTheme.primaryContainer.withOpacity(0.15),
+                      color: t.isTransfer
+                          ? AppTheme.surfaceContainerHighest
+                          : (isIncome
+                              ? AppTheme.secondaryContainer.withOpacity(0.5)
+                              : AppTheme.primaryContainer.withOpacity(0.15)),
                       borderRadius: BorderRadius.circular(100),
                     ),
                     child: Text(
-                      isIncome ? 'Ingreso' : 'Gasto',
+                      t.isTransfer ? 'Transferencia' : (isIncome ? 'Ingreso' : 'Gasto'),
                       style: GoogleFonts.beVietnamPro(
-                        color: isIncome
-                            ? AppTheme.onSecondaryContainer
-                            : AppTheme.onPrimaryFixedVariant,
+                        color: t.isTransfer
+                            ? AppTheme.onSurfaceVariant
+                            : (isIncome
+                                ? AppTheme.onSecondaryContainer
+                                : AppTheme.onPrimaryFixedVariant),
                         fontSize: 10,
                         fontWeight: FontWeight.w700,
                         letterSpacing: 0.5,
@@ -156,7 +164,9 @@ class _TransactionTileState extends State<TransactionTile> {
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Text(
-                  CurrencyFormatter.formatWithSign(t.amount, t.isIncome),
+                  t.isTransfer
+                      ? CurrencyFormatter.format(t.amount)
+                      : CurrencyFormatter.formatWithSign(t.amount, t.isIncome),
                   style: GoogleFonts.plusJakartaSans(
                     color: amountColor,
                     fontSize: 15,
@@ -164,21 +174,25 @@ class _TransactionTileState extends State<TransactionTile> {
                   ),
                 ),
                 const SizedBox(height: 6),
-                AnimatedOpacity(
-                  opacity: (!isDesktop || _hovered) ? 1.0 : 0.0,
-                  duration: const Duration(milliseconds: 200),
-                  child: Row(
-                    children: [
-                      _actionBtn(Icons.edit_rounded,
-                          AppTheme.onSurfaceVariant,
-                          AppTheme.surfaceContainer, widget.onEdit),
-                      const SizedBox(width: 6),
-                      _actionBtn(Icons.delete_rounded,
-                          AppTheme.errorRed,
-                          AppTheme.errorContainer, widget.onDelete),
-                    ],
+                // Las transferencias entre cuentas propias no se editan ni
+                // eliminan desde aquí (son dos movimientos espejo); para
+                // revertirlas se hace otra transferencia en sentido inverso.
+                if (!t.isTransfer)
+                  AnimatedOpacity(
+                    opacity: (!isDesktop || _hovered) ? 1.0 : 0.0,
+                    duration: const Duration(milliseconds: 200),
+                    child: Row(
+                      children: [
+                        _actionBtn(Icons.edit_rounded,
+                            AppTheme.onSurfaceVariant,
+                            AppTheme.surfaceContainer, widget.onEdit),
+                        const SizedBox(width: 6),
+                        _actionBtn(Icons.delete_rounded,
+                            AppTheme.errorRed,
+                            AppTheme.errorContainer, widget.onDelete),
+                      ],
+                    ),
                   ),
-                ),
               ],
             ),
           ],

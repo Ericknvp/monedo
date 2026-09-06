@@ -401,8 +401,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
             final income = _txService.calculateIncome(monthTx);
             final expenses = _txService.calculateExpenses(monthTx);
 
-            final expList = monthTx.where((t) => !t.isIncome).toList();
-            final incList = monthTx.where((t) => t.isIncome).toList();
+            final expList =
+                monthTx.where((t) => !t.isIncome && !t.isTransfer).toList();
+            final incList =
+                monthTx.where((t) => t.isIncome && !t.isTransfer).toList();
             TransactionModel? maxExpTx;
             for (final t in expList) {
               if (maxExpTx == null || t.amount > maxExpTx.amount) maxExpTx = t;
