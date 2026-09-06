@@ -12,6 +12,7 @@ import '../utils/currency_formatter.dart';
 import '../utils/category_icons.dart';
 import 'categories_screen.dart';
 import 'accounts_screen.dart';
+import '../widgets/app_toast.dart';
 
 /// Abre el formulario de movimiento: como una ventana modal centrada (con
 /// fondo oscurecido) en escritorio, o a pantalla completa en móvil.
@@ -121,39 +122,91 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
     if (picked != null) setState(() => _selectedDate = picked);
   }
 
+  void _showError(String message) {
+    showAppToast(
+      context,
+      message: message,
+      icon: Icons.error_outline_rounded,
+      accentColor: AppTheme.errorRed,
+    );
+  }
+
+  Future<bool> _confirmInsufficientFunds(String accountName, double balance) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppTheme.surfaceContainerLowest,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Text('Fondos insuficientes',
+            style: GoogleFonts.plusJakartaSans(
+                color: AppTheme.primary, fontWeight: FontWeight.w700)),
+        content: Text(
+          '"$accountName" tiene ${CurrencyFormatter.format(balance)}. Este gasto dejaría la cuenta en negativo. ¿Quieres continuar de todas formas?',
+          style: GoogleFonts.beVietnamPro(color: AppTheme.onSurfaceVariant),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text('Cancelar',
+                style: TextStyle(color: AppTheme.onSurfaceVariant)),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppTheme.errorRed,
+              shape: const StadiumBorder(),
+            ),
+            child: const Text('Continuar'),
+          ),
+        ],
+      ),
+    );
+    return confirm == true;
+  }
+
   Future<void> _save() async {
     if (_titleCtrl.text.trim().isEmpty || _amountCtrl.text.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content:
-              Text('Por favor completa todos los campos',
-                  style: GoogleFonts.beVietnamPro()),
-          backgroundColor: AppTheme.errorRed,
-        ),
-      );
+      _showError('Por favor completa todos los campos');
       return;
     }
     final amount = CurrencyFormatter.parse(_amountCtrl.text.trim());
     if (amount == null || amount <= 0) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('El monto debe ser un número válido mayor a 0',
-              style: GoogleFonts.beVietnamPro()),
-          backgroundColor: AppTheme.errorRed,
-        ),
-      );
+      _showError('El monto debe ser un número válido mayor a 0');
       return;
     }
     if (_selectedAccountId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Selecciona de qué cuenta sale o entra el dinero',
-              style: GoogleFonts.beVietnamPro()),
-          backgroundColor: AppTheme.errorRed,
-        ),
-      );
+      _showError('Selecciona de qué cuenta sale o entra el dinero');
       return;
     }
+
+    if (!_isIncome) {
+      final userId = FirebaseAuth.instance.currentUser?.uid ?? '';
+      final accounts = await _accountService.getAccounts(userId).first;
+      AccountModel? account;
+      for (final a in accounts) {
+        if (a.id == _selectedAccountId) {
+          account = a;
+          break;
+        }
+      }
+      if (account != null) {
+        // Si se está editando el mismo movimiento sin cambiar de cuenta,
+        // el monto anterior ya estaba descontado: se repone antes de comparar.
+        final alreadyDeducted =
+            (widget.transaction != null &&
+                    !widget.transaction!.isIncome &&
+                    widget.transaction!.accountId == _selectedAccountId)
+                ? widget.transaction!.amount
+                : 0.0;
+        final availableBalance = account.balance + alreadyDeducted;
+        if (amount > availableBalance) {
+          final proceed =
+              await _confirmInsufficientFunds(account.name, availableBalance);
+          if (!proceed) return;
+        }
+      }
+    }
+
     setState(() => _isLoading = true);
     final userId = FirebaseAuth.instance.currentUser?.uid ?? '';
     final tx = TransactionModel(
@@ -698,27 +751,29 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
     );
   }
 
+  InputDecoration _fieldDecoration(String label, {IconData? prefixIcon}) {
+    return InputDecoration(
+      labelText: label,
+      labelStyle:
+          GoogleFonts.beVietnamPro(color: AppTheme.onSurfaceVariant, fontSize: 13),
+      prefixIcon: prefixIcon != null
+          ? Icon(prefixIcon, color: AppTheme.secondary, size: 20)
+          : null,
+    );
+  }
+
   Widget _buildDatePicker() {
+    // Se usa InputDecorator (con la misma _fieldDecoration de los demás
+    // campos) para que la caja tenga exactamente el mismo alto y estilo
+    // que el dropdown de categoría de al lado, y no se vean desalineados.
     return GestureDetector(
       onTap: _selectDate,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-        decoration: BoxDecoration(
-          border: const Border(
-            bottom: BorderSide(color: AppTheme.surfaceVariant, width: 2),
-          ),
-        ),
-        child: Row(
-          children: [
-            const Icon(Icons.calendar_today_outlined,
-                color: AppTheme.secondary, size: 20),
-            const SizedBox(width: 12),
-            Text(
-              '${_selectedDate.day}/${_selectedDate.month}/${_selectedDate.year}',
-              style: GoogleFonts.beVietnamPro(
-                  color: AppTheme.primary, fontSize: 15),
-            ),
-          ],
+      child: InputDecorator(
+        decoration:
+            _fieldDecoration('Fecha', prefixIcon: Icons.calendar_today_outlined),
+        child: Text(
+          '${_selectedDate.day}/${_selectedDate.month}/${_selectedDate.year}',
+          style: GoogleFonts.beVietnamPro(color: AppTheme.primary, fontSize: 15),
         ),
       ),
     );

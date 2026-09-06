@@ -72,6 +72,7 @@ class _PreferencesSectionState extends State<PreferencesSection> {
           icon: Icons.account_balance_wallet_outlined,
           label: 'Mis cuentas',
           builder: (_) => const AccountsScreen(),
+          onTap: () => openAccountsScreen(context),
         ),
         const SizedBox(height: 10),
         _navRow(
@@ -79,6 +80,7 @@ class _PreferencesSectionState extends State<PreferencesSection> {
           icon: Icons.category_outlined,
           label: 'Mis categorías',
           builder: (_) => const CategoriesScreen(),
+          onTap: () => openCategoriesScreen(context),
         ),
         const SizedBox(height: 10),
         _navRow(

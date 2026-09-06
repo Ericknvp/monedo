@@ -48,6 +48,13 @@ class TransactionService {
     });
   }
 
+  // ---- Obtiene el historial de aportes de una meta de ahorro ----
+  Stream<List<TransactionModel>> getGoalContributions(
+      String userId, String goalId) {
+    return getTransactions(userId)
+        .map((transactions) => transactions.where((t) => t.goalId == goalId).toList());
+  }
+
   // ---- Obtiene transacciones de la semana actual ----
   Stream<List<TransactionModel>> getTransactionsByWeek(String userId) {
     return getTransactions(userId).map((transactions) {

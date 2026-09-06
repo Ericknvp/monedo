@@ -30,8 +30,43 @@ Future<String?> showAddCategorySheet(
   );
 }
 
+/// Abre "Mis categorías": como una ventana modal centrada (con fondo
+/// oscurecido) en escritorio, o a pantalla completa en móvil.
+Future<void> openCategoriesScreen(BuildContext context) {
+  final isDesktop = MediaQuery.of(context).size.width >= 900;
+
+  if (isDesktop) {
+    return showGeneralDialog(
+      context: context,
+      barrierDismissible: true,
+      barrierLabel: 'Cerrar',
+      barrierColor: Colors.black.withOpacity(0.55),
+      transitionDuration: const Duration(milliseconds: 220),
+      pageBuilder: (_, __, ___) => const CategoriesScreen(isDialog: true),
+      transitionBuilder: (context, animation, secondaryAnimation, child) {
+        final curved =
+            CurvedAnimation(parent: animation, curve: Curves.easeOutCubic);
+        return FadeTransition(
+          opacity: curved,
+          child: ScaleTransition(
+            scale: Tween<double>(begin: 0.94, end: 1).animate(curved),
+            child: child,
+          ),
+        );
+      },
+    );
+  }
+
+  return Navigator.push(
+    context,
+    MaterialPageRoute(builder: (_) => const CategoriesScreen()),
+  );
+}
+
 class CategoriesScreen extends StatefulWidget {
-  const CategoriesScreen({super.key});
+  final bool isDialog;
+
+  const CategoriesScreen({super.key, this.isDialog = false});
 
   @override
   State<CategoriesScreen> createState() => _CategoriesScreenState();
@@ -90,7 +125,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final isDesktop = MediaQuery.of(context).size.width >= 900;
+    if (widget.isDialog) return _buildDialog();
 
     return Scaffold(
       backgroundColor: AppTheme.background,
@@ -110,15 +145,77 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
           ),
         ),
       ),
-      body: StreamBuilder<List<CategoryModel>>(
+      body: _buildBody(),
+    );
+  }
+
+  /// Ventana modal centrada (escritorio).
+  Widget _buildDialog() {
+    return Dialog(
+      backgroundColor: Colors.transparent,
+      insetPadding: const EdgeInsets.all(24),
+      child: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 640, maxHeight: 720),
+          child: Material(
+            color: AppTheme.surfaceContainerLowest,
+            borderRadius: BorderRadius.circular(28),
+            clipBehavior: Clip.antiAlias,
+            elevation: 24,
+            shadowColor: Colors.black.withOpacity(0.4),
+            child: Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(28, 24, 20, 4),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 44,
+                        height: 44,
+                        decoration: BoxDecoration(
+                          color: AppTheme.secondary.withOpacity(0.12),
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        child: const Icon(Icons.category_outlined,
+                            color: AppTheme.secondary, size: 20),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Text(
+                          'Mis categorías',
+                          style: GoogleFonts.plusJakartaSans(
+                            color: AppTheme.primary,
+                            fontSize: 19,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.close_rounded,
+                            color: AppTheme.onSurfaceVariant),
+                        onPressed: () => Navigator.pop(context),
+                      ),
+                    ],
+                  ),
+                ),
+                Expanded(child: _buildBody(isDialog: true)),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBody({bool isDialog = false}) {
+    final isDesktop = MediaQuery.of(context).size.width >= 900;
+
+    return StreamBuilder<List<CategoryModel>>(
         stream: _categoryService.getCategories(_userId),
         builder: (context, snap) {
           final custom = snap.data ?? [];
-          return Center(
-            child: ConstrainedBox(
-              constraints: BoxConstraints(maxWidth: isDesktop ? 640 : 700),
-              child: SingleChildScrollView(
-                padding: EdgeInsets.all(isDesktop ? 32 : 20),
+          final content = SingleChildScrollView(
+                padding: EdgeInsets.all(isDialog ? 24 : (isDesktop ? 32 : 20)),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -207,12 +304,17 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                     const SizedBox(height: 24),
                   ],
                 ),
-              ),
+              );
+
+          if (isDialog) return content;
+          return Center(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(maxWidth: isDesktop ? 640 : 700),
+              child: content,
             ),
           );
         },
-      ),
-    );
+      );
   }
 
   Widget _categoryTile({

@@ -52,6 +52,7 @@ class GoalService {
       date: DateTime.now(),
       note: 'Aporte a meta de ahorro',
       accountId: accountId,
+      goalId: goal.id,
     );
     await _transactionService.addTransaction(transaction);
   }

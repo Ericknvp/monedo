@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../services/auth_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/setup_gate.dart';
+import '../widgets/app_toast.dart';
 import 'register_screen.dart';
 import 'dashboard_screen.dart';
 
@@ -45,8 +46,11 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void _showError(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message), backgroundColor: AppTheme.errorRed),
+    showAppToast(
+      context,
+      message: message,
+      icon: Icons.error_outline_rounded,
+      accentColor: AppTheme.errorRed,
     );
   }
 

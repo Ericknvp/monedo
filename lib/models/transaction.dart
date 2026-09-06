@@ -14,6 +14,7 @@ class TransactionModel {
   final DateTime date;       // Fecha del movimiento
   final String? note;        // Nota opcional
   final String? accountId;   // Cuenta de la que sale/entra el dinero
+  final String? goalId;      // Meta de ahorro a la que pertenece (si aplica)
 
   TransactionModel({
     required this.id,
@@ -25,6 +26,7 @@ class TransactionModel {
     required this.date,
     this.note,
     this.accountId,
+    this.goalId,
   });
 
   // ---- Convierte un documento de Firestore a TransactionModel ----
@@ -39,6 +41,7 @@ class TransactionModel {
       date: DateTime.parse(map['date']),
       note: map['note'],
       accountId: map['accountId'],
+      goalId: map['goalId'],
     );
   }
 
@@ -53,6 +56,7 @@ class TransactionModel {
       'date': date.toIso8601String(),
       'note': note,
       'accountId': accountId,
+      'goalId': goalId,
     };
   }
 }

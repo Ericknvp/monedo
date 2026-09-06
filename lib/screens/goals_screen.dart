@@ -4,11 +4,14 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../services/goal_service.dart';
 import '../services/account_service.dart';
+import '../services/transaction_service.dart';
 import '../models/goal.dart';
 import '../models/account.dart';
+import '../models/transaction.dart';
 import '../theme/app_theme.dart';
 import '../utils/currency_formatter.dart';
 import '../utils/amount_input_formatter.dart';
+import '../widgets/app_toast.dart';
 
 class GoalsScreen extends StatelessWidget {
   const GoalsScreen({super.key});
@@ -298,6 +301,143 @@ class _GoalCard extends StatefulWidget {
 
 class _GoalCardState extends State<_GoalCard> {
   bool _hovered = false;
+  final _txService = TransactionService();
+
+  void _showHistory(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppTheme.surfaceContainerLowest,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        contentPadding: const EdgeInsets.fromLTRB(20, 12, 20, 8),
+        title: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: AppTheme.secondary.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Icon(Icons.savings_rounded,
+                  color: AppTheme.secondary, size: 20),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'HISTORIAL DE APORTES',
+                    style: GoogleFonts.beVietnamPro(
+                      color: AppTheme.onSurfaceVariant,
+                      fontSize: 10.5,
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: 1.1,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    widget.goal.title,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.plusJakartaSans(
+                      color: AppTheme.primary,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        content: SizedBox(
+          width: 380,
+          child: StreamBuilder<List<TransactionModel>>(
+            stream:
+                _txService.getGoalContributions(widget.userId, widget.goal.id),
+            builder: (context, snap) {
+              final contributions = snap.data ?? [];
+              if (snap.connectionState == ConnectionState.waiting) {
+                return const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 24),
+                  child: Center(
+                      child: CircularProgressIndicator(
+                          color: AppTheme.secondary)),
+                );
+              }
+              if (contributions.isEmpty) {
+                return Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 24),
+                  child: Text(
+                    'Todavía no has agregado ahorros a esta meta.',
+                    style: GoogleFonts.beVietnamPro(
+                        color: AppTheme.onSurfaceVariant),
+                  ),
+                );
+              }
+              return ConstrainedBox(
+                constraints: const BoxConstraints(maxHeight: 360),
+                child: ListView.separated(
+                  shrinkWrap: true,
+                  itemCount: contributions.length,
+                  separatorBuilder: (_, __) =>
+                      const Divider(height: 1, color: AppTheme.surfaceVariant),
+                  itemBuilder: (context, i) {
+                    final t = contributions[i];
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 10),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 34,
+                            height: 34,
+                            decoration: BoxDecoration(
+                              color: AppTheme.secondary.withOpacity(0.1),
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(Icons.savings_rounded,
+                                color: AppTheme.secondary, size: 16),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              '${t.date.day}/${t.date.month}/${t.date.year}',
+                              style: GoogleFonts.beVietnamPro(
+                                color: AppTheme.onSurfaceVariant,
+                                fontSize: 12.5,
+                              ),
+                            ),
+                          ),
+                          Text(
+                            CurrencyFormatter.format(t.amount),
+                            style: GoogleFonts.plusJakartaSans(
+                              color: AppTheme.primary,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+              );
+            },
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text('Cerrar',
+                style: TextStyle(color: AppTheme.onSurfaceVariant)),
+          ),
+        ],
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -323,7 +463,10 @@ class _GoalCardState extends State<_GoalCard> {
             ),
           ],
         ),
-        child: Column(
+        child: InkWell(
+          borderRadius: BorderRadius.circular(20),
+          onTap: () => _showHistory(context),
+          child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Banner
@@ -513,6 +656,7 @@ class _GoalCardState extends State<_GoalCard> {
             ),
           ],
         ),
+        ),
       ),
     );
   }
@@ -618,19 +762,12 @@ class _GoalCardState extends State<_GoalCard> {
                   );
                   if (ctx.mounted) Navigator.pop(ctx);
                   if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Row(
-                          children: [
-                            const Icon(Icons.savings_rounded,
-                                color: Colors.white, size: 18),
-                            const SizedBox(width: 8),
-                            Text(
-                                '${CurrencyFormatter.format(amount)} ahorrado'),
-                          ],
-                        ),
-                        backgroundColor: AppTheme.secondary,
-                      ),
+                    showAppToast(
+                      context,
+                      message:
+                          '${CurrencyFormatter.format(amount)} ahorrado',
+                      icon: Icons.savings_rounded,
+                      accentColor: AppTheme.secondary,
                     );
                   }
                 }
@@ -720,21 +857,21 @@ class _GoalSheetState extends State<_GoalSheet> {
 
   Future<void> _save() async {
     if (_titleCtrl.text.trim().isEmpty || _targetCtrl.text.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Por favor completa los campos obligatorios'),
-          backgroundColor: AppTheme.errorRed,
-        ),
+      showAppToast(
+        context,
+        message: 'Por favor completa los campos obligatorios',
+        icon: Icons.error_outline_rounded,
+        accentColor: AppTheme.errorRed,
       );
       return;
     }
     final target = CurrencyFormatter.parse(_targetCtrl.text.trim());
     if (target == null || target <= 0) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('El monto debe ser mayor a 0'),
-          backgroundColor: AppTheme.errorRed,
-        ),
+      showAppToast(
+        context,
+        message: 'El monto debe ser mayor a 0',
+        icon: Icons.error_outline_rounded,
+        accentColor: AppTheme.errorRed,
       );
       return;
     }

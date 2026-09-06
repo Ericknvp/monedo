@@ -38,10 +38,7 @@ class AccountsSummaryCard extends StatelessWidget {
               const Spacer(),
               InkWell(
                 borderRadius: BorderRadius.circular(8),
-                onTap: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const AccountsScreen()),
-                ),
+                onTap: () => openAccountsScreen(context),
                 child: Padding(
                   padding:
                       const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
@@ -68,10 +65,7 @@ class AccountsSummaryCard extends StatelessWidget {
           if (accounts.isEmpty)
             InkWell(
               borderRadius: BorderRadius.circular(14),
-              onTap: () => Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const AccountsScreen()),
-              ),
+              onTap: () => openAccountsScreen(context),
               child: Container(
                 width: double.infinity,
                 padding: const EdgeInsets.symmetric(vertical: 18),
@@ -100,7 +94,7 @@ class AccountsSummaryCard extends StatelessWidget {
             )
           else
             SizedBox(
-              height: 78,
+              height: 92,
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
                 itemCount: accounts.length + 1,
@@ -109,11 +103,7 @@ class AccountsSummaryCard extends StatelessWidget {
                   if (i == accounts.length) {
                     return InkWell(
                       borderRadius: BorderRadius.circular(14),
-                      onTap: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (_) => const AccountsScreen()),
-                      ),
+                      onTap: () => openAccountsScreen(context),
                       child: Container(
                         width: 64,
                         decoration: BoxDecoration(

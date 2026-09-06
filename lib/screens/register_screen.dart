@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../services/auth_service.dart';
 import '../theme/app_theme.dart';
+import '../widgets/app_toast.dart';
 import 'dashboard_screen.dart';
 import 'login_screen.dart';
 import 'onboarding_screen.dart';
@@ -57,8 +58,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }
 
   void _showError(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message), backgroundColor: AppTheme.errorRed),
+    showAppToast(
+      context,
+      message: message,
+      icon: Icons.error_outline_rounded,
+      accentColor: AppTheme.errorRed,
     );
   }
 
