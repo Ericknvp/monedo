@@ -45,7 +45,7 @@ class PreferencesScreen extends StatelessWidget {
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(color: AppTheme.surfaceVariant),
                 ),
-                child: const PreferencesSection(),
+                child: const PreferencesSection(showQuickLinks: false),
               ),
             ],
           ),

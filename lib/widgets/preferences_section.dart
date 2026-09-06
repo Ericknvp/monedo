@@ -14,7 +14,12 @@ import 'app_toast.dart';
 /// categorías personalizadas. Se reutiliza tanto dentro de "Acerca de"
 /// (móvil) como en su propia sección del menú (escritorio).
 class PreferencesSection extends StatefulWidget {
-  const PreferencesSection({super.key});
+  /// En escritorio, "Mis cuentas", "Mis categorías" y "Presupuestos" ya
+  /// tienen su propio ítem en el menú lateral, así que aquí no se repiten.
+  /// En móvil (sin esos ítems en la barra inferior) siguen apareciendo.
+  final bool showQuickLinks;
+
+  const PreferencesSection({super.key, this.showQuickLinks = true});
 
   @override
   State<PreferencesSection> createState() => _PreferencesSectionState();
@@ -68,30 +73,32 @@ class _PreferencesSectionState extends State<PreferencesSection> {
           ),
         ),
         const SizedBox(height: 20),
-        _navRow(
-          context,
-          icon: Icons.account_balance_wallet_outlined,
-          label: 'Mis cuentas',
-          builder: (_) => const AccountsScreen(),
-          onTap: () => openAccountsScreen(context),
-        ),
-        const SizedBox(height: 10),
-        _navRow(
-          context,
-          icon: Icons.category_outlined,
-          label: 'Mis categorías',
-          builder: (_) => const CategoriesScreen(),
-          onTap: () => openCategoriesScreen(context),
-        ),
-        const SizedBox(height: 10),
-        _navRow(
-          context,
-          icon: Icons.pie_chart_outline_rounded,
-          label: 'Presupuestos',
-          builder: (_) => const BudgetsScreen(),
-          onTap: () => openBudgetsScreen(context),
-        ),
-        const SizedBox(height: 10),
+        if (widget.showQuickLinks) ...[
+          _navRow(
+            context,
+            icon: Icons.account_balance_wallet_outlined,
+            label: 'Mis cuentas',
+            builder: (_) => const AccountsScreen(),
+            onTap: () => openAccountsScreen(context),
+          ),
+          const SizedBox(height: 10),
+          _navRow(
+            context,
+            icon: Icons.category_outlined,
+            label: 'Mis categorías',
+            builder: (_) => const CategoriesScreen(),
+            onTap: () => openCategoriesScreen(context),
+          ),
+          const SizedBox(height: 10),
+          _navRow(
+            context,
+            icon: Icons.pie_chart_outline_rounded,
+            label: 'Presupuestos',
+            builder: (_) => const BudgetsScreen(),
+            onTap: () => openBudgetsScreen(context),
+          ),
+          const SizedBox(height: 10),
+        ],
         _navRow(
           context,
           icon: Icons.ios_share_rounded,

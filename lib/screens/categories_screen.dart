@@ -72,8 +72,15 @@ Future<void> openCategoriesScreen(BuildContext context) {
 
 class CategoriesScreen extends StatefulWidget {
   final bool isDialog;
+  // Incrustada como sección propia del menú lateral de escritorio: sin
+  // AppBar ni botón de volver (el encabezado ya lo pone el panel principal).
+  final bool embedded;
 
-  const CategoriesScreen({super.key, this.isDialog = false});
+  const CategoriesScreen({
+    super.key,
+    this.isDialog = false,
+    this.embedded = false,
+  });
 
   @override
   State<CategoriesScreen> createState() => _CategoriesScreenState();
@@ -146,6 +153,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
   @override
   Widget build(BuildContext context) {
     if (widget.isDialog) return _buildDialog();
+    if (widget.embedded) return _buildBody();
 
     return Scaffold(
       backgroundColor: AppTheme.background,

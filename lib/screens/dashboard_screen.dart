@@ -28,6 +28,9 @@ import 'goals_screen.dart';
 import 'about_screen.dart';
 import 'preferences_screen.dart';
 import 'login_screen.dart';
+import 'accounts_screen.dart';
+import 'categories_screen.dart';
+import 'budgets_screen.dart';
 
 class _MonthData {
   final DateTime month;
@@ -65,6 +68,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
     'Movimientos',
     'Estadísticas',
     'Metas de ahorro',
+    'Mis cuentas',
+    'Mis categorías',
+    'Presupuestos',
     'Preferencias',
     'Acerca de',
   ];
@@ -74,6 +80,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
     (Icons.receipt_long_rounded, 'Movimientos'),
     (Icons.analytics_rounded, 'Estadísticas'),
     (Icons.savings_rounded, 'Metas'),
+    (Icons.account_balance_wallet_outlined, 'Mis cuentas'),
+    (Icons.category_outlined, 'Mis categorías'),
+    (Icons.pie_chart_outline_rounded, 'Presupuestos'),
     (Icons.tune_rounded, 'Preferencias'),
     (Icons.person_outline_rounded, 'Acerca de'),
   ];
@@ -181,6 +190,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
       const TransactionsScreen(),
       const StatisticsScreen(),
       const GoalsScreen(),
+      const AccountsScreen(embedded: true),
+      const CategoriesScreen(embedded: true),
+      const BudgetsScreen(embedded: true),
       const PreferencesScreen(),
       const AboutScreen(showPreferences: false),
     ];

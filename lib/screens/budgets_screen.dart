@@ -47,8 +47,15 @@ Future<void> openBudgetsScreen(BuildContext context) {
 
 class BudgetsScreen extends StatefulWidget {
   final bool isDialog;
+  // Incrustada como sección propia del menú lateral de escritorio: sin
+  // AppBar ni botón de volver (el encabezado ya lo pone el panel principal).
+  final bool embedded;
 
-  const BudgetsScreen({super.key, this.isDialog = false});
+  const BudgetsScreen({
+    super.key,
+    this.isDialog = false,
+    this.embedded = false,
+  });
 
   @override
   State<BudgetsScreen> createState() => _BudgetsScreenState();
@@ -63,6 +70,7 @@ class _BudgetsScreenState extends State<BudgetsScreen> {
   @override
   Widget build(BuildContext context) {
     if (widget.isDialog) return _buildDialog();
+    if (widget.embedded) return _buildBody();
 
     return Scaffold(
       backgroundColor: AppTheme.background,
