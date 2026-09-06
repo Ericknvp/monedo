@@ -615,6 +615,7 @@ class _AddCategorySheetState extends State<_AddCategorySheet> {
                   child: TextField(
                     controller: _nameCtrl,
                     onChanged: (_) => setState(() {}),
+                    textCapitalization: TextCapitalization.sentences,
                     style: GoogleFonts.beVietnamPro(
                         color: AppTheme.primary, fontSize: 15),
                     decoration: InputDecoration(

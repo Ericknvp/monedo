@@ -144,6 +144,7 @@ class _AccountsScreenState extends State<AccountsScreen> {
         content: TextField(
           controller: ctrl,
           autofocus: true,
+          textCapitalization: TextCapitalization.sentences,
           style: GoogleFonts.beVietnamPro(color: AppTheme.primary),
         ),
         actions: [
@@ -605,6 +606,7 @@ class _AddAccountSheetState extends State<_AddAccountSheet> {
               controller: _nameCtrl,
               focusNode: _nameFocus,
               autofocus: true,
+              textCapitalization: TextCapitalization.sentences,
               style:
                   GoogleFonts.beVietnamPro(color: AppTheme.primary, fontSize: 15),
               decoration: InputDecoration(

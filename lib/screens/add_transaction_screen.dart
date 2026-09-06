@@ -586,6 +586,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
       maxLines: maxLines,
       keyboardType: keyboardType,
       inputFormatters: inputFormatters,
+      textCapitalization: TextCapitalization.sentences,
       style: GoogleFonts.beVietnamPro(color: AppTheme.primary, fontSize: 15),
       decoration: InputDecoration(
         labelText: label,

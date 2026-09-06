@@ -1,6 +1,6 @@
 {
-    "name": "monedo",
-    "short_name": "monedo",
+    "name": "Monedo",
+    "short_name": "Monedo",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#FCF9F8",

@@ -340,12 +340,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
     Widget field(TextEditingController ctrl, String label, IconData icon,
         {bool obscure = false,
         bool isConfirm = false,
-        TextInputType? keyboardType}) {
+        TextInputType? keyboardType,
+        TextCapitalization textCapitalization = TextCapitalization.none}) {
       return TextField(
         controller: ctrl,
         obscureText:
             obscure ? (isConfirm ? _obscureConfirm : _obscurePassword) : false,
         keyboardType: keyboardType,
+        textCapitalization: textCapitalization,
         style: GoogleFonts.beVietnamPro(color: AppTheme.primary, fontSize: 16),
         decoration: _fieldDecoration(
           label,
@@ -371,7 +373,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        field(_usernameController, 'Nombre de usuario', Icons.person_outline),
+        field(_usernameController, 'Nombre de usuario', Icons.person_outline,
+            textCapitalization: TextCapitalization.words),
         const SizedBox(height: 20),
         field(_emailController, 'Correo electrónico', Icons.email_outlined,
             keyboardType: TextInputType.emailAddress),
