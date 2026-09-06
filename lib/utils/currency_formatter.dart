@@ -51,12 +51,11 @@ class CurrencyFormatter {
     notifier.value = currencyByCode(code);
   }
 
-  static String format(double amount) {
-    final isNegative = amount < 0;
-    final absAmount = amount.abs();
+  /// Agrupa un número con el separador de miles/decimales de la moneda
+  /// activa, sin símbolo (ej. "1.234,56" para COP, "1,234.56" para USD).
+  static String formatNumber(double amount) {
     final c = current;
-
-    final fixed = absAmount.toStringAsFixed(c.decimalDigits);
+    final fixed = amount.toStringAsFixed(c.decimalDigits);
     final parts = fixed.split('.');
     final intPart = parts[0];
     final decPart = parts.length > 1 ? parts[1] : '';
@@ -69,16 +68,30 @@ class CurrencyFormatter {
       buffer.write(intPart[i]);
     }
 
-    final formatted = decPart.isEmpty
-        ? '${c.symbol}${buffer.toString()}'
-        : '${c.symbol}${buffer.toString()}${c.decimalSeparator}$decPart';
+    return decPart.isEmpty
+        ? buffer.toString()
+        : '${buffer.toString()}${c.decimalSeparator}$decPart';
+  }
 
-    return isNegative ? '-$formatted' : formatted;
+  static String format(double amount) {
+    final isNegative = amount < 0;
+    final body = '${current.symbol}${formatNumber(amount.abs())}';
+    return isNegative ? '-$body' : body;
   }
 
   /// Formatea con signo + o - según sea ingreso o gasto.
   static String formatWithSign(double amount, bool isIncome) {
     final sign = isIncome ? '+' : '-';
     return '$sign${format(amount.abs())}';
+  }
+
+  /// Interpreta un texto ya agrupado con los separadores de la moneda
+  /// activa (lo que escribe el usuario en un campo de monto) y devuelve
+  /// el número real, o null si no es válido.
+  static double? parse(String text) {
+    final c = current;
+    var raw = text.trim().replaceAll(c.thousandsSeparator, '');
+    raw = raw.replaceAll(c.decimalSeparator, '.');
+    return double.tryParse(raw);
   }
 }
