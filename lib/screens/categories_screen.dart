@@ -4,19 +4,22 @@ import 'package:google_fonts/google_fonts.dart';
 import '../models/category.dart';
 import '../services/category_service.dart';
 import '../services/category_color_service.dart';
+import '../services/category_visibility_service.dart';
 import '../theme/app_theme.dart';
 import '../utils/category_icons.dart';
 import '../utils/category_colors.dart';
+import '../utils/category_visibility.dart';
 import '../widgets/icon_picker.dart';
 import '../widgets/category_color_picker.dart';
 
-/// Abre la hoja para crear una categoría propia. Devuelve el nombre de la
-/// categoría creada (para poder seleccionarla al instante donde se llamó),
-/// o null si se canceló.
+/// Abre la hoja para crear (o editar, si se pasa [existing]) una categoría
+/// propia. Devuelve el nombre de la categoría creada/editada (para poder
+/// seleccionarla al instante donde se llamó), o null si se canceló.
 Future<String?> showAddCategorySheet(
   BuildContext context, {
   required String userId,
   required Set<String> existingNames,
+  CategoryModel? existing,
 }) {
   return showModalBottomSheet<String>(
     context: context,
@@ -29,6 +32,7 @@ Future<String?> showAddCategorySheet(
       userId: userId,
       existingNames: existingNames,
       categoryService: CategoryService(),
+      existing: existing,
     ),
   );
 }
@@ -77,6 +81,7 @@ class CategoriesScreen extends StatefulWidget {
 
 class _CategoriesScreenState extends State<CategoriesScreen> {
   final _categoryService = CategoryService();
+  final _visibilityService = CategoryVisibilityService();
 
   String get _userId => FirebaseAuth.instance.currentUser?.uid ?? '';
 
@@ -123,6 +128,18 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
         ...kDefaultCategoryIcons.keys,
         ...existing.map((c) => c.name),
       },
+    );
+  }
+
+  void _openEditCategory(CategoryModel category, List<CategoryModel> existing) {
+    showAddCategorySheet(
+      context,
+      userId: _userId,
+      existingNames: {
+        ...kDefaultCategoryIcons.keys,
+        ...existing.map((c) => c.name),
+      },
+      existing: category,
     );
   }
 
@@ -290,6 +307,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                       ...custom.map((c) => _categoryTile(
                             icon: c.icon,
                             name: c.name,
+                            onEdit: () => _openEditCategory(c, custom),
                             onDelete: () => _confirmDelete(c),
                           )),
                     const SizedBox(height: 32),
@@ -301,9 +319,34 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                         fontWeight: FontWeight.w700,
                       ),
                     ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Deshabilita las que no uses para que no te estorben al registrar un movimiento.',
+                      style: GoogleFonts.beVietnamPro(
+                        color: AppTheme.onSurfaceVariant,
+                        fontSize: 12,
+                        height: 1.4,
+                      ),
+                    ),
                     const SizedBox(height: 12),
-                    ...kDefaultCategoryIcons.entries
-                        .map((e) => _categoryTile(icon: e.value, name: e.key)),
+                    ValueListenableBuilder<Set<String>>(
+                      valueListenable: CategoryVisibilityRegistry.disabled,
+                      builder: (context, disabledSet, __) => Column(
+                        children: kDefaultCategoryIcons.entries
+                            .map((e) => _categoryTile(
+                                  icon: e.value,
+                                  name: e.key,
+                                  isDefault: true,
+                                  disabled: disabledSet.contains(e.key),
+                                  onToggle: (v) => _visibilityService.setDisabled(
+                                    userId: _userId,
+                                    category: e.key,
+                                    disabled: v,
+                                  ),
+                                ))
+                            .toList(),
+                      ),
+                    ),
                     const SizedBox(height: 24),
                   ],
                 ),
@@ -323,62 +366,85 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
   Widget _categoryTile({
     required IconData icon,
     required String name,
+    VoidCallback? onEdit,
     VoidCallback? onDelete,
+    bool isDefault = false,
+    bool disabled = false,
+    ValueChanged<bool>? onToggle,
   }) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 10),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      decoration: BoxDecoration(
-        color: AppTheme.surfaceContainerLowest,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppTheme.surfaceVariant),
-      ),
-      child: Row(
-        children: [
-          ValueListenableBuilder<Map<String, Color>>(
-            valueListenable: CategoryColorRegistry.customColors,
-            builder: (context, _, __) {
-              final color = CategoryColors.forCategory(name);
-              return Tooltip(
-                message: 'Cambiar color',
-                child: InkWell(
-                  borderRadius: BorderRadius.circular(12),
-                  onTap: () => showCategoryColorPicker(
-                    context,
-                    userId: _userId,
-                    category: name,
-                  ),
-                  child: Container(
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      color: color.withOpacity(0.14),
-                      borderRadius: BorderRadius.circular(12),
+    return Opacity(
+      opacity: disabled ? 0.5 : 1,
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 10),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          color: AppTheme.surfaceContainerLowest,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: AppTheme.surfaceVariant),
+        ),
+        child: Row(
+          children: [
+            ValueListenableBuilder<Map<String, Color>>(
+              valueListenable: CategoryColorRegistry.customColors,
+              builder: (context, _, __) {
+                final color = CategoryColors.forCategory(name);
+                return Tooltip(
+                  message: 'Cambiar color',
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(12),
+                    onTap: () => showCategoryColorPicker(
+                      context,
+                      userId: _userId,
+                      category: name,
                     ),
-                    child: Icon(icon, color: color, size: 20),
+                    child: Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        color: color.withOpacity(0.14),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Icon(icon, color: color, size: 20),
+                    ),
                   ),
+                );
+              },
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Text(
+                name,
+                style: GoogleFonts.beVietnamPro(
+                  color: AppTheme.primary,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
                 ),
-              );
-            },
-          ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Text(
-              name,
-              style: GoogleFonts.beVietnamPro(
-                color: AppTheme.primary,
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
               ),
             ),
-          ),
-          if (onDelete != null)
-            IconButton(
-              icon: const Icon(Icons.delete_outline_rounded,
-                  color: AppTheme.errorRed, size: 20),
-              onPressed: onDelete,
-            ),
-        ],
+            if (isDefault)
+              Switch(
+                value: !disabled,
+                activeThumbColor: AppTheme.secondary,
+                onChanged: onToggle == null
+                    ? null
+                    : (v) => onToggle(!v),
+              )
+            else ...[
+              if (onEdit != null)
+                IconButton(
+                  icon: const Icon(Icons.edit_outlined,
+                      color: AppTheme.onSurfaceVariant, size: 20),
+                  onPressed: onEdit,
+                ),
+              if (onDelete != null)
+                IconButton(
+                  icon: const Icon(Icons.delete_outline_rounded,
+                      color: AppTheme.errorRed, size: 20),
+                  onPressed: onDelete,
+                ),
+            ],
+          ],
+        ),
       ),
     );
   }
@@ -388,11 +454,13 @@ class _AddCategorySheet extends StatefulWidget {
   final String userId;
   final Set<String> existingNames;
   final CategoryService categoryService;
+  final CategoryModel? existing;
 
   const _AddCategorySheet({
     required this.userId,
     required this.existingNames,
     required this.categoryService,
+    this.existing,
   });
 
   @override
@@ -400,10 +468,25 @@ class _AddCategorySheet extends StatefulWidget {
 }
 
 class _AddCategorySheetState extends State<_AddCategorySheet> {
+  final _colorService = CategoryColorService();
   final _nameCtrl = TextEditingController();
   IconData? _selectedIcon;
+  Color? _selectedColor;
   bool _saving = false;
   String? _error;
+
+  bool get _isEditing => widget.existing != null;
+
+  @override
+  void initState() {
+    super.initState();
+    final e = widget.existing;
+    if (e != null) {
+      _nameCtrl.text = e.name;
+      _selectedIcon = e.icon;
+      _selectedColor = CategoryColorRegistry.customColors.value[e.name];
+    }
+  }
 
   @override
   void dispose() {
@@ -422,7 +505,10 @@ class _AddCategorySheetState extends State<_AddCategorySheet> {
       setState(() => _error = 'Ponle un nombre a la categoría');
       return;
     }
-    if (widget.existingNames.any((e) => e.toLowerCase() == name.toLowerCase())) {
+    final renamed =
+        !_isEditing || name.toLowerCase() != widget.existing!.name.toLowerCase();
+    if (renamed &&
+        widget.existingNames.any((e) => e.toLowerCase() == name.toLowerCase())) {
       setState(() => _error = 'Ya existe una categoría con ese nombre');
       return;
     }
@@ -434,11 +520,28 @@ class _AddCategorySheetState extends State<_AddCategorySheet> {
       _saving = true;
       _error = null;
     });
-    await widget.categoryService.addCategory(
-      userId: widget.userId,
-      name: name,
-      iconCodePoint: _selectedIcon!.codePoint,
-    );
+    if (_isEditing) {
+      await widget.categoryService.updateCategory(
+        id: widget.existing!.id,
+        userId: widget.userId,
+        oldName: widget.existing!.name,
+        newName: name,
+        iconCodePoint: _selectedIcon!.codePoint,
+      );
+    } else {
+      await widget.categoryService.addCategory(
+        userId: widget.userId,
+        name: name,
+        iconCodePoint: _selectedIcon!.codePoint,
+      );
+    }
+    if (_selectedColor != null) {
+      await _colorService.setColor(
+        userId: widget.userId,
+        category: name,
+        color: _selectedColor!,
+      );
+    }
     if (mounted) Navigator.pop(context, name);
   }
 
@@ -467,7 +570,7 @@ class _AddCategorySheetState extends State<_AddCategorySheet> {
           ),
           const SizedBox(height: 20),
           Text(
-            'Nueva categoría',
+            _isEditing ? 'Editar categoría' : 'Nueva categoría',
             style: GoogleFonts.plusJakartaSans(
               color: AppTheme.primary,
               fontSize: 20,
@@ -475,48 +578,92 @@ class _AddCategorySheetState extends State<_AddCategorySheet> {
             ),
           ),
           const SizedBox(height: 24),
-          Row(
-            children: [
-              InkWell(
-                borderRadius: BorderRadius.circular(16),
-                onTap: _pickIcon,
-                child: Container(
-                  width: 64,
-                  height: 64,
-                  decoration: BoxDecoration(
-                    color: AppTheme.surfaceContainerLow,
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: AppTheme.outlineVariant),
-                  ),
-                  child: _selectedIcon == null
-                      ? const Icon(Icons.add_photo_alternate_outlined,
-                          color: AppTheme.onSurfaceVariant)
-                      : Icon(_selectedIcon, color: AppTheme.secondary, size: 28),
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: TextField(
-                  controller: _nameCtrl,
-                  style: GoogleFonts.beVietnamPro(
-                      color: AppTheme.primary, fontSize: 15),
-                  decoration: InputDecoration(
-                    labelText: 'Nombre de la categoría',
-                    hintText: 'Ej: Suscripciones',
-                    labelStyle: GoogleFonts.beVietnamPro(
-                        color: AppTheme.onSurfaceVariant, fontSize: 13),
-                    filled: true,
-                    fillColor: AppTheme.surfaceContainerLow,
-                    contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16, vertical: 18),
-                    border: OutlineInputBorder(
+          Builder(builder: (context) {
+            final previewColor = _selectedColor ??
+                (_nameCtrl.text.trim().isEmpty
+                    ? AppTheme.secondary
+                    : CategoryColors.forCategory(_nameCtrl.text.trim()));
+            return Row(
+              children: [
+                InkWell(
+                  borderRadius: BorderRadius.circular(16),
+                  onTap: _pickIcon,
+                  child: Container(
+                    width: 64,
+                    height: 64,
+                    decoration: BoxDecoration(
+                      color: previewColor.withOpacity(0.14),
                       borderRadius: BorderRadius.circular(16),
-                      borderSide: BorderSide.none,
+                      border: Border.all(color: AppTheme.outlineVariant),
+                    ),
+                    child: _selectedIcon == null
+                        ? const Icon(Icons.add_photo_alternate_outlined,
+                            color: AppTheme.onSurfaceVariant)
+                        : Icon(_selectedIcon, color: previewColor, size: 28),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: TextField(
+                    controller: _nameCtrl,
+                    onChanged: (_) => setState(() {}),
+                    style: GoogleFonts.beVietnamPro(
+                        color: AppTheme.primary, fontSize: 15),
+                    decoration: InputDecoration(
+                      labelText: 'Nombre de la categoría',
+                      hintText: 'Ej: Suscripciones',
+                      labelStyle: GoogleFonts.beVietnamPro(
+                          color: AppTheme.onSurfaceVariant, fontSize: 13),
+                      filled: true,
+                      fillColor: AppTheme.surfaceContainerLow,
+                      contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 18),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        borderSide: BorderSide.none,
+                      ),
                     ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            );
+          }),
+          const SizedBox(height: 20),
+          Text(
+            'Color',
+            style: GoogleFonts.beVietnamPro(
+              color: AppTheme.onSurfaceVariant,
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 10),
+          Wrap(
+            spacing: 12,
+            runSpacing: 12,
+            children: CategoryColors.swatches.map((color) {
+              final isSelected = _selectedColor?.value == color.value;
+              return InkWell(
+                borderRadius: BorderRadius.circular(100),
+                onTap: () => setState(() => _selectedColor = color),
+                child: Container(
+                  width: 34,
+                  height: 34,
+                  decoration: BoxDecoration(
+                    color: color,
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: isSelected ? AppTheme.primary : Colors.transparent,
+                      width: 2.5,
+                    ),
+                  ),
+                  child: isSelected
+                      ? const Icon(Icons.check_rounded,
+                          color: Colors.white, size: 16)
+                      : null,
+                ),
+              );
+            }).toList(),
           ),
           if (_error != null) ...[
             const SizedBox(height: 12),

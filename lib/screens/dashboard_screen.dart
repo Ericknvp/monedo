@@ -7,6 +7,7 @@ import '../services/auth_service.dart';
 import '../services/transaction_service.dart';
 import '../services/category_service.dart';
 import '../services/category_color_service.dart';
+import '../services/category_visibility_service.dart';
 import '../services/account_service.dart';
 import '../models/transaction.dart';
 import '../models/user_model.dart';
@@ -16,6 +17,7 @@ import '../theme/app_theme.dart';
 import '../utils/currency_formatter.dart';
 import '../utils/category_icons.dart';
 import '../utils/category_colors.dart';
+import '../utils/category_visibility.dart';
 import '../widgets/balance_card.dart';
 import '../widgets/accounts_summary.dart';
 import '../widgets/transaction_tile.dart';
@@ -47,9 +49,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
   final _txService = TransactionService();
   final _categoryService = CategoryService();
   final _categoryColorService = CategoryColorService();
+  final _categoryVisibilityService = CategoryVisibilityService();
   final _accountService = AccountService();
   StreamSubscription<List<CategoryModel>>? _categorySub;
   StreamSubscription<Map<String, Color>>? _categoryColorSub;
+  StreamSubscription<Set<String>>? _categoryVisibilitySub;
   int _selectedIndex = 0;
   UserModel? _currentUser;
   late final Future<List<_MonthData>> _chartFuture;
@@ -88,12 +92,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
     _categoryColorSub = _categoryColorService.getColors(uid).listen((colors) {
       CategoryColorRegistry.customColors.value = colors;
     });
+    _categoryVisibilitySub =
+        _categoryVisibilityService.getDisabled(uid).listen((disabled) {
+      CategoryVisibilityRegistry.disabled.value = disabled;
+    });
   }
 
   @override
   void dispose() {
     _categorySub?.cancel();
     _categoryColorSub?.cancel();
+    _categoryVisibilitySub?.cancel();
     super.dispose();
   }
 

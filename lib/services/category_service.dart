@@ -36,6 +36,46 @@ class CategoryService {
     ).toMap());
   }
 
+  // ---- Edita una categoría personalizada existente ----
+  //
+  // Si cambia el nombre, migra los movimientos que ya usaban el nombre
+  // anterior (y su color elegido, si tenía uno) para no dejarlos huérfanos.
+  Future<void> updateCategory({
+    required String id,
+    required String userId,
+    required String oldName,
+    required String newName,
+    required int iconCodePoint,
+  }) async {
+    await _categories.doc(id).update({
+      'name': newName,
+      'iconCodePoint': iconCodePoint,
+    });
+    if (oldName == newName) return;
+
+    final txSnap = await _firestore
+        .collection('transactions')
+        .where('userId', isEqualTo: userId)
+        .where('category', isEqualTo: oldName)
+        .get();
+    if (txSnap.docs.isNotEmpty) {
+      final batch = _firestore.batch();
+      for (final doc in txSnap.docs) {
+        batch.update(doc.reference, {'category': newName});
+      }
+      await batch.commit();
+    }
+
+    final colorSnap = await _firestore
+        .collection('categoryColors')
+        .where('userId', isEqualTo: userId)
+        .where('category', isEqualTo: oldName)
+        .get();
+    for (final doc in colorSnap.docs) {
+      await doc.reference.update({'category': newName});
+    }
+  }
+
   // ---- Elimina una categoría personalizada ----
   Future<void> deleteCategory(String id) async {
     await _categories.doc(id).delete();

@@ -11,6 +11,7 @@ import '../utils/amount_input_formatter.dart';
 import '../utils/currency_formatter.dart';
 import '../utils/category_icons.dart';
 import '../utils/category_colors.dart';
+import '../utils/category_visibility.dart';
 import 'categories_screen.dart';
 import 'accounts_screen.dart';
 import '../widgets/app_toast.dart';
@@ -601,12 +602,19 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
     return ValueListenableBuilder<Map<String, IconData>>(
       valueListenable: CategoryIconRegistry.customIcons,
       builder: (context, customIcons, _) {
+        return ValueListenableBuilder<Set<String>>(
+          valueListenable: CategoryVisibilityRegistry.disabled,
+          builder: (context, disabledDefaults, __) {
         final customNames = customIcons.keys
             .where((n) => !_categories.contains(n))
             .toList()
           ..sort();
+        // Las categorías predeterminadas deshabilitadas no aparecen para
+        // elegir, salvo que sea la que ya tenía asignada este movimiento.
+        final visibleDefaults =
+            _categories.where((n) => !disabledDefaults.contains(n));
         final allNames = <String>{
-          ..._categories,
+          ...visibleDefaults,
           ...customNames,
           _selectedCategory,
         }.toList();
@@ -677,6 +685,8 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
               ),
             ),
           ],
+        );
+          },
         );
       },
     );
