@@ -19,6 +19,7 @@ import 'transactions_screen.dart';
 import 'statistics_screen.dart';
 import 'goals_screen.dart';
 import 'about_screen.dart';
+import 'preferences_screen.dart';
 import 'login_screen.dart';
 
 class _MonthData {
@@ -45,11 +46,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
   UserModel? _currentUser;
   late final Future<List<_MonthData>> _chartFuture;
 
+  // Nota: estas listas solo se usan en el menú lateral de escritorio.
+  // La barra de navegación de móvil tiene sus propios destinos fijos.
   static const _sectionTitles = [
     'Vista general',
     'Movimientos',
     'Estadísticas',
     'Metas de ahorro',
+    'Preferencias',
     'Acerca de',
   ];
 
@@ -58,6 +62,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     (Icons.receipt_long_rounded, 'Movimientos'),
     (Icons.analytics_rounded, 'Estadísticas'),
     (Icons.savings_rounded, 'Metas'),
+    (Icons.tune_rounded, 'Preferencias'),
     (Icons.person_outline_rounded, 'Acerca de'),
   ];
 
@@ -155,8 +160,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
       const TransactionsScreen(),
       const StatisticsScreen(),
       const GoalsScreen(),
-      const AboutScreen(),
+      const PreferencesScreen(),
+      const AboutScreen(showPreferences: false),
     ];
+    final safeIndex = _selectedIndex.clamp(0, pages.length - 1);
 
     return Scaffold(
       backgroundColor: AppTheme.background,
@@ -167,7 +174,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             child: Column(
               children: [
                 _buildDesktopHeader(userId),
-                Expanded(child: pages[_selectedIndex]),
+                Expanded(child: pages[safeIndex]),
               ],
             ),
           ),
@@ -393,12 +400,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
             final expList = monthTx.where((t) => !t.isIncome).toList();
             final incList = monthTx.where((t) => t.isIncome).toList();
-            final maxExp = expList.isEmpty
-                ? 0.0
-                : expList.map((t) => t.amount).reduce((a, b) => a > b ? a : b);
-            final maxInc = incList.isEmpty
-                ? 0.0
-                : incList.map((t) => t.amount).reduce((a, b) => a > b ? a : b);
+            TransactionModel? maxExpTx;
+            for (final t in expList) {
+              if (maxExpTx == null || t.amount > maxExpTx.amount) maxExpTx = t;
+            }
+            TransactionModel? maxIncTx;
+            for (final t in incList) {
+              if (maxIncTx == null || t.amount > maxIncTx.amount) maxIncTx = t;
+            }
 
             return SingleChildScrollView(
               padding: const EdgeInsets.all(40),
@@ -424,7 +433,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       const SizedBox(width: 16),
                       Expanded(
                         child: _statCard(
-                          CurrencyFormatter.format(maxExp),
+                          maxExpTx == null
+                              ? CurrencyFormatter.format(0)
+                              : '${CurrencyFormatter.format(maxExpTx.amount)} de ${maxExpTx.title}',
                           'Mayor gasto',
                           Icons.trending_down_rounded,
                           AppTheme.errorContainer.withOpacity(0.3),
@@ -434,7 +445,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       const SizedBox(width: 16),
                       Expanded(
                         child: _statCard(
-                          CurrencyFormatter.format(maxInc),
+                          maxIncTx == null
+                              ? CurrencyFormatter.format(0)
+                              : '${CurrencyFormatter.format(maxIncTx.amount)} de ${maxIncTx.title}',
                           'Mayor ingreso',
                           Icons.trending_up_rounded,
                           AppTheme.secondaryContainer.withOpacity(0.4),
@@ -609,8 +622,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
           const SizedBox(height: 14),
           Text(
             value,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
             style: GoogleFonts.plusJakartaSans(
-                color: AppTheme.primary, fontSize: 20, fontWeight: FontWeight.w700),
+                color: AppTheme.primary, fontSize: 18, fontWeight: FontWeight.w700),
           ),
           const SizedBox(height: 4),
           Text(
@@ -902,6 +917,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
       const GoalsScreen(),
       const AboutScreen(),
     ];
+    // El menú de escritorio tiene una pestaña más (Preferencias), así que
+    // el índice guardado puede no existir aquí si se redimensiona la
+    // ventana estando en una pestaña que solo vive en escritorio.
+    final safeIndex = _selectedIndex.clamp(0, pages.length - 1);
 
     return Scaffold(
       backgroundColor: AppTheme.background,
@@ -940,8 +959,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
         ],
       ),
-      body: pages[_selectedIndex],
-      floatingActionButton: _selectedIndex == 0
+      body: pages[safeIndex],
+      floatingActionButton: safeIndex == 0
           ? FloatingActionButton(
               backgroundColor: AppTheme.secondary,
               foregroundColor: Colors.white,
@@ -952,7 +971,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       bottomNavigationBar: NavigationBar(
         backgroundColor: AppTheme.surfaceContainer,
         indicatorColor: AppTheme.secondary,
-        selectedIndex: _selectedIndex,
+        selectedIndex: safeIndex,
         labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
         onDestinationSelected: (i) => setState(() => _selectedIndex = i),
         destinations: const [

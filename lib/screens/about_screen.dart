@@ -1,42 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../services/auth_service.dart';
 import '../theme/app_theme.dart';
-import '../utils/currency_formatter.dart';
 import '../utils/web_redirect.dart' if (dart.library.io) '../utils/web_redirect_stub.dart';
-import '../widgets/currency_picker.dart';
-import '../widgets/app_toast.dart';
-import 'categories_screen.dart';
+import '../widgets/preferences_section.dart';
 
-class AboutScreen extends StatefulWidget {
-  const AboutScreen({super.key});
+class AboutScreen extends StatelessWidget {
+  /// En escritorio, Preferencias vive en su propia sección del menú, así
+  /// que aquí no se repite. En móvil sigue mostrándose dentro de Acerca de.
+  final bool showPreferences;
 
-  @override
-  State<AboutScreen> createState() => _AboutScreenState();
-}
-
-class _AboutScreenState extends State<AboutScreen> {
-  final _authService = AuthService();
-  late Currency _currency = CurrencyFormatter.current;
-  bool _savingCurrency = false;
-
-  Future<void> _changeCurrency(Currency currency) async {
-    setState(() => _savingCurrency = true);
-    await _authService.updateCurrency(currency.code);
-    CurrencyFormatter.setCurrency(currency.code);
-    setState(() {
-      _currency = currency;
-      _savingCurrency = false;
-    });
-    if (mounted) {
-      showAppToast(
-        context,
-        message: 'Moneda actualizada a ${currency.code}',
-        icon: Icons.check_circle_rounded,
-        accentColor: AppTheme.secondary,
-      );
-    }
-  }
+  const AboutScreen({super.key, this.showPreferences = true});
 
   @override
   Widget build(BuildContext context) {
@@ -84,6 +57,34 @@ class _AboutScreenState extends State<AboutScreen> {
               const SizedBox(height: 40),
 
               // About app card
+              if (showPreferences) ...[
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(24),
+                  decoration: BoxDecoration(
+                    color: AppTheme.surfaceContainerLowest,
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: AppTheme.surfaceVariant),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Preferencias',
+                        style: GoogleFonts.plusJakartaSans(
+                          color: AppTheme.primary,
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      const PreferencesSection(),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 24),
+              ],
+
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(24),
@@ -120,88 +121,6 @@ class _AboutScreenState extends State<AboutScreen> {
                     _featureRow(Icons.savings_rounded, 'Metas de ahorro con seguimiento'),
                     const SizedBox(height: 10),
                     _featureRow(Icons.devices_rounded, 'Diseño responsive: web y móvil'),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 24),
-
-              // Preferences card
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(24),
-                decoration: BoxDecoration(
-                  color: AppTheme.surfaceContainerLowest,
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: AppTheme.surfaceVariant),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Preferencias',
-                      style: GoogleFonts.plusJakartaSans(
-                        color: AppTheme.primary,
-                        fontSize: 18,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    IgnorePointer(
-                      ignoring: _savingCurrency,
-                      child: Opacity(
-                        opacity: _savingCurrency ? 0.6 : 1,
-                        child: CurrencyPickerField(
-                          selected: _currency,
-                          onChanged: _changeCurrency,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    Text(
-                      'Cambiar la moneda solo actualiza el formato de tus cifras; no convierte los montos ya registrados.',
-                      style: GoogleFonts.beVietnamPro(
-                        color: AppTheme.onSurfaceVariant,
-                        fontSize: 12,
-                        height: 1.4,
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    InkWell(
-                      borderRadius: BorderRadius.circular(16),
-                      onTap: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (_) => const CategoriesScreen()),
-                      ),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 20, vertical: 16),
-                        decoration: BoxDecoration(
-                          color: AppTheme.surfaceContainerLow,
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: AppTheme.outlineVariant),
-                        ),
-                        child: Row(
-                          children: [
-                            const Icon(Icons.category_outlined,
-                                color: AppTheme.onSurfaceVariant, size: 20),
-                            const SizedBox(width: 14),
-                            Expanded(
-                              child: Text(
-                                'Mis categorías',
-                                style: GoogleFonts.beVietnamPro(
-                                  color: AppTheme.primary,
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ),
-                            const Icon(Icons.chevron_right_rounded,
-                                color: AppTheme.onSurfaceVariant),
-                          ],
-                        ),
-                      ),
-                    ),
                   ],
                 ),
               ),

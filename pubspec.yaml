@@ -22,6 +22,8 @@ dependencies:
   # Iconos
   cupertino_icons: ^1.0.2
   excel: ^4.0.6
+  pdf: ^3.11.1
+  share_plus: ^10.1.2
   path_provider: ^2.1.5
   google_fonts: ^6.2.1
   url_launcher: ^6.3.0

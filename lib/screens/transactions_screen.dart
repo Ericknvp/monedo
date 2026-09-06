@@ -7,6 +7,7 @@ import '../theme/app_theme.dart';
 import '../utils/currency_formatter.dart';
 import '../widgets/transaction_tile.dart';
 import 'add_transaction_screen.dart';
+import 'export_screen.dart';
 
 class TransactionsScreen extends StatefulWidget {
   const TransactionsScreen({super.key});
@@ -93,38 +94,62 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
               color: AppTheme.background,
               padding: const EdgeInsets.fromLTRB(24, 16, 24, 16),
               child: Row(
-                children: _filters.map((f) {
-                  final isSelected = _filter == f;
-                  return Padding(
-                    padding: const EdgeInsets.only(right: 8),
-                    child: GestureDetector(
-                      onTap: () => _setFilter(f),
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 180),
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 20, vertical: 9),
-                        decoration: BoxDecoration(
-                          color: isSelected
-                              ? AppTheme.primary
-                              : AppTheme.surfaceContainer,
-                          borderRadius: BorderRadius.circular(100),
-                        ),
-                        child: Text(
-                          f,
-                          style: GoogleFonts.beVietnamPro(
-                            color: isSelected
-                                ? Colors.white
-                                : AppTheme.onSurfaceVariant,
-                            fontSize: 13,
-                            fontWeight: isSelected
-                                ? FontWeight.w700
-                                : FontWeight.w500,
+                children: [
+                  Expanded(
+                    child: Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: _filters.map((f) {
+                        final isSelected = _filter == f;
+                        return GestureDetector(
+                          onTap: () => _setFilter(f),
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 180),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 20, vertical: 9),
+                            decoration: BoxDecoration(
+                              color: isSelected
+                                  ? AppTheme.primary
+                                  : AppTheme.surfaceContainer,
+                              borderRadius: BorderRadius.circular(100),
+                            ),
+                            child: Text(
+                              f,
+                              style: GoogleFonts.beVietnamPro(
+                                color: isSelected
+                                    ? Colors.white
+                                    : AppTheme.onSurfaceVariant,
+                                fontSize: 13,
+                                fontWeight: isSelected
+                                    ? FontWeight.w700
+                                    : FontWeight.w500,
+                              ),
+                            ),
                           ),
+                        );
+                      }).toList(),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Tooltip(
+                    message: 'Exportar datos',
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(100),
+                      onTap: () => openExportScreen(context),
+                      child: Container(
+                        width: 38,
+                        height: 38,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: AppTheme.surfaceContainer,
+                          border: Border.all(color: AppTheme.outlineVariant),
                         ),
+                        child: const Icon(Icons.ios_share_rounded,
+                            size: 17, color: AppTheme.primary),
                       ),
                     ),
-                  );
-                }).toList(),
+                  ),
+                ],
               ),
             ),
 
