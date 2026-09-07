@@ -19,7 +19,6 @@ Monedo permite registrar y visualizar movimientos financieros de forma clara e i
 - Cuentas de dinero (efectivo, banco, billeteras) con saldo propio, transferencias entre ellas y resumen "Dónde está tu dinero" en el dashboard
 - Registro de ingresos y gastos con cuenta, categoría, fecha y nota opcional
 - Categorías personalizadas con selector de ícono, además de las categorías por defecto
-- Advertencia de fondos insuficientes al registrar un gasto que dejaría una cuenta en negativo
 - Edición y eliminación de movimientos
 - Filtros por tipo: Todos, Ingresos, Gastos
 - Balance actual con desglose mensual de ingresos y gastos
