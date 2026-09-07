@@ -18,6 +18,7 @@ import 'screens/reset_password_screen.dart';
 import 'screens/dashboard_screen.dart';
 import 'screens/onboarding_screen.dart';
 import 'widgets/setup_gate.dart';
+import 'widgets/branded_loading_screen.dart';
 import 'utils/currency_formatter.dart';
 import 'utils/web_redirect.dart' if (dart.library.io) 'utils/web_redirect_stub.dart';
 
@@ -78,9 +79,7 @@ class AuthWrapper extends StatelessWidget {
         }
 
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Scaffold(
-            body: Center(child: CircularProgressIndicator()),
-          );
+          return const BrandedLoadingScreen();
         }
 
         if (snapshot.hasData) {
@@ -98,9 +97,7 @@ class AuthWrapper extends StatelessWidget {
           }
           // Sin parámetro → redirige a la landing page
           redirectToLanding();
-          return const Scaffold(
-            body: Center(child: CircularProgressIndicator()),
-          );
+          return const BrandedLoadingScreen();
         }
 
         // Mobile: muestra onboarding (solo la primera vez) y luego login
@@ -140,9 +137,7 @@ class _OnboardingGateState extends State<OnboardingGate> {
   @override
   Widget build(BuildContext context) {
     if (_hasSeenOnboarding == null) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
+      return const BrandedLoadingScreen();
     }
     if (_hasSeenOnboarding == false) {
       return OnboardingScreen(

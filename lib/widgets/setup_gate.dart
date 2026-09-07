@@ -4,6 +4,7 @@ import '../services/auth_service.dart';
 import '../services/account_service.dart';
 import '../screens/onboarding_screen.dart';
 import '../utils/currency_formatter.dart';
+import 'branded_loading_screen.dart';
 
 /// Verifica que el usuario tenga moneda y al menos una cuenta configuradas.
 /// Cuentas creadas (o que iniciaron sesión) antes de estas funciones
@@ -46,9 +47,7 @@ class _SetupGateState extends State<SetupGate> {
   @override
   Widget build(BuildContext context) {
     if (_needsCurrency == null || _needsAccounts == null) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
+      return const BrandedLoadingScreen();
     }
     if (_needsCurrency == true || _needsAccounts == true) {
       return OnboardingScreen(
