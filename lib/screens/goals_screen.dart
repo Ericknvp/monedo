@@ -15,6 +15,8 @@ import '../utils/currency_formatter.dart';
 import '../utils/amount_input_formatter.dart';
 import '../widgets/app_toast.dart';
 import '../widgets/branded_loading_screen.dart';
+import '../widgets/blurred_image_frame.dart';
+import 'add_transaction_screen.dart';
 
 class GoalsScreen extends StatelessWidget {
   const GoalsScreen({super.key});
@@ -338,139 +340,351 @@ class _GoalCardState extends State<_GoalCard> {
     return confirm == true;
   }
 
-  void _showHistory(BuildContext context) {
-    showDialog(
+  // Hoja de detalle completa de la meta: imagen grande, datos, acciones
+  // (editar/eliminar/agregar ahorro) e historial de aportes, todo junto.
+  void _showDetail(BuildContext context) {
+    final g = widget.goal;
+    final percent = g.progressPercent;
+    final isComplete = g.isCompleted;
+    final accentColor = isComplete ? AppTheme.secondary : AppTheme.primary;
+    final hasImage = g.imageUrl != null && g.imageUrl!.isNotEmpty;
+
+    showModalBottomSheet(
       context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: AppTheme.surfaceContainerLowest,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        contentPadding: const EdgeInsets.fromLTRB(20, 12, 20, 8),
-        title: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                color: AppTheme.secondary.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: const Icon(Icons.savings_rounded,
-                  color: AppTheme.secondary, size: 20),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'HISTORIAL DE APORTES',
-                    style: GoogleFonts.beVietnamPro(
-                      color: AppTheme.onSurfaceVariant,
-                      fontSize: 10.5,
-                      fontWeight: FontWeight.w600,
-                      letterSpacing: 1.1,
+      isScrollControlled: true,
+      backgroundColor: AppTheme.surfaceContainerLowest,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (sheetCtx) => FractionallySizedBox(
+        heightFactor: 0.92,
+        child: SingleChildScrollView(
+          child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: Container(
+                    width: 40,
+                    height: 4,
+                    margin: const EdgeInsets.symmetric(vertical: 12),
+                    decoration: BoxDecoration(
+                      color: AppTheme.outlineVariant,
+                      borderRadius: BorderRadius.circular(2),
                     ),
                   ),
-                  const SizedBox(height: 2),
-                  Text(
-                    widget.goal.title,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.plusJakartaSans(
-                      color: AppTheme.primary,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-        content: SizedBox(
-          width: 380,
-          child: StreamBuilder<List<TransactionModel>>(
-            stream:
-                _txService.getGoalContributions(widget.userId, widget.goal.id),
-            builder: (context, snap) {
-              final contributions = snap.data ?? [];
-              if (snap.connectionState == ConnectionState.waiting) {
-                return const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 24),
-                  child: Center(
-                      child: CircularProgressIndicator(
-                          color: AppTheme.secondary)),
-                );
-              }
-              if (contributions.isEmpty) {
-                return Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 24),
-                  child: Text(
-                    'Todavía no has agregado ahorros a esta meta.',
-                    style: GoogleFonts.beVietnamPro(
-                        color: AppTheme.onSurfaceVariant),
-                  ),
-                );
-              }
-              return ConstrainedBox(
-                constraints: const BoxConstraints(maxHeight: 360),
-                child: ListView.separated(
-                  shrinkWrap: true,
-                  itemCount: contributions.length,
-                  separatorBuilder: (_, __) =>
-                      const Divider(height: 1, color: AppTheme.surfaceVariant),
-                  itemBuilder: (context, i) {
-                    final t = contributions[i];
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 10),
-                      child: Row(
+                ),
+                SizedBox(
+                  height: 220,
+                  width: double.infinity,
+                  child: hasImage
+                      ? BlurredImageFrame(
+                          url: g.imageUrl,
+                          errorBuilder: (_) => _banner(accentColor),
+                        )
+                      : _banner(accentColor),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Container(
-                            width: 34,
-                            height: 34,
-                            decoration: BoxDecoration(
-                              color: AppTheme.secondary.withOpacity(0.1),
-                              shape: BoxShape.circle,
-                            ),
-                            child: const Icon(Icons.savings_rounded,
-                                color: AppTheme.secondary, size: 16),
-                          ),
-                          const SizedBox(width: 12),
                           Expanded(
                             child: Text(
-                              '${t.date.day}/${t.date.month}/${t.date.year}',
-                              style: GoogleFonts.beVietnamPro(
-                                color: AppTheme.onSurfaceVariant,
-                                fontSize: 12.5,
+                              g.title,
+                              style: GoogleFonts.plusJakartaSans(
+                                color: AppTheme.primary,
+                                fontSize: 21,
+                                fontWeight: FontWeight.w700,
                               ),
                             ),
                           ),
+                          if (isComplete)
+                            Container(
+                              margin: const EdgeInsets.only(left: 10),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 10, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: AppTheme.secondaryContainer
+                                    .withOpacity(0.5),
+                                borderRadius: BorderRadius.circular(100),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(Icons.check_circle_rounded,
+                                      color: AppTheme.onSecondaryContainer,
+                                      size: 13),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    'Completada',
+                                    style: GoogleFonts.beVietnamPro(
+                                      color: AppTheme.onSecondaryContainer,
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                        ],
+                      ),
+                      if (g.note != null && g.note!.isNotEmpty) ...[
+                        const SizedBox(height: 6),
+                        Text(
+                          g.note!,
+                          style: GoogleFonts.beVietnamPro(
+                            color: AppTheme.onSurfaceVariant,
+                            fontSize: 13,
+                            fontStyle: FontStyle.italic,
+                            height: 1.4,
+                          ),
+                        ),
+                      ],
+                      const SizedBox(height: 20),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text('Ahorrado',
+                                  style: GoogleFonts.beVietnamPro(
+                                      color: AppTheme.onSurfaceVariant,
+                                      fontSize: 11)),
+                              Text(
+                                CurrencyFormatter.format(g.savedAmount),
+                                style: GoogleFonts.plusJakartaSans(
+                                  color: accentColor,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ],
+                          ),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              Text('Meta',
+                                  style: GoogleFonts.beVietnamPro(
+                                      color: AppTheme.onSurfaceVariant,
+                                      fontSize: 11)),
+                              Text(
+                                CurrencyFormatter.format(g.targetAmount),
+                                style: GoogleFonts.plusJakartaSans(
+                                  color: AppTheme.primary,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(100),
+                        child: LinearProgressIndicator(
+                          value: percent,
+                          backgroundColor: accentColor.withOpacity(0.1),
+                          valueColor: AlwaysStoppedAnimation<Color>(accentColor),
+                          minHeight: 8,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
                           Text(
-                            CurrencyFormatter.format(t.amount),
-                            style: GoogleFonts.plusJakartaSans(
-                              color: AppTheme.primary,
-                              fontSize: 14,
-                              fontWeight: FontWeight.w700,
+                            '${(percent * 100).toStringAsFixed(1)}% completado',
+                            style: GoogleFonts.beVietnamPro(
+                              color: accentColor,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          Text(
+                            'Falta: ${CurrencyFormatter.format(g.remaining)}',
+                            style: GoogleFonts.beVietnamPro(
+                                color: AppTheme.onSurfaceVariant, fontSize: 11),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 24),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: OutlinedButton.icon(
+                              onPressed: () {
+                                Navigator.pop(sheetCtx);
+                                widget.onEdit();
+                              },
+                              icon: const Icon(Icons.edit_outlined, size: 17),
+                              label: const Text('Editar'),
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: AppTheme.primary,
+                                side: const BorderSide(
+                                    color: AppTheme.outlineVariant),
+                                shape: const StadiumBorder(),
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 14),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: OutlinedButton.icon(
+                              onPressed: () {
+                                Navigator.pop(sheetCtx);
+                                _confirmDelete(context);
+                              },
+                              icon: Icon(Icons.delete_outline_rounded,
+                                  color: AppTheme.errorRed, size: 17),
+                              label: Text('Eliminar',
+                                  style:
+                                      TextStyle(color: AppTheme.errorRed)),
+                              style: OutlinedButton.styleFrom(
+                                side: BorderSide(
+                                    color: AppTheme.errorRed.withOpacity(0.4)),
+                                shape: const StadiumBorder(),
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 14),
+                              ),
                             ),
                           ),
                         ],
                       ),
-                    );
-                  },
+                      if (!isComplete) ...[
+                        const SizedBox(height: 12),
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton(
+                            onPressed: () => _showAddSavings(sheetCtx),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppTheme.secondaryFixed,
+                              foregroundColor: AppTheme.onSecondaryFixed,
+                              shape: const StadiumBorder(),
+                              padding:
+                                  const EdgeInsets.symmetric(vertical: 14),
+                              elevation: 0,
+                            ),
+                            child: Text(
+                              'Agregar ahorro',
+                              style: GoogleFonts.beVietnamPro(
+                                  fontWeight: FontWeight.w700, fontSize: 14),
+                            ),
+                          ),
+                        ),
+                      ],
+                      const SizedBox(height: 28),
+                      const Divider(color: AppTheme.surfaceVariant),
+                      const SizedBox(height: 20),
+                      Text(
+                        'Historial de aportes',
+                        style: GoogleFonts.plusJakartaSans(
+                          color: AppTheme.primary,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      const SizedBox(height: 14),
+                      StreamBuilder<List<TransactionModel>>(
+                        stream: _txService.getGoalContributions(
+                            widget.userId, widget.goal.id),
+                        builder: (context, snap) {
+                          final contributions = snap.data ?? [];
+                          if (snap.connectionState ==
+                              ConnectionState.waiting) {
+                            return const Padding(
+                              padding: EdgeInsets.symmetric(vertical: 24),
+                              child: Center(child: BrandedInlineLoader(size: 32)),
+                            );
+                          }
+                          if (contributions.isEmpty) {
+                            return Text(
+                              'Todavía no has agregado ahorros a esta meta.',
+                              style: GoogleFonts.beVietnamPro(
+                                  color: AppTheme.onSurfaceVariant),
+                            );
+                          }
+                          return Column(
+                            children: [
+                              for (var i = 0; i < contributions.length; i++) ...[
+                                if (i > 0)
+                                  const Divider(
+                                      height: 1,
+                                      color: AppTheme.surfaceVariant),
+                                MouseRegion(
+                                  cursor: SystemMouseCursors.click,
+                                  child: InkWell(
+                                    borderRadius: BorderRadius.circular(10),
+                                    onTap: () {
+                                      Navigator.pop(sheetCtx);
+                                      openAddTransaction(context,
+                                          transaction: contributions[i]);
+                                    },
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                          vertical: 10),
+                                      child: Row(
+                                        children: [
+                                          Container(
+                                            width: 34,
+                                            height: 34,
+                                            decoration: BoxDecoration(
+                                              color: AppTheme.secondary
+                                                  .withOpacity(0.1),
+                                              shape: BoxShape.circle,
+                                            ),
+                                            child: const Icon(
+                                                Icons.savings_rounded,
+                                                color: AppTheme.secondary,
+                                                size: 16),
+                                          ),
+                                          const SizedBox(width: 12),
+                                          Expanded(
+                                            child: Text(
+                                              '${contributions[i].date.day}/${contributions[i].date.month}/${contributions[i].date.year}',
+                                              style: GoogleFonts.beVietnamPro(
+                                                color:
+                                                    AppTheme.onSurfaceVariant,
+                                                fontSize: 12.5,
+                                              ),
+                                            ),
+                                          ),
+                                          Text(
+                                            CurrencyFormatter.format(
+                                                contributions[i].amount),
+                                            style: GoogleFonts.plusJakartaSans(
+                                              color: AppTheme.primary,
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.w700,
+                                            ),
+                                          ),
+                                          const SizedBox(width: 6),
+                                          const Icon(
+                                              Icons.chevron_right_rounded,
+                                              color: AppTheme.onSurfaceVariant,
+                                              size: 16),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ],
+                          );
+                        },
+                      ),
+                    ],
+                  ),
                 ),
-              );
-            },
+              ],
+            ),
           ),
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text('Cerrar',
-                style: TextStyle(color: AppTheme.onSurfaceVariant)),
-          ),
-        ],
-      ),
     );
   }
 
@@ -500,23 +714,24 @@ class _GoalCardState extends State<_GoalCard> {
         ),
         child: InkWell(
           borderRadius: BorderRadius.circular(20),
-          onTap: () => _showHistory(context),
+          onTap: () => _showDetail(context),
           child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Banner
-            ClipRRect(
-              borderRadius:
-                  const BorderRadius.vertical(top: Radius.circular(20)),
-              child: g.imageUrl != null && g.imageUrl!.isNotEmpty
-                  ? Image.network(
-                      g.imageUrl!,
-                      height: 140,
-                      width: double.infinity,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => _banner(accentColor),
-                    )
-                  : _banner(accentColor),
+            SizedBox(
+              height: 140,
+              width: double.infinity,
+              child: ClipRRect(
+                borderRadius:
+                    const BorderRadius.vertical(top: Radius.circular(20)),
+                child: g.imageUrl != null && g.imageUrl!.isNotEmpty
+                    ? BlurredImageFrame(
+                        url: g.imageUrl,
+                        errorBuilder: (_) => _banner(accentColor),
+                      )
+                    : _banner(accentColor),
+              ),
             ),
 
             Padding(
@@ -562,22 +777,13 @@ class _GoalCardState extends State<_GoalCard> {
                             ],
                           ),
                         ),
-                      IconButton(
-                        onPressed: widget.onEdit,
-                        icon: const Icon(Icons.edit_outlined,
-                            color: AppTheme.onSurfaceVariant, size: 18),
-                        padding: EdgeInsets.zero,
-                        constraints: const BoxConstraints(),
-                      ),
-                      const SizedBox(width: 8),
-                      IconButton(
-                        onPressed: () => _confirmDelete(context),
-                        icon: Icon(Icons.delete_outline,
-                            color: AppTheme.errorRed, size: 18),
-                        padding: EdgeInsets.zero,
-                        constraints: const BoxConstraints(),
-                      ),
                     ],
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    'Creada el ${g.createdAt.day}/${g.createdAt.month}/${g.createdAt.year}',
+                    style: GoogleFonts.beVietnamPro(
+                        color: AppTheme.onSurfaceVariant, fontSize: 11),
                   ),
                   if (g.note != null && g.note!.isNotEmpty) ...[
                     const SizedBox(height: 4),
@@ -1164,13 +1370,12 @@ class _GoalSheetState extends State<_GoalSheet> {
                 fit: StackFit.expand,
                 children: [
                   if (_pickedBytes != null)
-                    Image.memory(_pickedBytes!, fit: BoxFit.cover)
+                    BlurredImageFrame(bytes: _pickedBytes)
                   else if (_existingImageUrl != null &&
                       _existingImageUrl!.isNotEmpty)
-                    Image.network(
-                      _existingImageUrl!,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => _imagePickerEmptyState(),
+                    BlurredImageFrame(
+                      url: _existingImageUrl,
+                      errorBuilder: (_) => _imagePickerEmptyState(),
                     )
                   else
                     _imagePickerEmptyState(),
