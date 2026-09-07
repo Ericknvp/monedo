@@ -28,7 +28,6 @@ Monedo permite registrar y visualizar movimientos financieros de forma clara e i
 - Metas de ahorro con progreso visual, descuento automático del balance de la cuenta elegida e historial de aportes por meta
 - Exportación de movimientos a Excel y PDF.
 - Selector de moneda (USD, COP, EUR, MXN, ARS, CLP, PEN, BRL, GBP) al registrarse, editable luego desde "Acerca de" y aplicado en tiempo real a toda la app
-- Onboarding con bienvenida y tour explicativo antes de crear la cuenta, seguido de selección de moneda y primeras cuentas al terminar el registro
 - Landing page pública con características, sección "Cómo funciona" (incluye cuentas y exportación), y sección "Próximamente" (recomendaciones con IA)
 - Redirección automática a landing en web cuando no hay sesión activa
 - Pantalla "Acerca de" con información del creador, enlaces externos y preferencias de moneda
