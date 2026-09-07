@@ -29,18 +29,45 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
   int _selectedYear = DateTime.now().year;
   int? _touchedIndex;
   _PieRange _pieRange = _PieRange.month;
+  final Map<String, Stream<List<TransactionModel>>> _rangeStreamCache = {};
 
   static const _months = [
-    'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
-    'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre',
+    'Enero',
+    'Febrero',
+    'Marzo',
+    'Abril',
+    'Mayo',
+    'Junio',
+    'Julio',
+    'Agosto',
+    'Septiembre',
+    'Octubre',
+    'Noviembre',
+    'Diciembre',
   ];
   static const _monthsShort = [
-    'Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun',
-    'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic',
+    'Ene',
+    'Feb',
+    'Mar',
+    'Abr',
+    'May',
+    'Jun',
+    'Jul',
+    'Ago',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dic',
   ];
   static const _weekdaysShort = ['L', 'M', 'Mi', 'J', 'V', 'S', 'D'];
   static const _weekdaysFull = [
-    'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo',
+    'Lunes',
+    'Martes',
+    'Miércoles',
+    'Jueves',
+    'Viernes',
+    'Sábado',
+    'Domingo',
   ];
 
   DateTime _startOfWeek(DateTime d) {
@@ -115,13 +142,27 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                   final balanceChange = _pctChange(balance, prevBalance);
 
                   if (isDesktop) {
-                    return _buildDesktopLayout(userId, income, expenses,
-                        balance, categoryData, incomeChange, expensesChange,
-                        balanceChange, tx);
+                    return _buildDesktopLayout(
+                        userId,
+                        income,
+                        expenses,
+                        balance,
+                        categoryData,
+                        incomeChange,
+                        expensesChange,
+                        balanceChange,
+                        tx);
                   }
-                  return _buildMobileLayout(userId, income, expenses, balance,
-                      categoryData, incomeChange, expensesChange,
-                      balanceChange, tx);
+                  return _buildMobileLayout(
+                      userId,
+                      income,
+                      expenses,
+                      balance,
+                      categoryData,
+                      incomeChange,
+                      expensesChange,
+                      balanceChange,
+                      tx);
                 },
               );
             },
@@ -200,7 +241,8 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
             ),
             _monthPill(_monthsShort[next1.month - 1], false, _nextMonth),
             _monthPill(
-              _monthsShort[(DateTime(_selectedYear, _selectedMonth + 2, 1).month) - 1],
+              _monthsShort[
+                  (DateTime(_selectedYear, _selectedMonth + 2, 1).month) - 1],
               false,
               _nextMonth,
             ),
@@ -215,8 +257,8 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 180),
-        padding: EdgeInsets.symmetric(
-            horizontal: isActive ? 24 : 16, vertical: 10),
+        padding:
+            EdgeInsets.symmetric(horizontal: isActive ? 24 : 16, vertical: 10),
         decoration: BoxDecoration(
           color: isActive ? AppTheme.primary : Colors.transparent,
           borderRadius: BorderRadius.circular(100),
@@ -261,7 +303,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
             // Donut chart (left, 8/12)
             Expanded(
               flex: 8,
-              child: _buildDonutCard(userId, expenses, categoryData),
+              child: _buildDonutCard(userId),
             ),
             const SizedBox(width: 24),
             // Stat cards (right, 4/12)
@@ -269,14 +311,22 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
               flex: 4,
               child: Column(
                 children: [
-                  _summaryCard('Ingresos', income, Icons.trending_up_rounded,
+                  _summaryCard(
+                      'Ingresos',
+                      income,
+                      Icons.trending_up_rounded,
                       AppTheme.secondaryContainer.withOpacity(0.7),
                       AppTheme.onSecondaryContainer,
                       changePercent: incomeChange),
                   const SizedBox(height: 16),
-                  _summaryCard('Gastos', expenses, Icons.trending_down_rounded,
-                      AppTheme.errorContainer.withOpacity(0.45), AppTheme.errorRed,
-                      changePercent: expensesChange, higherIsBetter: false),
+                  _summaryCard(
+                      'Gastos',
+                      expenses,
+                      Icons.trending_down_rounded,
+                      AppTheme.errorContainer.withOpacity(0.45),
+                      AppTheme.errorRed,
+                      changePercent: expensesChange,
+                      higherIsBetter: false),
                   const SizedBox(height: 16),
                   _summaryCard(
                     'Balance',
@@ -322,16 +372,25 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Expanded(
-              child: _summaryCard('Ingresos', income, Icons.trending_up_rounded,
+              child: _summaryCard(
+                  'Ingresos',
+                  income,
+                  Icons.trending_up_rounded,
                   AppTheme.secondaryContainer.withOpacity(0.7),
                   AppTheme.onSecondaryContainer,
-                  changePercent: incomeChange, compact: true),
+                  changePercent: incomeChange,
+                  compact: true),
             ),
             const SizedBox(width: 12),
             Expanded(
-              child: _summaryCard('Gastos', expenses, Icons.trending_down_rounded,
-                  AppTheme.errorContainer.withOpacity(0.45), AppTheme.errorRed,
-                  changePercent: expensesChange, higherIsBetter: false,
+              child: _summaryCard(
+                  'Gastos',
+                  expenses,
+                  Icons.trending_down_rounded,
+                  AppTheme.errorContainer.withOpacity(0.45),
+                  AppTheme.errorRed,
+                  changePercent: expensesChange,
+                  higherIsBetter: false,
                   compact: true),
             ),
           ],
@@ -349,7 +408,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
           compact: true,
         ),
         const SizedBox(height: 24),
-        _buildDonutCard(userId, expenses, categoryData),
+        _buildDonutCard(userId),
         const SizedBox(height: 24),
         _buildBudgetsCard(userId, categoryData),
         const SizedBox(height: 24),
@@ -417,8 +476,8 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                     backgroundColor: AppTheme.secondary,
                     foregroundColor: Colors.white,
                     shape: const StadiumBorder(),
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 20, vertical: 12),
                     elevation: 0,
                     textStyle: GoogleFonts.beVietnamPro(
                         fontSize: 13, fontWeight: FontWeight.w600),
@@ -464,7 +523,8 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                   ),
                   TextButton.icon(
                     onPressed: () => openBudgetsScreen(context),
-                    icon: const Icon(Icons.add_circle_outline_rounded, size: 16),
+                    icon:
+                        const Icon(Icons.add_circle_outline_rounded, size: 16),
                     label: const Text('Agregar límite'),
                     style: TextButton.styleFrom(
                       foregroundColor: AppTheme.secondary,
@@ -562,28 +622,50 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
     );
   }
 
-  /// Datos del donut según el rango elegido: usa lo ya calculado del mes
-  /// (evita una consulta extra) o pide semana/hoy bajo demanda.
-  Widget _buildDonutCard(
-      String userId, double monthExpenses, Map<String, double> monthCategoryData) {
-    if (_pieRange == _PieRange.month) {
-      return _buildDonutCardBody(monthExpenses, monthCategoryData);
+  /// Datos del donut según el rango elegido (mes/semana/hoy).
+  ///
+  /// SIEMPRE pasa por el mismo StreamBuilder, sin importar el rango: antes,
+  /// "Mensual" devolvía el Container directamente mientras que semana/hoy lo
+  /// envolvían en un StreamBuilder, así que al alternar entre ellos el
+  /// widget en esa posición del árbol cambiaba de tipo y Flutter destruía y
+  /// recreaba todo el selector desde cero (el fondo animado no tenía "punto
+  /// de partida" y aparecía de golpe en vez de deslizarse). Con la misma
+  /// forma de árbol en los tres casos, el selector conserva su estado y el
+  /// AnimatedAlign puede interpolar con fluidez.
+  Widget _buildDonutCard(String userId) {
+    final String cacheKey;
+    final Stream<List<TransactionModel>> Function() createStream;
+    switch (_pieRange) {
+      case _PieRange.month:
+        cacheKey = 'month-$_selectedYear-$_selectedMonth';
+        createStream = () => _txService.getTransactionsByMonth(
+            userId, _selectedYear, _selectedMonth);
+        break;
+      case _PieRange.week:
+        cacheKey = 'week';
+        createStream = () {
+          final start = _startOfWeek(DateTime.now());
+          final end = start.add(const Duration(days: 7));
+          return _txService.getTransactionsByDateRange(userId, start, end);
+        };
+        break;
+      case _PieRange.today:
+        cacheKey = 'today';
+        createStream = () {
+          final now = DateTime.now();
+          final today = DateTime(now.year, now.month, now.day);
+          final end = today.add(const Duration(days: 1));
+          return _txService.getTransactionsByDateRange(userId, today, end);
+        };
+        break;
     }
-
-    final now = DateTime.now();
-    final DateTime start;
-    final DateTime end;
-    if (_pieRange == _PieRange.today) {
-      final today = DateTime(now.year, now.month, now.day);
-      start = today;
-      end = today.add(const Duration(days: 1));
-    } else {
-      start = _startOfWeek(now);
-      end = start.add(const Duration(days: 7));
-    }
+    // Cacheado por clave: evita que cada setState (p. ej. tocar una porción
+    // de la tarta) genere un stream nuevo y reinicie la suscripción.
+    final stream = _rangeStreamCache.putIfAbsent(cacheKey, createStream);
 
     return StreamBuilder<List<TransactionModel>>(
-      stream: _txService.getTransactionsByDateRange(userId, start, end),
+      key: const ValueKey('donut-stream'),
+      stream: stream,
       builder: (context, snap) {
         final tx = snap.data ?? [];
         final expenses = _txService.calculateExpenses(tx);
@@ -595,110 +677,99 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
 
   /// Segmentado Mensual / Semana / Hoy que controla qué rango de gastos
   /// se muestra en la gráfica de tarta.
+  // Mismo patrón del selector Gasto/Ingreso del formulario de movimiento:
+  // un fondo que se desliza (AnimatedAlign) detrás de los tres textos, en
+  // vez de que cada píldora cambie de color por separado.
   Widget _pieRangeSelector() {
-    Widget pill(String label, _PieRange range) {
-      final isActive = _pieRange == range;
-      return Expanded(
-        child: GestureDetector(
-          onTap: () => setState(() {
-            _pieRange = range;
-            _touchedIndex = null;
-          }),
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 180),
-            padding: const EdgeInsets.symmetric(vertical: 9),
-            decoration: BoxDecoration(
-              color: isActive ? AppTheme.secondary : Colors.transparent,
-              borderRadius: BorderRadius.circular(100),
-              boxShadow: isActive
-                  ? [
-                      BoxShadow(
-                        color: AppTheme.secondary.withOpacity(0.25),
-                        blurRadius: 8,
-                        offset: const Offset(0, 2),
-                      ),
-                    ]
-                  : [],
-            ),
-            child: Text(
-              label,
-              textAlign: TextAlign.center,
-              style: GoogleFonts.beVietnamPro(
-                color: isActive ? Colors.white : AppTheme.onSurfaceVariant,
-                fontSize: 12.5,
-                fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
-              ),
-            ),
-          ),
-        ),
-      );
-    }
+    const ranges = [_PieRange.month, _PieRange.week, _PieRange.today];
+    const alignments = [
+      Alignment.centerLeft,
+      Alignment.center,
+      Alignment.centerRight,
+    ];
+    final index = ranges.indexOf(_pieRange);
 
     return Container(
+      height: 40,
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
         color: AppTheme.surfaceContainer,
         borderRadius: BorderRadius.circular(100),
         border: Border.all(color: AppTheme.outlineVariant.withOpacity(0.3)),
       ),
-      child: Row(
+      child: Stack(
+        alignment: Alignment.center,
         children: [
-          pill('Mensual', _PieRange.month),
-          pill('Semana', _PieRange.week),
-          pill('Hoy', _PieRange.today),
+          LayoutBuilder(
+            builder: (context, constraints) {
+              return AnimatedAlign(
+                duration: const Duration(milliseconds: 280),
+                curve: Curves.easeOutCubic,
+                alignment: alignments[index],
+                child: Container(
+                  width: constraints.maxWidth / 3,
+                  decoration: BoxDecoration(
+                    color: AppTheme.secondary,
+                    borderRadius: BorderRadius.circular(100),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppTheme.secondary.withOpacity(0.3),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+          Row(
+            children: [
+              Expanded(child: _pieRangeBtn('Mensual', _PieRange.month)),
+              Expanded(child: _pieRangeBtn('Semana', _PieRange.week)),
+              Expanded(child: _pieRangeBtn('Hoy', _PieRange.today)),
+            ],
+          ),
         ],
       ),
     );
   }
 
+  Widget _pieRangeBtn(String label, _PieRange range) {
+    final isSelected = _pieRange == range;
+    return GestureDetector(
+      onTap: () => setState(() {
+        _pieRange = range;
+        _touchedIndex = null;
+      }),
+      behavior: HitTestBehavior.opaque,
+      child: Center(
+        child: AnimatedDefaultTextStyle(
+          duration: const Duration(milliseconds: 200),
+          style: GoogleFonts.beVietnamPro(
+            color: isSelected ? Colors.white : AppTheme.onSurfaceVariant,
+            fontSize: 12.5,
+            fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+          ),
+          child: Text(label),
+        ),
+      ),
+    );
+  }
+
+  // Un único árbol de widgets para el estado vacío y con datos: la cabecera
+  // (título + selector) es siempre la MISMA instancia en la misma posición,
+  // así el selector no pierde su estado al alternar entre rangos sin datos
+  // y con datos (antes eran dos "return" con estructuras distintas, y
+  // Flutter recreaba el selector desde cero en vez de animarlo).
   Widget _buildDonutCardBody(
       double expenses, Map<String, double> categoryData) {
+    final isEmpty = categoryData.isEmpty;
     final emptyLabel = switch (_pieRange) {
       _PieRange.today => 'Sin gastos hoy',
       _PieRange.week => 'Sin gastos esta semana',
       _PieRange.month => 'Sin gastos este mes',
     };
-
-    if (categoryData.isEmpty) {
-      return Container(
-        padding: const EdgeInsets.all(28),
-        decoration: BoxDecoration(
-          color: AppTheme.surfaceContainerLowest,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: AppTheme.surfaceVariant),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Distribución de gastos',
-              style: GoogleFonts.plusJakartaSans(
-                color: AppTheme.primary,
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            const SizedBox(height: 14),
-            _pieRangeSelector(),
-            const SizedBox(height: 34),
-            Center(
-              child: Column(
-                children: [
-                  const Icon(Icons.bar_chart_outlined,
-                      size: 56, color: AppTheme.outlineVariant),
-                  const SizedBox(height: 14),
-                  Text(
-                    emptyLabel,
-                    style: GoogleFonts.plusJakartaSans(
-                        color: AppTheme.onSurfaceVariant, fontSize: 15),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      );
-    }
 
     return Container(
       padding: const EdgeInsets.all(28),
@@ -723,7 +794,23 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
           ),
           const SizedBox(height: 14),
           _pieRangeSelector(),
-          if (categoryData.isNotEmpty) ...[
+          if (isEmpty) ...[
+            const SizedBox(height: 34),
+            Center(
+              child: Column(
+                children: [
+                  const Icon(Icons.bar_chart_outlined,
+                      size: 56, color: AppTheme.outlineVariant),
+                  const SizedBox(height: 14),
+                  Text(
+                    emptyLabel,
+                    style: GoogleFonts.plusJakartaSans(
+                        color: AppTheme.onSurfaceVariant, fontSize: 15),
+                  ),
+                ],
+              ),
+            ),
+          ] else ...[
             const SizedBox(height: 14),
             Builder(builder: (context) {
               final top = categoryData.entries
@@ -731,7 +818,8 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
               final topColor = CategoryColors.forCategory(top.key);
               return Container(
                 width: double.infinity,
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                 decoration: BoxDecoration(
                   color: topColor.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(12),
@@ -756,8 +844,8 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                               children: [
                                 TextSpan(
                                   text: top.key,
-                                  style:
-                                      const TextStyle(fontWeight: FontWeight.w700),
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.w700),
                                 ),
                                 const TextSpan(text: ' es tu mayor gasto'),
                               ],
@@ -785,184 +873,187 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                 ),
               );
             }),
-          ],
-          const SizedBox(height: 28),
-          Builder(builder: (context) {
-            final entries = categoryData.entries.toList();
-            final hasTouch =
-                _touchedIndex != null && _touchedIndex! < entries.length;
-            final touchedEntry = hasTouch ? entries[_touchedIndex!] : null;
-            final touchedColor =
-                hasTouch ? CategoryColors.forCategory(touchedEntry!.key) : null;
+            const SizedBox(height: 28),
+            Builder(builder: (context) {
+              final entries = categoryData.entries.toList();
+              final hasTouch =
+                  _touchedIndex != null && _touchedIndex! < entries.length;
+              final touchedEntry = hasTouch ? entries[_touchedIndex!] : null;
+              final touchedColor = hasTouch
+                  ? CategoryColors.forCategory(touchedEntry!.key)
+                  : null;
 
-            return Column(
-              children: [
-                SizedBox(
-                  height: 260,
-                  child: Stack(
-                    children: [
-                      PieChart(
-                        PieChartData(
-                          pieTouchData: PieTouchData(
-                            touchCallback: (event, response) {
-                              final idx =
-                                  response?.touchedSection?.touchedSectionIndex;
-                              setState(() {
-                                _touchedIndex = (event.isInterestedForInteractions &&
-                                        idx != null &&
-                                        idx >= 0)
-                                    ? idx
-                                    : null;
-                              });
-                            },
-                          ),
-                          sections: entries.asMap().entries.map((e) {
-                            final idx = e.key;
-                            final cat = e.value;
-                            final isTouched = idx == _touchedIndex;
-                            return PieChartSectionData(
-                              value: cat.value,
-                              title: expenses > 0
-                                  ? '${(cat.value / expenses * 100).toStringAsFixed(0)}%'
-                                  : '',
-                              color: CategoryColors.forCategory(cat.key),
-                              radius: isTouched ? 98 : 90,
-                              titleStyle: GoogleFonts.plusJakartaSans(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w700,
-                                fontSize: isTouched ? 13 : 12,
-                              ),
-                            );
-                          }).toList(),
-                          sectionsSpace: 2,
-                          centerSpaceRadius: 60,
-                        ),
-                      ),
-                      // Center text: detalle de la categoría en hover/tap,
-                      // o el total gastado por defecto.
-                      Center(
-                        child: touchedEntry != null
-                            ? Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Container(
-                                    width: 10,
-                                    height: 10,
-                                    decoration: BoxDecoration(
-                                      color: touchedColor,
-                                      shape: BoxShape.circle,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 6),
-                                  Text(
-                                    touchedEntry.key,
-                                    textAlign: TextAlign.center,
-                                    style: GoogleFonts.beVietnamPro(
-                                      color: AppTheme.onSurfaceVariant,
-                                      fontSize: 11,
-                                      letterSpacing: 0.5,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    CurrencyFormatter.format(touchedEntry.value),
-                                    style: GoogleFonts.plusJakartaSans(
-                                      color: AppTheme.primary,
-                                      fontSize: 17,
-                                      fontWeight: FontWeight.w700,
-                                    ),
-                                  ),
-                                  Text(
-                                    expenses > 0
-                                        ? '${(touchedEntry.value / expenses * 100).toStringAsFixed(0)}% del total'
-                                        : '',
-                                    style: GoogleFonts.beVietnamPro(
-                                      color: AppTheme.outline,
-                                      fontSize: 10,
-                                    ),
-                                  ),
-                                ],
-                              )
-                            : Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Text(
-                                    'Total gastado',
-                                    style: GoogleFonts.beVietnamPro(
-                                      color: AppTheme.onSurfaceVariant,
-                                      fontSize: 11,
-                                      letterSpacing: 0.5,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    CurrencyFormatter.format(expenses),
-                                    style: GoogleFonts.plusJakartaSans(
-                                      color: AppTheme.primary,
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.w700,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 24),
-                Wrap(
-                  spacing: 16,
-                  runSpacing: 10,
-                  children: entries.asMap().entries.map((e) {
-                    final idx = e.key;
-                    final cat = e.value;
-                    final isTouched = idx == _touchedIndex;
-                    return GestureDetector(
-                      onTap: () => setState(
-                          () => _touchedIndex = isTouched ? null : idx),
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 150),
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: isTouched
-                              ? AppTheme.surfaceContainer
-                              : Colors.transparent,
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Container(
-                              width: 10,
-                              height: 10,
-                              decoration: BoxDecoration(
+              return Column(
+                children: [
+                  SizedBox(
+                    height: 260,
+                    child: Stack(
+                      children: [
+                        PieChart(
+                          PieChartData(
+                            pieTouchData: PieTouchData(
+                              touchCallback: (event, response) {
+                                final idx = response
+                                    ?.touchedSection?.touchedSectionIndex;
+                                setState(() {
+                                  _touchedIndex =
+                                      (event.isInterestedForInteractions &&
+                                              idx != null &&
+                                              idx >= 0)
+                                          ? idx
+                                          : null;
+                                });
+                              },
+                            ),
+                            sections: entries.asMap().entries.map((e) {
+                              final idx = e.key;
+                              final cat = e.value;
+                              final isTouched = idx == _touchedIndex;
+                              return PieChartSectionData(
+                                value: cat.value,
+                                title: expenses > 0
+                                    ? '${(cat.value / expenses * 100).toStringAsFixed(0)}%'
+                                    : '',
                                 color: CategoryColors.forCategory(cat.key),
-                                shape: BoxShape.circle,
-                              ),
-                            ),
-                            const SizedBox(width: 6),
-                            Text(
-                              '${cat.key}: ${CurrencyFormatter.format(cat.value)}',
-                              style: GoogleFonts.beVietnamPro(
-                                color: isTouched
-                                    ? AppTheme.primary
-                                    : AppTheme.onSurfaceVariant,
-                                fontSize: 12,
-                                fontWeight: isTouched
-                                    ? FontWeight.w700
-                                    : FontWeight.w400,
-                              ),
-                            ),
-                          ],
+                                radius: isTouched ? 98 : 90,
+                                titleStyle: GoogleFonts.plusJakartaSans(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: isTouched ? 13 : 12,
+                                ),
+                              );
+                            }).toList(),
+                            sectionsSpace: 2,
+                            centerSpaceRadius: 60,
+                          ),
                         ),
-                      ),
-                    );
-                  }).toList(),
-                ),
-              ],
-            );
-          }),
+                        // Center text: detalle de la categoría en hover/tap,
+                        // o el total gastado por defecto.
+                        Center(
+                          child: touchedEntry != null
+                              ? Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Container(
+                                      width: 10,
+                                      height: 10,
+                                      decoration: BoxDecoration(
+                                        color: touchedColor,
+                                        shape: BoxShape.circle,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 6),
+                                    Text(
+                                      touchedEntry.key,
+                                      textAlign: TextAlign.center,
+                                      style: GoogleFonts.beVietnamPro(
+                                        color: AppTheme.onSurfaceVariant,
+                                        fontSize: 11,
+                                        letterSpacing: 0.5,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      CurrencyFormatter.format(
+                                          touchedEntry.value),
+                                      style: GoogleFonts.plusJakartaSans(
+                                        color: AppTheme.primary,
+                                        fontSize: 17,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                    Text(
+                                      expenses > 0
+                                          ? '${(touchedEntry.value / expenses * 100).toStringAsFixed(0)}% del total'
+                                          : '',
+                                      style: GoogleFonts.beVietnamPro(
+                                        color: AppTheme.outline,
+                                        fontSize: 10,
+                                      ),
+                                    ),
+                                  ],
+                                )
+                              : Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      'Total gastado',
+                                      style: GoogleFonts.beVietnamPro(
+                                        color: AppTheme.onSurfaceVariant,
+                                        fontSize: 11,
+                                        letterSpacing: 0.5,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      CurrencyFormatter.format(expenses),
+                                      style: GoogleFonts.plusJakartaSans(
+                                        color: AppTheme.primary,
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  Wrap(
+                    spacing: 16,
+                    runSpacing: 10,
+                    children: entries.asMap().entries.map((e) {
+                      final idx = e.key;
+                      final cat = e.value;
+                      final isTouched = idx == _touchedIndex;
+                      return GestureDetector(
+                        onTap: () => setState(
+                            () => _touchedIndex = isTouched ? null : idx),
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 150),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: isTouched
+                                ? AppTheme.surfaceContainer
+                                : Colors.transparent,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Container(
+                                width: 10,
+                                height: 10,
+                                decoration: BoxDecoration(
+                                  color: CategoryColors.forCategory(cat.key),
+                                  shape: BoxShape.circle,
+                                ),
+                              ),
+                              const SizedBox(width: 6),
+                              Text(
+                                '${cat.key}: ${CurrencyFormatter.format(cat.value)}',
+                                style: GoogleFonts.beVietnamPro(
+                                  color: isTouched
+                                      ? AppTheme.primary
+                                      : AppTheme.onSurfaceVariant,
+                                  fontSize: 12,
+                                  fontWeight: isTouched
+                                      ? FontWeight.w700
+                                      : FontWeight.w400,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ],
+              );
+            }),
+          ],
         ],
       ),
     );
@@ -979,8 +1070,8 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
     bool compact = false,
   }) {
     final hasChange = changePercent != null && changePercent.isFinite;
-    final isGood = hasChange &&
-        (higherIsBetter ? changePercent >= 0 : changePercent <= 0);
+    final isGood =
+        hasChange && (higherIsBetter ? changePercent >= 0 : changePercent <= 0);
 
     final trendRow = FittedBox(
       fit: BoxFit.scaleDown,
@@ -1033,7 +1124,8 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
           Container(
             width: 36,
             height: 36,
-            decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(100)),
+            decoration: BoxDecoration(
+                color: bg, borderRadius: BorderRadius.circular(100)),
             child: Icon(icon, color: color, size: 18),
           ),
           const SizedBox(width: 12),
@@ -1147,20 +1239,26 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
               Row(
                 children: [
                   Expanded(
-                    child: _summaryCard('Ingresos', income,
+                    child: _summaryCard(
+                        'Ingresos',
+                        income,
                         Icons.trending_up_rounded,
                         AppTheme.secondaryContainer.withOpacity(0.5),
                         AppTheme.onSecondaryContainer,
-                        changePercent: incomeChange, compact: true),
+                        changePercent: incomeChange,
+                        compact: true),
                   ),
                   const SizedBox(width: 14),
                   Expanded(
-                    child: _summaryCard('Gastos', expenses,
+                    child: _summaryCard(
+                        'Gastos',
+                        expenses,
                         Icons.trending_down_rounded,
                         AppTheme.errorContainer.withOpacity(0.3),
                         AppTheme.errorRed,
                         changePercent: expensesChange,
-                        higherIsBetter: false, compact: true),
+                        higherIsBetter: false,
+                        compact: true),
                   ),
                 ],
               ),
@@ -1207,12 +1305,12 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                       ),
                     ),
                     titlesData: FlTitlesData(
-                      topTitles:
-                          const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                      rightTitles:
-                          const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                      leftTitles:
-                          const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                      topTitles: const AxisTitles(
+                          sideTitles: SideTitles(showTitles: false)),
+                      rightTitles: const AxisTitles(
+                          sideTitles: SideTitles(showTitles: false)),
+                      leftTitles: const AxisTitles(
+                          sideTitles: SideTitles(showTitles: false)),
                       bottomTitles: AxisTitles(
                         sideTitles: SideTitles(
                           showTitles: true,
@@ -1232,8 +1330,9 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                                       ? AppTheme.primary
                                       : AppTheme.onSurfaceVariant,
                                   fontSize: 11,
-                                  fontWeight:
-                                      isToday ? FontWeight.w800 : FontWeight.w500,
+                                  fontWeight: isToday
+                                      ? FontWeight.w800
+                                      : FontWeight.w500,
                                 ),
                               ),
                             );
@@ -1465,8 +1564,9 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                       sideTitles: SideTitles(
                         showTitles: true,
                         reservedSize: 24,
-                        interval:
-                            (daysInMonth / 4).clamp(1, daysInMonth).roundToDouble(),
+                        interval: (daysInMonth / 4)
+                            .clamp(1, daysInMonth)
+                            .roundToDouble(),
                         getTitlesWidget: (value, meta) {
                           final day = value.toInt() + 1;
                           return Padding(
@@ -1533,7 +1633,8 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
     final now = DateTime.now();
     final start = DateTime(now.year, now.month - 5, 1);
     final end = DateTime(now.year, now.month + 1, 1);
-    final months = List.generate(6, (i) => DateTime(start.year, start.month + i, 1));
+    final months =
+        List.generate(6, (i) => DateTime(start.year, start.month + i, 1));
 
     return StreamBuilder<List<TransactionModel>>(
       stream: _txService.getTransactionsByDateRange(userId, start, end),
