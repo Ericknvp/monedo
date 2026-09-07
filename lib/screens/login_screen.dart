@@ -5,6 +5,7 @@ import '../theme/app_theme.dart';
 import '../widgets/setup_gate.dart';
 import '../widgets/app_toast.dart';
 import '../widgets/google_logo.dart';
+import '../widgets/forgot_password_dialog.dart';
 import 'register_screen.dart';
 import 'dashboard_screen.dart';
 
@@ -419,7 +420,30 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
           ),
         ),
-        const SizedBox(height: 36),
+        const SizedBox(height: 12),
+        Align(
+          alignment: Alignment.centerRight,
+          child: TextButton(
+            onPressed: () => showDialog(
+              context: context,
+              builder: (_) => const ForgotPasswordDialog(),
+            ),
+            style: TextButton.styleFrom(
+              padding: EdgeInsets.zero,
+              minimumSize: Size.zero,
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            ),
+            child: Text(
+              '¿Olvidaste tu contraseña?',
+              style: GoogleFonts.beVietnamPro(
+                color: AppTheme.secondary,
+                fontWeight: FontWeight.w600,
+                fontSize: 13,
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 24),
         SizedBox(
           width: double.infinity,
           child: ElevatedButton(

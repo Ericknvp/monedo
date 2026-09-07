@@ -181,6 +181,90 @@ class AuthService {
     return candidate;
   }
 
+  // ---- Envía un correo para restablecer la contraseña ----
+  // Por seguridad, no revela si el correo está registrado o no: siempre
+  // retorna null (éxito) salvo que el formato del correo sea inválido o
+  // falle el envío por un problema real (ej. de red).
+  //
+  // El link del correo abre directamente nuestra propia pantalla (en vez
+  // de la página genérica de Firebase), para que se vea con la marca
+  // Monedo. En web usa el dominio/puerto actual; fuera de web (la app
+  // abre en el navegador del celular) usa el hosting de Firebase.
+  Future<String?> sendPasswordReset(String email) async {
+    final trimmed = email.trim();
+    if (trimmed.isEmpty) return 'Ingresa tu correo electrónico';
+    try {
+      final origin =
+          kIsWeb ? Uri.base.origin : 'https://monedo-e7849.web.app';
+      await _auth.sendPasswordResetEmail(
+        email: trimmed,
+        actionCodeSettings: ActionCodeSettings(
+          url: '$origin/?view=reset-password',
+          handleCodeInApp: true,
+        ),
+      );
+      return null;
+    } on FirebaseAuthException catch (e) {
+      switch (e.code) {
+        case 'invalid-email':
+          return 'El correo no es válido';
+        case 'user-not-found':
+          return null;
+        default:
+          return 'No se pudo enviar el correo. Intenta de nuevo';
+      }
+    } catch (_) {
+      return 'No se pudo enviar el correo. Intenta de nuevo';
+    }
+  }
+
+  // ---- Verifica que un link de restablecimiento sea válido ----
+  // Retorna el correo asociado (o un mensaje de error si expiró / no es
+  // válido / ya fue usado).
+  Future<(String? email, String? error)> verifyPasswordResetCode(
+      String oobCode) async {
+    try {
+      final email = await _auth.verifyPasswordResetCode(oobCode);
+      return (email, null);
+    } on FirebaseAuthException catch (e) {
+      switch (e.code) {
+        case 'expired-action-code':
+          return (null, 'Este link ya expiró. Solicita uno nuevo.');
+        case 'invalid-action-code':
+          return (null, 'Este link no es válido o ya fue usado.');
+        default:
+          return (null, 'No se pudo verificar el link.');
+      }
+    } catch (_) {
+      return (null, 'No se pudo verificar el link.');
+    }
+  }
+
+  // ---- Confirma la nueva contraseña usando el código del link ----
+  Future<String?> confirmPasswordReset(
+      String oobCode, String newPassword) async {
+    try {
+      await _auth.confirmPasswordReset(
+        code: oobCode,
+        newPassword: newPassword,
+      );
+      return null;
+    } on FirebaseAuthException catch (e) {
+      switch (e.code) {
+        case 'expired-action-code':
+          return 'Este link ya expiró. Solicita uno nuevo.';
+        case 'invalid-action-code':
+          return 'Este link no es válido o ya fue usado.';
+        case 'weak-password':
+          return 'La contraseña es muy débil.';
+        default:
+          return 'No se pudo actualizar la contraseña. Intenta de nuevo.';
+      }
+    } catch (_) {
+      return 'No se pudo actualizar la contraseña. Intenta de nuevo.';
+    }
+  }
+
   // ---- Cerrar sesión ----
   Future<void> logout() async {
     await _auth.signOut();

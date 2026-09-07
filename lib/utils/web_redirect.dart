@@ -9,6 +9,10 @@ String? getViewParam() {
   return Uri.parse(html.window.location.href).queryParameters['view'];
 }
 
+String? getUrlParam(String key) {
+  return Uri.parse(html.window.location.href).queryParameters[key];
+}
+
 void openExternalUrl(String url) {
   html.window.open(url, '_blank');
 }

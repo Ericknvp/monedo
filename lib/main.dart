@@ -7,12 +7,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'firebase_options.dart';
 import 'theme/app_theme.dart';
 import 'services/auth_service.dart';
 import 'screens/login_screen.dart';
 import 'screens/register_screen.dart';
+import 'screens/reset_password_screen.dart';
 import 'screens/dashboard_screen.dart';
 import 'screens/onboarding_screen.dart';
 import 'widgets/setup_gate.dart';
@@ -26,6 +28,10 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+
+  // Correos de Firebase Auth (verificación, restablecer contraseña, etc.)
+  // en español en vez de inglés.
+  await FirebaseAuth.instance.setLanguageCode('es');
 
   runApp(const MonedoApp());
 }
@@ -60,6 +66,12 @@ class AuthWrapper extends StatelessWidget {
     return StreamBuilder(
       stream: authService.authStateChanges,
       builder: (context, snapshot) {
+        // El link de "olvidé mi contraseña" debe funcionar sin importar
+        // si ya hay una sesión activa en este navegador.
+        if (kIsWeb && getViewParam() == 'reset-password') {
+          return const ResetPasswordScreen();
+        }
+
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Scaffold(
             body: Center(child: CircularProgressIndicator()),
