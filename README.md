@@ -1,4 +1,4 @@
-# Monedo
+# Moned
 
 Aplicación de finanzas personales desarrollada con Flutter, orientada a la gestión de ingresos, gastos, metas de ahorro y control financiero diario. Disponible en Android y Web.
 
