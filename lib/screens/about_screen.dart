@@ -61,7 +61,7 @@ class AboutScreen extends StatelessWidget {
                 ),
               ),
               Text(
-                'v2.3.0',
+                'v2.4.0',
                 style: GoogleFonts.beVietnamPro(
                     color: AppTheme.onSurfaceVariant, fontSize: 14),
               ),

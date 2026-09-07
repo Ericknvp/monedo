@@ -23,6 +23,7 @@ import '../utils/category_visibility.dart';
 import '../widgets/balance_card.dart';
 import '../widgets/accounts_summary.dart';
 import '../widgets/transaction_tile.dart';
+import '../widgets/update_dialog.dart';
 import 'add_transaction_screen.dart';
 import 'transactions_screen.dart';
 import 'statistics_screen.dart';
@@ -107,6 +108,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
     _categoryVisibilitySub =
         _categoryVisibilityService.getDisabled(uid).listen((disabled) {
       CategoryVisibilityRegistry.disabled.value = disabled;
+    });
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      // El aviso es para descargar el APK de Android: no aplica en la
+      // versión de escritorio.
+      if (mounted && MediaQuery.of(context).size.width < 900) {
+        checkAndShowUpdateDialog(context);
+      }
     });
   }
 
