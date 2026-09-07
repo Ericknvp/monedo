@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../services/auth_service.dart';
 import '../theme/app_theme.dart';
 import '../utils/web_redirect.dart' if (dart.library.io) '../utils/web_redirect_stub.dart';
 import '../widgets/preferences_section.dart';
 import '../widgets/app_toast.dart';
+import 'login_screen.dart';
 
 const _kSupportEmail = 'narvaezvegaerick@gmail.com';
 
@@ -242,6 +244,28 @@ class AboutScreen extends StatelessWidget {
               }),
               const SizedBox(height: 24),
 
+              // Logout button (solo en móvil: en escritorio ya vive en el
+              // pie del menú lateral).
+              if (!isDesktop) ...[
+                Builder(builder: (context) {
+                  return SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      onPressed: () => _confirmAndLogout(context),
+                      icon: const Icon(Icons.logout_rounded, size: 19),
+                      label: const Text('Cerrar sesión'),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: AppTheme.errorRed,
+                        side: const BorderSide(color: AppTheme.errorRed),
+                        shape: const StadiumBorder(),
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                      ),
+                    ),
+                  );
+                }),
+                const SizedBox(height: 24),
+              ],
+
               // Footer
               const Divider(color: AppTheme.surfaceVariant),
               const SizedBox(height: 20),
@@ -316,6 +340,44 @@ class AboutScreen extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Future<void> _confirmAndLogout(BuildContext context) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppTheme.surfaceContainerLowest,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text('¿Cerrar sesión?',
+            style: GoogleFonts.plusJakartaSans(
+                color: AppTheme.primary, fontWeight: FontWeight.w600)),
+        content: Text('¿Seguro que quieres salir de tu cuenta?',
+            style: GoogleFonts.beVietnamPro(color: AppTheme.onSurfaceVariant)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text('Cancelar',
+                style: TextStyle(color: AppTheme.onSurfaceVariant)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text('Salir',
+                style: TextStyle(
+                    color: AppTheme.errorRed, fontWeight: FontWeight.w600)),
+          ),
+        ],
+      ),
+    );
+    if (confirm != true) return;
+
+    await AuthService().logout();
+    if (context.mounted) {
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (_) => const LoginScreen()),
+        (route) => false,
+      );
+    }
   }
 
   void _reportProblem(String userId) {

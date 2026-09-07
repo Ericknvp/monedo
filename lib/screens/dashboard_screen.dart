@@ -986,16 +986,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ),
           ],
         ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout_rounded,
-                color: AppTheme.onPrimaryFixedVariant),
-            tooltip: 'Cerrar sesión',
-            onPressed: () async {
-              if (await _confirmLogout() == true) _logout();
-            },
-          ),
-        ],
       ),
       body: pages[safeIndex],
       floatingActionButton: safeIndex == 0
