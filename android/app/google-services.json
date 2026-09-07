@@ -12,7 +12,20 @@
           "package_name": "com.example.monedo"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "1059318428832-4382nkhk979ji8phatho8iq4qgvpoaq8.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.monedo",
+            "certificate_hash": "506ece2b798bc2b1a92c943fd651139dc9e98d56"
+          }
+        },
+        {
+          "client_id": "1059318428832-hknf1pcmh6r6ghp9nro1d4cec327ffk4.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyARREEdznH0bkGfNU2O6kVy7FkMRfngbng"
@@ -20,7 +33,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1059318428832-hknf1pcmh6r6ghp9nro1d4cec327ffk4.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }

@@ -201,6 +201,26 @@ class AuthService {
     }
   }
 
+  // ---- Cambia el nombre de usuario (debe ser único) ----
+  Future<String?> updateUsername(String newUsername) async {
+    final trimmed = newUsername.trim();
+    if (trimmed.isEmpty) return 'El nombre de usuario no puede estar vacío';
+    if (currentUser == null) return 'No hay una sesión activa';
+
+    final current = await getCurrentUserData();
+    if (current?.username == trimmed) return null; // sin cambios
+
+    if (await usernameExists(trimmed)) {
+      return 'El nombre de usuario ya está en uso';
+    }
+
+    await _firestore
+        .collection('users')
+        .doc(currentUser!.uid)
+        .update({'username': trimmed});
+    return null;
+  }
+
   // ---- Guarda la moneda preferida del usuario actual ----
   Future<void> updateCurrency(String currencyCode) async {
     if (currentUser == null) return;

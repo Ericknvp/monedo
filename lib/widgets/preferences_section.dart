@@ -29,6 +29,77 @@ class _PreferencesSectionState extends State<PreferencesSection> {
   final _authService = AuthService();
   late Currency _currency = CurrencyFormatter.current;
   bool _savingCurrency = false;
+  String? _username;
+  bool _loadingUsername = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUsername();
+  }
+
+  Future<void> _loadUsername() async {
+    final data = await _authService.getCurrentUserData();
+    if (!mounted) return;
+    setState(() {
+      _username = data?.username;
+      _loadingUsername = false;
+    });
+  }
+
+  Future<void> _editUsername() async {
+    final controller = TextEditingController(text: _username ?? '');
+    final newUsername = await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(
+          'Cambiar nombre de usuario',
+          style: GoogleFonts.plusJakartaSans(
+              fontWeight: FontWeight.w700, color: AppTheme.primary),
+        ),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          textCapitalization: TextCapitalization.words,
+          decoration: const InputDecoration(labelText: 'Nombre de usuario'),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancelar'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, controller.text.trim()),
+            child: const Text('Guardar'),
+          ),
+        ],
+      ),
+    );
+    controller.dispose();
+
+    if (newUsername == null || newUsername.isEmpty || newUsername == _username) {
+      return;
+    }
+
+    final error = await _authService.updateUsername(newUsername);
+    if (!mounted) return;
+    if (error != null) {
+      showAppToast(
+        context,
+        message: error,
+        icon: Icons.error_outline_rounded,
+        accentColor: AppTheme.errorRed,
+      );
+    } else {
+      setState(() => _username = newUsername);
+      showAppToast(
+        context,
+        message: 'Nombre de usuario actualizado',
+        icon: Icons.check_circle_rounded,
+        accentColor: AppTheme.secondary,
+      );
+    }
+  }
 
   Future<void> _changeCurrency(Currency currency) async {
     setState(() => _savingCurrency = true);
@@ -53,6 +124,43 @@ class _PreferencesSectionState extends State<PreferencesSection> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          decoration: BoxDecoration(
+            color: AppTheme.surfaceContainerLow,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: AppTheme.outlineVariant),
+          ),
+          child: Row(
+            children: [
+              const Icon(Icons.person_outline,
+                  color: AppTheme.onSurfaceVariant, size: 20),
+              const SizedBox(width: 14),
+              Expanded(
+                child: _loadingUsername
+                    ? const SizedBox(
+                        height: 16,
+                        width: 16,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : Text(
+                        _username ?? 'Sin nombre de usuario',
+                        style: GoogleFonts.beVietnamPro(
+                          color: AppTheme.primary,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+              ),
+              IconButton(
+                icon: const Icon(Icons.edit_outlined,
+                    size: 18, color: AppTheme.onSurfaceVariant),
+                onPressed: _loadingUsername ? null : _editUsername,
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 20),
         IgnorePointer(
           ignoring: _savingCurrency,
           child: Opacity(
