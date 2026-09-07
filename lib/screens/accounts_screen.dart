@@ -5,8 +5,10 @@ import 'package:google_fonts/google_fonts.dart';
 import '../models/account.dart';
 import '../services/account_service.dart';
 import '../theme/app_theme.dart';
+import '../utils/account_colors.dart';
 import '../utils/amount_input_formatter.dart';
 import '../utils/currency_formatter.dart';
+import '../widgets/account_color_picker.dart';
 import '../widgets/app_toast.dart';
 
 /// Abre la hoja para crear una cuenta nueva (ej. Efectivo, Nu, Nequi).
@@ -380,70 +382,95 @@ class _AccountsScreenState extends State<AccountsScreen> {
                         ),
                       )
                     else
-                      ...accounts.map((a) => Container(
-                            margin: const EdgeInsets.only(bottom: 10),
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 18, vertical: 14),
-                            decoration: BoxDecoration(
-                              color: AppTheme.surfaceContainerLowest,
-                              borderRadius: BorderRadius.circular(14),
-                              border:
-                                  Border.all(color: AppTheme.surfaceVariant),
-                            ),
-                            child: Row(
-                              children: [
-                                Container(
-                                  width: 40,
-                                  height: 40,
-                                  decoration: BoxDecoration(
-                                    color: AppTheme.secondary.withOpacity(0.1),
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  child: const Icon(
-                                      Icons.account_balance_wallet_rounded,
-                                      color: AppTheme.secondary,
-                                      size: 20),
+                      ...accounts.map((a) {
+                        final color = AccountColors.forAccount(a);
+                        return Container(
+                          margin: const EdgeInsets.only(bottom: 10),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 18, vertical: 14),
+                          decoration: BoxDecoration(
+                            color: AppTheme.surfaceContainerLowest,
+                            borderRadius: BorderRadius.circular(14),
+                            border:
+                                Border.all(color: AppTheme.surfaceVariant),
+                          ),
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 40,
+                                height: 40,
+                                decoration: BoxDecoration(
+                                  color: color.withOpacity(0.1),
+                                  borderRadius: BorderRadius.circular(12),
                                 ),
-                                const SizedBox(width: 14),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        a.name,
-                                        style: GoogleFonts.beVietnamPro(
-                                          color: AppTheme.primary,
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.w600,
-                                        ),
+                                child: Icon(
+                                    Icons.account_balance_wallet_rounded,
+                                    color: color,
+                                    size: 20),
+                              ),
+                              const SizedBox(width: 14),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      a.name,
+                                      style: GoogleFonts.beVietnamPro(
+                                        color: AppTheme.primary,
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w600,
                                       ),
-                                      Text(
-                                        CurrencyFormatter.format(a.balance),
-                                        style: GoogleFonts.beVietnamPro(
-                                          color: AppTheme.onSurfaceVariant,
-                                          fontSize: 12,
-                                        ),
+                                    ),
+                                    Text(
+                                      CurrencyFormatter.format(a.balance),
+                                      style: GoogleFonts.beVietnamPro(
+                                        color: AppTheme.onSurfaceVariant,
+                                        fontSize: 12,
                                       ),
-                                    ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Tooltip(
+                                message: 'Cambiar color',
+                                child: InkWell(
+                                  borderRadius: BorderRadius.circular(100),
+                                  onTap: () => showAccountColorPicker(
+                                      context,
+                                      account: a),
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(8),
+                                    child: Container(
+                                      width: 16,
+                                      height: 16,
+                                      decoration: BoxDecoration(
+                                        color: color,
+                                        shape: BoxShape.circle,
+                                        border: Border.all(
+                                            color: AppTheme.surfaceVariant),
+                                      ),
+                                    ),
                                   ),
                                 ),
-                                IconButton(
-                                  icon: const Icon(Icons.edit_outlined,
-                                      color: AppTheme.onSurfaceVariant,
-                                      size: 18),
-                                  onPressed: () => _rename(a),
-                                ),
-                                IconButton(
-                                  icon: const Icon(
-                                      Icons.delete_outline_rounded,
-                                      color: AppTheme.errorRed,
-                                      size: 18),
-                                  onPressed: () => _confirmDelete(a),
-                                ),
-                              ],
-                            ),
-                          )),
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.edit_outlined,
+                                    color: AppTheme.onSurfaceVariant,
+                                    size: 18),
+                                onPressed: () => _rename(a),
+                              ),
+                              IconButton(
+                                icon: const Icon(
+                                    Icons.delete_outline_rounded,
+                                    color: AppTheme.errorRed,
+                                    size: 18),
+                                onPressed: () => _confirmDelete(a),
+                              ),
+                            ],
+                          ),
+                        );
+                      }),
                   ],
                 ),
               );

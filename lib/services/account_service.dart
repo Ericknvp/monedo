@@ -79,6 +79,11 @@ class AccountService {
     await _accounts.doc(id).update({'name': name});
   }
 
+  // ---- Cambia el color elegido para una cuenta ----
+  Future<void> setColor(String id, int colorValue) async {
+    await _accounts.doc(id).update({'color': colorValue});
+  }
+
   // ---- Aplica un cambio de saldo (positivo o negativo) de forma atómica ----
   Future<void> adjustBalance(String accountId, double delta) async {
     if (delta == 0) return;

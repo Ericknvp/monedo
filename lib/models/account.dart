@@ -4,6 +4,7 @@ class AccountModel {
   final String name;
   final double balance;
   final DateTime createdAt;
+  final int? color; // Valor ARGB elegido por el usuario; null = color por defecto
 
   AccountModel({
     required this.id,
@@ -11,6 +12,7 @@ class AccountModel {
     required this.name,
     required this.balance,
     required this.createdAt,
+    this.color,
   });
 
   factory AccountModel.fromMap(Map<String, dynamic> map, String id) {
@@ -20,6 +22,7 @@ class AccountModel {
       name: map['name'] ?? '',
       balance: (map['balance'] ?? 0).toDouble(),
       createdAt: DateTime.tryParse(map['createdAt'] ?? '') ?? DateTime.now(),
+      color: map['color'],
     );
   }
 
@@ -29,6 +32,7 @@ class AccountModel {
       'name': name,
       'balance': balance,
       'createdAt': createdAt.toIso8601String(),
+      'color': color,
     };
   }
 }

@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../models/account.dart';
 import '../screens/accounts_screen.dart';
 import '../theme/app_theme.dart';
+import '../utils/account_colors.dart';
 import '../utils/currency_formatter.dart';
 
 /// Tarjeta que muestra en qué cuentas está el dinero del usuario, con
@@ -129,8 +130,8 @@ class AccountsSummaryCard extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Icon(Icons.account_balance_wallet_rounded,
-                            color: AppTheme.secondary, size: 18),
+                        Icon(Icons.account_balance_wallet_rounded,
+                            color: AccountColors.forAccount(a), size: 18),
                         const SizedBox(height: 8),
                         Text(
                           a.name,
