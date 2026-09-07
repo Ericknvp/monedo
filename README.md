@@ -69,7 +69,7 @@ Tipografía: **Plus Jakarta Sans** (encabezados y cuerpo) / **Be Vietnam Pro** (
 
 ## Descargar APK última versión.
 
-[Descargar Monedo v2.3.0](https://github.com/Ericknvp/monedo/releases/tag/v2.3.0)
+[Descargar Monedo v2.4.0](https://github.com/Ericknvp/monedo/releases/tag/v2.4.0)
 
 ## Changelog
 
