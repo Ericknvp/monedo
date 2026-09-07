@@ -67,8 +67,13 @@ class AuthWrapper extends StatelessWidget {
       stream: authService.authStateChanges,
       builder: (context, snapshot) {
         // El link de "olvidé mi contraseña" debe funcionar sin importar
-        // si ya hay una sesión activa en este navegador.
-        if (kIsWeb && getViewParam() == 'reset-password') {
+        // si ya hay una sesión activa en este navegador. Se detecta tanto
+        // por nuestro propio parámetro (?view=reset-password) como por el
+        // que agrega Firebase si el link viene de una "Action URL"
+        // configurada en la consola (?mode=resetPassword).
+        if (kIsWeb &&
+            (getViewParam() == 'reset-password' ||
+                getUrlParam('mode') == 'resetPassword')) {
           return const ResetPasswordScreen();
         }
 

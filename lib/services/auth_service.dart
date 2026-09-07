@@ -265,6 +265,43 @@ class AuthService {
     }
   }
 
+  // ---- Indica si la cuenta tiene contraseña (no solo Google, etc.) ----
+  bool get hasPasswordProvider =>
+      currentUser?.providerData.any((p) => p.providerId == 'password') ??
+      false;
+
+  // ---- Cambia la contraseña del usuario autenticado ----
+  Future<String?> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    final user = currentUser;
+    if (user == null || user.email == null) return 'No hay una sesión activa';
+    try {
+      final credential = EmailAuthProvider.credential(
+        email: user.email!,
+        password: currentPassword,
+      );
+      await user.reauthenticateWithCredential(credential);
+      await user.updatePassword(newPassword);
+      return null;
+    } on FirebaseAuthException catch (e) {
+      switch (e.code) {
+        case 'wrong-password':
+        case 'invalid-credential':
+          return 'La contraseña actual es incorrecta';
+        case 'weak-password':
+          return 'La nueva contraseña es muy débil';
+        case 'requires-recent-login':
+          return 'Por seguridad, vuelve a iniciar sesión e intenta de nuevo';
+        default:
+          return 'No se pudo cambiar la contraseña. Intenta de nuevo';
+      }
+    } catch (_) {
+      return 'No se pudo cambiar la contraseña. Intenta de nuevo';
+    }
+  }
+
   // ---- Cerrar sesión ----
   Future<void> logout() async {
     await _auth.signOut();

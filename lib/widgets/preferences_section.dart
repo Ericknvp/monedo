@@ -9,6 +9,7 @@ import '../screens/budgets_screen.dart';
 import '../screens/export_screen.dart';
 import 'currency_picker.dart';
 import 'app_toast.dart';
+import 'change_password_dialog.dart';
 
 /// Contenido de preferencias del usuario: moneda activa y acceso a sus
 /// categorías personalizadas. Se reutiliza tanto dentro de "Acerca de"
@@ -160,6 +161,19 @@ class _PreferencesSectionState extends State<PreferencesSection> {
             ],
           ),
         ),
+        if (_authService.hasPasswordProvider) ...[
+          const SizedBox(height: 10),
+          _navRow(
+            context,
+            icon: Icons.password_rounded,
+            label: 'Cambiar contraseña',
+            builder: (_) => const SizedBox.shrink(),
+            onTap: () => showDialog(
+              context: context,
+              builder: (_) => const ChangePasswordDialog(),
+            ),
+          ),
+        ],
         const SizedBox(height: 20),
         IgnorePointer(
           ignoring: _savingCurrency,
