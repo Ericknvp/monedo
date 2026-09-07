@@ -287,66 +287,169 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
             clipBehavior: Clip.antiAlias,
             elevation: 24,
             shadowColor: Colors.black.withOpacity(0.4),
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.fromLTRB(36, 32, 36, 36),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Container(
-                        width: 48,
-                        height: 48,
-                        decoration: BoxDecoration(
-                          color: AppTheme.secondary.withOpacity(0.12),
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                        child: Icon(
-                          isEditing
-                              ? Icons.edit_note_rounded
-                              : Icons.receipt_long_rounded,
-                          color: AppTheme.secondary,
-                          size: 24,
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
+            // Column con altura mínima: el cuerpo scrollea internamente al
+            // llegar al maxHeight de arriba, mientras el footer de botones
+            // queda fijo fuera del scroll (no se pierde al hacer scroll).
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Flexible(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.fromLTRB(36, 32, 36, 20),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                              isEditing
-                                  ? 'Editar movimiento'
-                                  : 'Registrar movimiento',
-                              style: GoogleFonts.plusJakartaSans(
-                                color: AppTheme.primary,
-                                fontSize: 22,
-                                fontWeight: FontWeight.w700,
+                            Container(
+                              width: 48,
+                              height: 48,
+                              decoration: BoxDecoration(
+                                color: AppTheme.secondary.withOpacity(0.12),
+                                borderRadius: BorderRadius.circular(14),
+                              ),
+                              child: Icon(
+                                isEditing
+                                    ? Icons.edit_note_rounded
+                                    : Icons.receipt_long_rounded,
+                                color: AppTheme.secondary,
+                                size: 24,
                               ),
                             ),
-                            const SizedBox(height: 4),
-                            Text(
-                              'Completa los datos del movimiento',
-                              style: GoogleFonts.beVietnamPro(
-                                  color: AppTheme.onSurfaceVariant,
-                                  fontSize: 14),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    isEditing
+                                        ? 'Editar movimiento'
+                                        : 'Registrar movimiento',
+                                    style: GoogleFonts.plusJakartaSans(
+                                      color: AppTheme.primary,
+                                      fontSize: 22,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    'Completa los datos del movimiento',
+                                    style: GoogleFonts.beVietnamPro(
+                                        color: AppTheme.onSurfaceVariant,
+                                        fontSize: 14),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.close_rounded,
+                                  color: AppTheme.onSurfaceVariant),
+                              onPressed: () => Navigator.pop(context),
                             ),
                           ],
                         ),
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.close_rounded,
-                            color: AppTheme.onSurfaceVariant),
-                        onPressed: () => Navigator.pop(context),
-                      ),
-                    ],
+                        const SizedBox(height: 24),
+                        _buildFormFields(isEditing),
+                      ],
+                    ),
                   ),
-                  const SizedBox(height: 24),
-                  _buildFormFields(isEditing),
-                ],
+                ),
+                _buildDialogFooter(isEditing),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Acciones flotantes del diálogo de escritorio: sin barra ni fondo
+  /// detrás, solo los botones con su propia sombra (como el FAB de "+" en
+  /// móvil), quedando fijos fuera del área scrolleable.
+  Widget _buildDialogFooter(bool isEditing) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(36, 0, 36, 28),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          _floatingPill(
+            color: AppTheme.surfaceContainerLowest,
+            onTap: () => Navigator.pop(context),
+            child: Text(
+              'Cancelar',
+              style: GoogleFonts.plusJakartaSans(
+                color: AppTheme.onSurfaceVariant,
+                fontWeight: FontWeight.w600,
+                fontSize: 14,
               ),
             ),
+          ),
+          const SizedBox(width: 12),
+          _floatingPill(
+            color: AppTheme.secondary,
+            width: 220,
+            onTap: _isLoading ? null : _save,
+            child: _isLoading
+                ? const SizedBox(
+                    height: 20,
+                    width: 20,
+                    child: CircularProgressIndicator(
+                        color: Colors.white, strokeWidth: 2.4),
+                  )
+                : Text(
+                    isEditing ? 'Guardar cambios' : 'Agregar movimiento',
+                    style: GoogleFonts.plusJakartaSans(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 14,
+                    ),
+                  ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Botón tipo píldora con sombra propia, para que "flote" sobre el
+  /// contenido en vez de aparecer dentro de una barra sólida.
+  Widget _floatingPill({
+    required Color color,
+    required VoidCallback? onTap,
+    required Widget child,
+    double? width,
+  }) {
+    final isDisabled = onTap == null;
+    return Container(
+      width: width,
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: BorderRadius.circular(100),
+        boxShadow: isDisabled
+            ? null
+            : [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.2),
+                  blurRadius: 16,
+                  offset: const Offset(0, 6),
+                ),
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.08),
+                  blurRadius: 4,
+                  offset: const Offset(0, 1),
+                ),
+              ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(100),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(100),
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
+            child: Center(widthFactor: 1, child: child),
           ),
         ),
       ),
@@ -402,43 +505,6 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
 
               _textField(_noteCtrl, 'Nota (opcional)',
                   icon: Icons.note_outlined, maxLines: 3),
-              const SizedBox(height: 28),
-
-              Divider(height: 1, color: AppTheme.surfaceVariant),
-              const SizedBox(height: 24),
-
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  TextButton(
-                    onPressed: () => Navigator.pop(context),
-                    child: Text('Cancelar',
-                        style: TextStyle(color: AppTheme.onSurfaceVariant)),
-                  ),
-                  const SizedBox(width: 12),
-                  SizedBox(
-                    width: 220,
-                    child: ElevatedButton(
-                      onPressed: _isLoading ? null : _save,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppTheme.secondary,
-                        shape: const StadiumBorder(),
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        elevation: 0,
-                      ),
-                      child: _isLoading
-                          ? const CircularProgressIndicator(color: Colors.white)
-                          : Text(
-                              isEditing
-                                  ? 'Guardar cambios'
-                                  : 'Agregar movimiento',
-                              style: GoogleFonts.plusJakartaSans(
-                                  fontWeight: FontWeight.w600, fontSize: 14),
-                            ),
-                    ),
-                  ),
-                ],
-              ),
       ],
     );
   }

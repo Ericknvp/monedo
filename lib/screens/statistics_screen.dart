@@ -13,6 +13,8 @@ import '../utils/category_icons.dart';
 import 'budgets_screen.dart';
 import '../widgets/budget_editor.dart';
 
+enum _PieRange { month, week, today }
+
 class StatisticsScreen extends StatefulWidget {
   const StatisticsScreen({super.key});
 
@@ -26,6 +28,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
   int _selectedMonth = DateTime.now().month;
   int _selectedYear = DateTime.now().year;
   int? _touchedIndex;
+  _PieRange _pieRange = _PieRange.month;
 
   static const _months = [
     'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
@@ -258,7 +261,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
             // Donut chart (left, 8/12)
             Expanded(
               flex: 8,
-              child: _buildDonutCard(income, expenses, categoryData),
+              child: _buildDonutCard(userId, expenses, categoryData),
             ),
             const SizedBox(width: 24),
             // Stat cards (right, 4/12)
@@ -346,7 +349,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
           compact: true,
         ),
         const SizedBox(height: 24),
-        _buildDonutCard(income, expenses, categoryData),
+        _buildDonutCard(userId, expenses, categoryData),
         const SizedBox(height: 24),
         _buildBudgetsCard(userId, categoryData),
         const SizedBox(height: 24),
@@ -559,29 +562,140 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
     );
   }
 
+  /// Datos del donut según el rango elegido: usa lo ya calculado del mes
+  /// (evita una consulta extra) o pide semana/hoy bajo demanda.
   Widget _buildDonutCard(
-      double income, double expenses, Map<String, double> categoryData) {
+      String userId, double monthExpenses, Map<String, double> monthCategoryData) {
+    if (_pieRange == _PieRange.month) {
+      return _buildDonutCardBody(monthExpenses, monthCategoryData);
+    }
+
+    final now = DateTime.now();
+    final DateTime start;
+    final DateTime end;
+    if (_pieRange == _PieRange.today) {
+      final today = DateTime(now.year, now.month, now.day);
+      start = today;
+      end = today.add(const Duration(days: 1));
+    } else {
+      start = _startOfWeek(now);
+      end = start.add(const Duration(days: 7));
+    }
+
+    return StreamBuilder<List<TransactionModel>>(
+      stream: _txService.getTransactionsByDateRange(userId, start, end),
+      builder: (context, snap) {
+        final tx = snap.data ?? [];
+        final expenses = _txService.calculateExpenses(tx);
+        final categoryData = _txService.getExpensesByCategory(tx);
+        return _buildDonutCardBody(expenses, categoryData);
+      },
+    );
+  }
+
+  /// Segmentado Mensual / Semana / Hoy que controla qué rango de gastos
+  /// se muestra en la gráfica de tarta.
+  Widget _pieRangeSelector() {
+    Widget pill(String label, _PieRange range) {
+      final isActive = _pieRange == range;
+      return Expanded(
+        child: GestureDetector(
+          onTap: () => setState(() {
+            _pieRange = range;
+            _touchedIndex = null;
+          }),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 180),
+            padding: const EdgeInsets.symmetric(vertical: 9),
+            decoration: BoxDecoration(
+              color: isActive ? AppTheme.secondary : Colors.transparent,
+              borderRadius: BorderRadius.circular(100),
+              boxShadow: isActive
+                  ? [
+                      BoxShadow(
+                        color: AppTheme.secondary.withOpacity(0.25),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ]
+                  : [],
+            ),
+            child: Text(
+              label,
+              textAlign: TextAlign.center,
+              style: GoogleFonts.beVietnamPro(
+                color: isActive ? Colors.white : AppTheme.onSurfaceVariant,
+                fontSize: 12.5,
+                fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    return Container(
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        color: AppTheme.surfaceContainer,
+        borderRadius: BorderRadius.circular(100),
+        border: Border.all(color: AppTheme.outlineVariant.withOpacity(0.3)),
+      ),
+      child: Row(
+        children: [
+          pill('Mensual', _PieRange.month),
+          pill('Semana', _PieRange.week),
+          pill('Hoy', _PieRange.today),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDonutCardBody(
+      double expenses, Map<String, double> categoryData) {
+    final emptyLabel = switch (_pieRange) {
+      _PieRange.today => 'Sin gastos hoy',
+      _PieRange.week => 'Sin gastos esta semana',
+      _PieRange.month => 'Sin gastos este mes',
+    };
+
     if (categoryData.isEmpty) {
       return Container(
-        padding: const EdgeInsets.all(48),
+        padding: const EdgeInsets.all(28),
         decoration: BoxDecoration(
           color: AppTheme.surfaceContainerLowest,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(color: AppTheme.surfaceVariant),
         ),
-        child: Center(
-          child: Column(
-            children: [
-              const Icon(Icons.bar_chart_outlined,
-                  size: 56, color: AppTheme.outlineVariant),
-              const SizedBox(height: 14),
-              Text(
-                'Sin gastos este mes',
-                style: GoogleFonts.plusJakartaSans(
-                    color: AppTheme.onSurfaceVariant, fontSize: 15),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Distribución de gastos',
+              style: GoogleFonts.plusJakartaSans(
+                color: AppTheme.primary,
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
               ),
-            ],
-          ),
+            ),
+            const SizedBox(height: 14),
+            _pieRangeSelector(),
+            const SizedBox(height: 34),
+            Center(
+              child: Column(
+                children: [
+                  const Icon(Icons.bar_chart_outlined,
+                      size: 56, color: AppTheme.outlineVariant),
+                  const SizedBox(height: 14),
+                  Text(
+                    emptyLabel,
+                    style: GoogleFonts.plusJakartaSans(
+                        color: AppTheme.onSurfaceVariant, fontSize: 15),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
       );
     }
@@ -607,6 +721,8 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
               ),
             ],
           ),
+          const SizedBox(height: 14),
+          _pieRangeSelector(),
           if (categoryData.isNotEmpty) ...[
             const SizedBox(height: 14),
             Builder(builder: (context) {
