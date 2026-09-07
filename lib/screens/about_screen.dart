@@ -111,7 +111,7 @@ class AboutScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 12),
                     Text(
-                      'Monedo es tu app de finanzas personales: organiza el dinero de todas tus cuentas, registra cada movimiento y sigue tus metas de ahorro, todo en la moneda que prefieras.',
+                      'Monedo es tu app de finanzas personales: organiza el dinero de todas tus cuentas, registra cada movimiento y sigue tus metas de ahorro.',
                       style: GoogleFonts.beVietnamPro(
                         color: AppTheme.onSurfaceVariant,
                         fontSize: 15,
@@ -159,7 +159,7 @@ class AboutScreen extends StatelessWidget {
                       ),
                       const SizedBox(height: 12),
                       Text(
-                        '¿Tienes un problema o encontraste un error? Repórtalo e incluye tu ID de usuario para que podamos ubicar tu cuenta rápido.',
+                        '¿Tienes un problema o encontraste un error? Repórtalo junto con tu ID de usuario.',
                         style: GoogleFonts.beVietnamPro(
                           color: AppTheme.onSurfaceVariant,
                           fontSize: 14,
