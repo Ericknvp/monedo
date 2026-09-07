@@ -35,6 +35,12 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
     'Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun',
     'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic',
   ];
+  static const _weekdaysShort = ['L', 'M', 'Mi', 'J', 'V', 'S', 'D'];
+
+  DateTime _startOfWeek(DateTime d) {
+    final date = DateTime(d.year, d.month, d.day);
+    return date.subtract(Duration(days: date.weekday - 1));
+  }
 
   void _prevMonth() => setState(() {
         if (_selectedMonth == 1) {
@@ -105,11 +111,11 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                   if (isDesktop) {
                     return _buildDesktopLayout(userId, income, expenses,
                         balance, categoryData, incomeChange, expensesChange,
-                        balanceChange);
+                        balanceChange, tx);
                   }
                   return _buildMobileLayout(userId, income, expenses, balance,
                       categoryData, incomeChange, expensesChange,
-                      balanceChange);
+                      balanceChange, tx);
                 },
               );
             },
@@ -239,6 +245,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
     double? incomeChange,
     double? expensesChange,
     double? balanceChange,
+    List<TransactionModel> monthTx,
   ) {
     return Column(
       children: [
@@ -284,6 +291,10 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
         _buildBudgetsCard(userId, categoryData),
         const SizedBox(height: 24),
         _buildWeeklySection(userId),
+        const SizedBox(height: 24),
+        _buildMonthTrendCard(monthTx, _selectedYear, _selectedMonth),
+        const SizedBox(height: 24),
+        _buildSixMonthTrendCard(userId),
       ],
     );
   }
@@ -297,6 +308,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
     double? incomeChange,
     double? expensesChange,
     double? balanceChange,
+    List<TransactionModel> monthTx,
   ) {
     return Column(
       children: [
@@ -336,6 +348,10 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
         _buildBudgetsCard(userId, categoryData),
         const SizedBox(height: 24),
         _buildWeeklySection(userId),
+        const SizedBox(height: 24),
+        _buildMonthTrendCard(monthTx, _selectedYear, _selectedMonth),
+        const SizedBox(height: 24),
+        _buildSixMonthTrendCard(userId),
       ],
     );
   }
@@ -941,44 +957,656 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
   }
 
   Widget _buildWeeklySection(String userId) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final weekStart = _startOfWeek(now);
+    final weekEnd = weekStart.add(const Duration(days: 7));
+    final prevWeekStart = weekStart.subtract(const Duration(days: 7));
+    final weekEndDisplay = weekStart.add(const Duration(days: 6));
+
+    String fmtShort(DateTime d) => '${d.day} ${_monthsShort[d.month - 1]}';
+
     return StreamBuilder<List<TransactionModel>>(
-      stream: _txService.getTransactionsByWeek(userId),
+      // Se pide un solo rango de 14 días (semana pasada + esta semana) y se
+      // parte en memoria, en vez de dos streams anidados como en el mes.
+      stream:
+          _txService.getTransactionsByDateRange(userId, prevWeekStart, weekEnd),
       builder: (context, snap) {
-        final tx = snap.data ?? [];
-        final income = _txService.calculateIncome(tx);
-        final expenses = _txService.calculateExpenses(tx);
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Esta semana',
-              style: GoogleFonts.plusJakartaSans(
-                color: AppTheme.primary,
-                fontSize: 17,
-                fontWeight: FontWeight.w600,
+        final all = snap.data ?? [];
+        final currentTx =
+            all.where((t) => !t.date.isBefore(weekStart)).toList();
+        final prevTx = all.where((t) => t.date.isBefore(weekStart)).toList();
+
+        final income = _txService.calculateIncome(currentTx);
+        final expenses = _txService.calculateExpenses(currentTx);
+        final prevIncome = _txService.calculateIncome(prevTx);
+        final prevExpenses = _txService.calculateExpenses(prevTx);
+        final incomeChange = _pctChange(income, prevIncome);
+        final expensesChange = _pctChange(expenses, prevExpenses);
+
+        final daily = _txService.getDailyTotals(currentTx, weekStart, 7);
+        final dayKeys = daily.keys.toList()..sort();
+        final maxDaily = daily.values
+            .map((v) => v['expenses'] ?? 0)
+            .fold<double>(0, (m, v) => v > m ? v : m);
+
+        return Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: AppTheme.surfaceContainerLowest,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: AppTheme.surfaceVariant),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Text(
+                      'Esta semana',
+                      style: GoogleFonts.plusJakartaSans(
+                        color: AppTheme.primary,
+                        fontSize: 17,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                  Text(
+                    '${fmtShort(weekStart)} - ${fmtShort(weekEndDisplay)}',
+                    style: GoogleFonts.beVietnamPro(
+                      color: AppTheme.onSurfaceVariant,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
               ),
-            ),
-            const SizedBox(height: 14),
-            Row(
-              children: [
-                Expanded(
-                  child: _summaryCard('Ingresos', income,
-                      Icons.trending_up_rounded,
-                      AppTheme.secondaryContainer.withOpacity(0.5),
-                      AppTheme.onSecondaryContainer),
+              const SizedBox(height: 14),
+              Row(
+                children: [
+                  Expanded(
+                    child: _summaryCard('Ingresos', income,
+                        Icons.trending_up_rounded,
+                        AppTheme.secondaryContainer.withOpacity(0.5),
+                        AppTheme.onSecondaryContainer,
+                        changePercent: incomeChange, compact: true),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: _summaryCard('Gastos', expenses,
+                        Icons.trending_down_rounded,
+                        AppTheme.errorContainer.withOpacity(0.3),
+                        AppTheme.errorRed,
+                        changePercent: expensesChange,
+                        higherIsBetter: false, compact: true),
+                  ),
+                ],
+              ),
+              _weekInsightBanner(expenses, prevExpenses),
+              const SizedBox(height: 24),
+              Text(
+                'Gastos por día',
+                style: GoogleFonts.beVietnamPro(
+                  color: AppTheme.onSurfaceVariant,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
                 ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: _summaryCard('Gastos', expenses,
-                      Icons.trending_down_rounded,
-                      AppTheme.errorContainer.withOpacity(0.3),
-                      AppTheme.errorRed),
+              ),
+              const SizedBox(height: 14),
+              SizedBox(
+                height: 150,
+                child: BarChart(
+                  BarChartData(
+                    alignment: BarChartAlignment.spaceAround,
+                    maxY: maxDaily == 0 ? 10 : maxDaily * 1.3,
+                    barTouchData: BarTouchData(
+                      touchTooltipData: BarTouchTooltipData(
+                        getTooltipItem: (group, groupIndex, rod, rodIndex) {
+                          final day = dayKeys[group.x.toInt()];
+                          return BarTooltipItem(
+                            '${_weekdaysShort[group.x.toInt()]} ${day.day}\n',
+                            GoogleFonts.beVietnamPro(
+                              color: Colors.white,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w500,
+                            ),
+                            children: [
+                              TextSpan(
+                                text: CurrencyFormatter.format(rod.toY),
+                                style: GoogleFonts.plusJakartaSans(
+                                  color: Colors.white,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ],
+                          );
+                        },
+                      ),
+                    ),
+                    titlesData: FlTitlesData(
+                      topTitles:
+                          const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                      rightTitles:
+                          const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                      leftTitles:
+                          const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                      bottomTitles: AxisTitles(
+                        sideTitles: SideTitles(
+                          showTitles: true,
+                          reservedSize: 26,
+                          getTitlesWidget: (value, meta) {
+                            final idx = value.toInt();
+                            if (idx < 0 || idx >= dayKeys.length) {
+                              return const SizedBox.shrink();
+                            }
+                            final isToday = dayKeys[idx] == today;
+                            return Padding(
+                              padding: const EdgeInsets.only(top: 8),
+                              child: Text(
+                                _weekdaysShort[idx],
+                                style: GoogleFonts.beVietnamPro(
+                                  color: isToday
+                                      ? AppTheme.primary
+                                      : AppTheme.onSurfaceVariant,
+                                  fontSize: 11,
+                                  fontWeight:
+                                      isToday ? FontWeight.w800 : FontWeight.w500,
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ),
+                    gridData: const FlGridData(show: false),
+                    borderData: FlBorderData(show: false),
+                    barGroups: dayKeys.asMap().entries.map((e) {
+                      final idx = e.key;
+                      final day = e.value;
+                      final val = daily[day]?['expenses'] ?? 0;
+                      final isToday = day == today;
+                      final isFuture = day.isAfter(today);
+                      return BarChartGroupData(
+                        x: idx,
+                        barRods: [
+                          BarChartRodData(
+                            toY: val,
+                            width: 22,
+                            borderRadius: BorderRadius.circular(6),
+                            color: isFuture
+                                ? AppTheme.outlineVariant.withOpacity(0.25)
+                                : (isToday
+                                    ? AppTheme.errorRed
+                                    : AppTheme.errorRed.withOpacity(0.55)),
+                          ),
+                        ],
+                      );
+                    }).toList(),
+                  ),
                 ),
-              ],
-            ),
-          ],
+              ),
+            ],
+          ),
         );
       },
+    );
+  }
+
+  // Frase corta que resume, en lenguaje simple, cómo va la semana frente a
+  // la anterior. Null cuando no hay ninguna base útil para comparar.
+  Widget _weekInsightBanner(double expenses, double prevExpenses) {
+    if (expenses == 0 && prevExpenses == 0) return const SizedBox.shrink();
+
+    IconData icon;
+    Color color;
+    String message;
+
+    if (prevExpenses == 0) {
+      icon = Icons.info_outline_rounded;
+      color = AppTheme.onSurfaceVariant;
+      message =
+          'La semana pasada no registraste gastos, así que no hay con qué comparar todavía.';
+    } else {
+      final change = ((expenses - prevExpenses) / prevExpenses) * 100;
+      if (change > 5) {
+        icon = Icons.trending_up_rounded;
+        color = AppTheme.errorRed;
+        message =
+            'Gastaste ${change.toStringAsFixed(0)}% más que la semana pasada.';
+      } else if (change < -5) {
+        icon = Icons.trending_down_rounded;
+        color = AppTheme.secondary;
+        message =
+            'Gastaste ${change.abs().toStringAsFixed(0)}% menos que la semana pasada. ¡Bien!';
+      } else {
+        icon = Icons.trending_flat_rounded;
+        color = AppTheme.onSurfaceVariant;
+        message = 'Vas gastando casi igual que la semana pasada.';
+      }
+    }
+
+    return Padding(
+      padding: const EdgeInsets.only(top: 14),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        decoration: BoxDecoration(
+          color: color.withOpacity(0.08),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          children: [
+            Icon(icon, color: color, size: 18),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                message,
+                style: GoogleFonts.beVietnamPro(
+                  color: AppTheme.primary,
+                  fontSize: 12.5,
+                  fontWeight: FontWeight.w500,
+                  height: 1.3,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // Líneas de evolución del mes: ingresos vs gastos acumulados, día a día.
+  // Muy fácil de leer de un vistazo (¿qué línea va más arriba, y qué tan rápido sube?).
+  Widget _buildMonthTrendCard(
+      List<TransactionModel> monthTx, int year, int month) {
+    final daysInMonth = DateTime(year, month + 1, 0).day;
+    final now = DateTime.now();
+    final isCurrentMonth = now.year == year && now.month == month;
+    final lastDay = isCurrentMonth ? now.day : daysInMonth;
+
+    final dailyExpense = List<double>.filled(daysInMonth, 0);
+    final dailyIncome = List<double>.filled(daysInMonth, 0);
+    for (var t in monthTx.where((t) => !t.isTransfer)) {
+      if (t.isIncome) {
+        dailyIncome[t.date.day - 1] += t.amount;
+      } else {
+        dailyExpense[t.date.day - 1] += t.amount;
+      }
+    }
+
+    final cumulativeExpense = <double>[];
+    final cumulativeIncome = <double>[];
+    double runningExpense = 0;
+    double runningIncome = 0;
+    for (var i = 0; i < daysInMonth; i++) {
+      runningExpense += dailyExpense[i];
+      runningIncome += dailyIncome[i];
+      cumulativeExpense.add(runningExpense);
+      cumulativeIncome.add(runningIncome);
+    }
+
+    final visibleDays = isCurrentMonth ? lastDay : daysInMonth;
+    final expenseSpots = List.generate(
+        visibleDays, (i) => FlSpot(i.toDouble(), cumulativeExpense[i]));
+    final incomeSpots = List.generate(
+        visibleDays, (i) => FlSpot(i.toDouble(), cumulativeIncome[i]));
+
+    final totalSpent =
+        cumulativeExpense.isEmpty ? 0.0 : cumulativeExpense[visibleDays - 1];
+    final totalIncome =
+        cumulativeIncome.isEmpty ? 0.0 : cumulativeIncome[visibleDays - 1];
+    final maxVal = totalSpent > totalIncome ? totalSpent : totalIncome;
+    final maxY = maxVal <= 0 ? 10.0 : maxVal * 1.2;
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: AppTheme.surfaceContainerLowest,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppTheme.surfaceVariant),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Evolución del mes',
+                      style: GoogleFonts.plusJakartaSans(
+                        color: AppTheme.primary,
+                        fontSize: 17,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Ingresos vs. gastos acumulados, día a día',
+                      style: GoogleFonts.beVietnamPro(
+                        color: AppTheme.onSurfaceVariant,
+                        fontSize: 12.5,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              _legendDot('Ingresos', AppTheme.secondary),
+              const SizedBox(width: 14),
+              _legendDot('Gastos', AppTheme.errorRed),
+            ],
+          ),
+          const SizedBox(height: 20),
+          if (totalSpent <= 0 && totalIncome <= 0)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 30),
+              child: Center(
+                child: Text(
+                  'Aún no hay movimientos este mes',
+                  style: GoogleFonts.beVietnamPro(
+                      color: AppTheme.onSurfaceVariant, fontSize: 13),
+                ),
+              ),
+            )
+          else
+            SizedBox(
+              height: 180,
+              child: LineChart(
+                LineChartData(
+                  minX: 0,
+                  maxX: (daysInMonth - 1).toDouble(),
+                  minY: 0,
+                  maxY: maxY,
+                  gridData: FlGridData(
+                    show: true,
+                    drawVerticalLine: false,
+                    horizontalInterval: maxY / 4,
+                    getDrawingHorizontalLine: (v) => FlLine(
+                      color: AppTheme.outlineVariant.withOpacity(0.2),
+                      strokeWidth: 1,
+                    ),
+                  ),
+                  borderData: FlBorderData(show: false),
+                  titlesData: FlTitlesData(
+                    topTitles: const AxisTitles(
+                        sideTitles: SideTitles(showTitles: false)),
+                    rightTitles: const AxisTitles(
+                        sideTitles: SideTitles(showTitles: false)),
+                    leftTitles: const AxisTitles(
+                        sideTitles: SideTitles(showTitles: false)),
+                    bottomTitles: AxisTitles(
+                      sideTitles: SideTitles(
+                        showTitles: true,
+                        reservedSize: 24,
+                        interval:
+                            (daysInMonth / 4).clamp(1, daysInMonth).roundToDouble(),
+                        getTitlesWidget: (value, meta) {
+                          final day = value.toInt() + 1;
+                          return Padding(
+                            padding: const EdgeInsets.only(top: 6),
+                            child: Text(
+                              '$day',
+                              style: GoogleFonts.beVietnamPro(
+                                color: AppTheme.onSurfaceVariant,
+                                fontSize: 10,
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+                  lineTouchData: LineTouchData(
+                    touchTooltipData: LineTouchTooltipData(
+                      getTooltipItems: (touchedSpots) => touchedSpots.map((s) {
+                        final isIncome = s.barIndex == 0;
+                        return LineTooltipItem(
+                          '${isIncome ? 'Ingresos' : 'Gastos'} · día ${s.x.toInt() + 1}\n${CurrencyFormatter.format(s.y)}',
+                          GoogleFonts.beVietnamPro(
+                            color: Colors.white,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                  ),
+                  lineBarsData: [
+                    LineChartBarData(
+                      spots: incomeSpots,
+                      isCurved: true,
+                      color: AppTheme.secondary,
+                      barWidth: 3,
+                      dotData: const FlDotData(show: false),
+                      belowBarData: BarAreaData(show: false),
+                    ),
+                    LineChartBarData(
+                      spots: expenseSpots,
+                      isCurved: true,
+                      color: AppTheme.errorRed,
+                      barWidth: 3,
+                      dotData: const FlDotData(show: false),
+                      belowBarData: BarAreaData(
+                        show: true,
+                        color: AppTheme.errorRed.withOpacity(0.08),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  // Barras agrupadas ingresos/gastos de los últimos 6 meses: la vista más
+  // simple para notar si el patrón mensual mejora o empeora con el tiempo.
+  Widget _buildSixMonthTrendCard(String userId) {
+    final now = DateTime.now();
+    final start = DateTime(now.year, now.month - 5, 1);
+    final end = DateTime(now.year, now.month + 1, 1);
+    final months = List.generate(6, (i) => DateTime(start.year, start.month + i, 1));
+
+    return StreamBuilder<List<TransactionModel>>(
+      stream: _txService.getTransactionsByDateRange(userId, start, end),
+      builder: (context, snap) {
+        final tx = snap.data ?? [];
+        final incomeByMonth = <double>[];
+        final expensesByMonth = <double>[];
+        for (var m in months) {
+          final monthTx = tx
+              .where((t) => t.date.year == m.year && t.date.month == m.month)
+              .toList();
+          incomeByMonth.add(_txService.calculateIncome(monthTx));
+          expensesByMonth.add(_txService.calculateExpenses(monthTx));
+        }
+        final maxVal = [...incomeByMonth, ...expensesByMonth]
+            .fold<double>(0, (m, v) => v > m ? v : m);
+
+        return Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: AppTheme.surfaceContainerLowest,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: AppTheme.surfaceVariant),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Últimos 6 meses',
+                          style: GoogleFonts.plusJakartaSans(
+                            color: AppTheme.primary,
+                            fontSize: 17,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Ingresos y gastos, mes a mes',
+                          style: GoogleFonts.beVietnamPro(
+                            color: AppTheme.onSurfaceVariant,
+                            fontSize: 12.5,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  _legendDot('Ingresos', AppTheme.secondary),
+                  const SizedBox(width: 14),
+                  _legendDot('Gastos', AppTheme.errorRed),
+                ],
+              ),
+              const SizedBox(height: 24),
+              if (maxVal == 0)
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 30),
+                  child: Center(
+                    child: Text(
+                      'Aún no hay movimientos en este período',
+                      style: GoogleFonts.beVietnamPro(
+                          color: AppTheme.onSurfaceVariant, fontSize: 13),
+                    ),
+                  ),
+                )
+              else
+                SizedBox(
+                  height: 200,
+                  child: BarChart(
+                    BarChartData(
+                      alignment: BarChartAlignment.spaceAround,
+                      maxY: maxVal * 1.25,
+                      barTouchData: BarTouchData(
+                        touchTooltipData: BarTouchTooltipData(
+                          getTooltipItem: (group, groupIndex, rod, rodIndex) {
+                            final m = months[group.x.toInt()];
+                            final label = rodIndex == 0 ? 'Ingresos' : 'Gastos';
+                            return BarTooltipItem(
+                              '${_monthsShort[m.month - 1]}\n$label: ',
+                              GoogleFonts.beVietnamPro(
+                                color: Colors.white,
+                                fontSize: 11,
+                              ),
+                              children: [
+                                TextSpan(
+                                  text: CurrencyFormatter.format(rod.toY),
+                                  style: GoogleFonts.plusJakartaSans(
+                                    color: Colors.white,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ],
+                            );
+                          },
+                        ),
+                      ),
+                      titlesData: FlTitlesData(
+                        topTitles: const AxisTitles(
+                            sideTitles: SideTitles(showTitles: false)),
+                        rightTitles: const AxisTitles(
+                            sideTitles: SideTitles(showTitles: false)),
+                        leftTitles: const AxisTitles(
+                            sideTitles: SideTitles(showTitles: false)),
+                        bottomTitles: AxisTitles(
+                          sideTitles: SideTitles(
+                            showTitles: true,
+                            reservedSize: 26,
+                            getTitlesWidget: (value, meta) {
+                              final idx = value.toInt();
+                              if (idx < 0 || idx >= months.length) {
+                                return const SizedBox.shrink();
+                              }
+                              final isCurrent = months[idx].year == now.year &&
+                                  months[idx].month == now.month;
+                              return Padding(
+                                padding: const EdgeInsets.only(top: 8),
+                                child: Text(
+                                  _monthsShort[months[idx].month - 1],
+                                  style: GoogleFonts.beVietnamPro(
+                                    color: isCurrent
+                                        ? AppTheme.primary
+                                        : AppTheme.onSurfaceVariant,
+                                    fontSize: 11,
+                                    fontWeight: isCurrent
+                                        ? FontWeight.w800
+                                        : FontWeight.w500,
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                      ),
+                      gridData: const FlGridData(show: false),
+                      borderData: FlBorderData(show: false),
+                      barGroups: months.asMap().entries.map((e) {
+                        final idx = e.key;
+                        return BarChartGroupData(
+                          x: idx,
+                          barRods: [
+                            BarChartRodData(
+                              toY: incomeByMonth[idx],
+                              width: 9,
+                              borderRadius: BorderRadius.circular(4),
+                              color: AppTheme.secondary,
+                            ),
+                            BarChartRodData(
+                              toY: expensesByMonth[idx],
+                              width: 9,
+                              borderRadius: BorderRadius.circular(4),
+                              color: AppTheme.errorRed,
+                            ),
+                          ],
+                          barsSpace: 4,
+                        );
+                      }).toList(),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _legendDot(String label, Color color) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: 9,
+          height: 9,
+          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+        ),
+        const SizedBox(width: 6),
+        Text(
+          label,
+          style: GoogleFonts.beVietnamPro(
+            color: AppTheme.onSurfaceVariant,
+            fontSize: 11.5,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ],
     );
   }
 }

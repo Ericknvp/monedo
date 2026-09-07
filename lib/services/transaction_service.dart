@@ -66,16 +66,36 @@ class TransactionService {
         .map((transactions) => transactions.where((t) => t.goalId == goalId).toList());
   }
 
-  // ---- Obtiene transacciones de la semana actual ----
-  Stream<List<TransactionModel>> getTransactionsByWeek(String userId) {
+  // ---- Obtiene transacciones dentro de un rango [start, end) ----
+  Stream<List<TransactionModel>> getTransactionsByDateRange(
+      String userId, DateTime start, DateTime end) {
     return getTransactions(userId).map((transactions) {
-      final now = DateTime.now();
-      final startOfWeek =
-      now.subtract(Duration(days: now.weekday - 1));
-      final start = DateTime(
-          startOfWeek.year, startOfWeek.month, startOfWeek.day);
-      return transactions.where((t) => t.date.isAfter(start)).toList();
+      return transactions
+          .where((t) => !t.date.isBefore(start) && t.date.isBefore(end))
+          .toList();
     });
+  }
+
+  // ---- Agrupa ingresos y gastos por día para gráficas de barras diarias ----
+  // [start] es el primer día del rango; se generan [days] cubetas consecutivas
+  // (incluso sin movimientos) para que la gráfica siempre tenga el mismo ancho.
+  Map<DateTime, Map<String, double>> getDailyTotals(
+      List<TransactionModel> transactions, DateTime start, int days) {
+    final result = <DateTime, Map<String, double>>{};
+    for (var i = 0; i < days; i++) {
+      result[DateTime(start.year, start.month, start.day + i)] = {
+        'income': 0.0,
+        'expenses': 0.0,
+      };
+    }
+    for (var t in transactions.where((t) => !t.isTransfer)) {
+      final day = DateTime(t.date.year, t.date.month, t.date.day);
+      final bucket = result[day];
+      if (bucket == null) continue;
+      final key = t.isIncome ? 'income' : 'expenses';
+      bucket[key] = (bucket[key] ?? 0) + t.amount;
+    }
+    return result;
   }
 
   // ---- Edita una transacción existente y corrige el saldo de la(s) cuenta(s) ----
