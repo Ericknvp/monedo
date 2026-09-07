@@ -110,6 +110,63 @@
       opacity: 1;
       transform: translateY(0);
     }
+    nav {
+      transition: box-shadow 0.3s ease, background-color 0.3s ease;
+    }
+    nav.nav-scrolled {
+      box-shadow: 0 8px 24px rgba(0,31,45,0.08);
+    }
+    .btn-glow {
+      animation: btn-glow 2.6s ease-in-out infinite;
+    }
+    @keyframes btn-glow {
+      0%, 100% { box-shadow: 0 8px 24px rgba(0,108,75,0.25); }
+      50%      { box-shadow: 0 8px 32px rgba(0,108,75,0.45); }
+    }
+    .timeline-track {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 50%;
+      width: 3px;
+      transform: translateX(-50%);
+      background: linear-gradient(to bottom, transparent, var(--tw-color-outline-variant, #c1c7cc) 4%, var(--tw-color-outline-variant, #c1c7cc) 96%, transparent);
+      display: none;
+    }
+    .timeline-fill {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 0%;
+      background: linear-gradient(to bottom, #006c4b, #96f6c8);
+      border-radius: 999px;
+      transition: height 0.1s linear;
+    }
+    @media (min-width: 768px) {
+      .timeline-track { display: block; }
+    }
+    .feature-icon-wrap {
+      transform: rotate(-24deg) scale(0.6);
+      opacity: 0;
+      transition: transform 0.55s cubic-bezier(0.34,1.56,0.64,1), opacity 0.4s ease;
+    }
+    .reveal.visible .feature-icon-wrap {
+      transform: rotate(0deg) scale(1);
+      opacity: 1;
+      transition-delay: 0.15s;
+    }
+    .card-hover:hover .feature-icon-wrap {
+      transform: scale(1.12) rotate(-6deg) !important;
+      transition-delay: 0s;
+    }
+    #caracteristicas .grid > .reveal:nth-child(3n+1) { transition-delay: 0ms; }
+    #caracteristicas .grid > .reveal:nth-child(3n+2) { transition-delay: 90ms; }
+    #caracteristicas .grid > .reveal:nth-child(3n+3) { transition-delay: 180ms; }
+    @media (prefers-reduced-motion: reduce) {
+      .btn-glow { animation: none !important; }
+      .timeline-fill { transition: none !important; }
+    }
   </style>
 
 </head>
@@ -147,8 +204,12 @@
 <header class="relative overflow-hidden">
   <div class="blob w-[560px] h-[560px] bg-secondary-container top-0 -left-40"></div>
   <div class="blob blob-delay w-[420px] h-[420px] bg-primary-container bottom-0 -right-16"></div>
-  <span class="float-icon material-symbols-outlined hidden md:block absolute top-24 left-[10%] text-secondary/25 text-[40px] z-0" style="font-variation-settings:'FILL' 1;">account_balance_wallet</span>
-  <span class="float-icon delay material-symbols-outlined hidden md:block absolute bottom-16 right-[12%] text-primary/20 text-[34px] z-0" style="font-variation-settings:'FILL' 1;">savings</span>
+  <div id="heroIconWallet" class="hidden md:block absolute top-24 left-[10%] z-0">
+    <span class="float-icon material-symbols-outlined text-secondary/25 text-[40px]" style="font-variation-settings:'FILL' 1;">account_balance_wallet</span>
+  </div>
+  <div id="heroIconSavings" class="hidden md:block absolute bottom-16 right-[12%] z-0">
+    <span class="float-icon delay material-symbols-outlined text-primary/20 text-[34px]" style="font-variation-settings:'FILL' 1;">savings</span>
+  </div>
   <div class="max-w-6xl mx-auto px-6 md:px-10 py-24 md:py-36 relative z-10">
     <div class="max-w-3xl mx-auto text-center space-y-7">
       <div class="inline-flex items-center gap-2 bg-secondary-container/50 px-4 py-1.5 rounded-full text-on-secondary-container text-sm font-semibold">
@@ -164,7 +225,7 @@
       </p>
       <div class="flex flex-wrap justify-center gap-4 pt-2">
         <a href="/?view=register"
-           class="bg-secondary text-on-secondary h-12 px-10 rounded-full font-semibold flex items-center gap-2 shadow-lg shadow-secondary/25 hover:scale-105 active:scale-95 transition-all text-sm">
+           class="btn-glow bg-secondary text-on-secondary h-12 px-10 rounded-full font-semibold flex items-center gap-2 hover:scale-105 active:scale-95 transition-all text-sm">
           Crear cuenta
           <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
         </a>
@@ -251,7 +312,7 @@
   </div>
   <div class="grid md:grid-cols-3 gap-6">
     <div class="card-hover bg-surface-container-lowest p-8 rounded-2xl border border-outline-variant/40 flex flex-col gap-5 reveal">
-      <div class="w-14 h-14 bg-secondary-container rounded-2xl flex items-center justify-center">
+      <div class="feature-icon-wrap w-14 h-14 bg-secondary-container rounded-2xl flex items-center justify-center">
         <span class="material-symbols-outlined text-on-secondary-container text-[28px]">account_balance_wallet</span>
       </div>
       <div>
@@ -262,7 +323,7 @@
       </div>
     </div>
     <div class="card-hover bg-surface-container-lowest p-8 rounded-2xl border border-outline-variant/40 flex flex-col gap-5 reveal">
-      <div class="w-14 h-14 bg-primary-container rounded-2xl flex items-center justify-center">
+      <div class="feature-icon-wrap w-14 h-14 bg-primary-container rounded-2xl flex items-center justify-center">
         <span class="material-symbols-outlined text-on-primary-container text-[28px]">receipt_long</span>
       </div>
       <div>
@@ -273,7 +334,7 @@
       </div>
     </div>
     <div class="card-hover bg-surface-container-lowest p-8 rounded-2xl border border-outline-variant/40 flex flex-col gap-5 reveal">
-      <div class="w-14 h-14 bg-secondary-container rounded-2xl flex items-center justify-center">
+      <div class="feature-icon-wrap w-14 h-14 bg-secondary-container rounded-2xl flex items-center justify-center">
         <span class="material-symbols-outlined text-on-secondary-container text-[28px]">currency_exchange</span>
       </div>
       <div>
@@ -284,7 +345,7 @@
       </div>
     </div>
     <div class="card-hover bg-surface-container-lowest p-8 rounded-2xl border border-outline-variant/40 flex flex-col gap-5 reveal">
-      <div class="w-14 h-14 bg-primary-container rounded-2xl flex items-center justify-center">
+      <div class="feature-icon-wrap w-14 h-14 bg-primary-container rounded-2xl flex items-center justify-center">
         <span class="material-symbols-outlined text-on-primary-container text-[28px]">analytics</span>
       </div>
       <div>
@@ -295,7 +356,7 @@
       </div>
     </div>
     <div class="card-hover bg-surface-container-lowest p-8 rounded-2xl border border-outline-variant/40 flex flex-col gap-5 reveal">
-      <div class="w-14 h-14 bg-secondary-container rounded-2xl flex items-center justify-center">
+      <div class="feature-icon-wrap w-14 h-14 bg-secondary-container rounded-2xl flex items-center justify-center">
         <span class="material-symbols-outlined text-on-secondary-container text-[28px]">savings</span>
       </div>
       <div>
@@ -306,7 +367,7 @@
       </div>
     </div>
     <div class="card-hover bg-surface-container-lowest p-8 rounded-2xl border border-outline-variant/40 flex flex-col gap-5 reveal">
-      <div class="w-14 h-14 bg-primary-container rounded-2xl flex items-center justify-center">
+      <div class="feature-icon-wrap w-14 h-14 bg-primary-container rounded-2xl flex items-center justify-center">
         <span class="material-symbols-outlined text-on-primary-container text-[28px]">ios_share</span>
       </div>
       <div>
@@ -368,46 +429,14 @@
   <div class="max-w-6xl mx-auto px-6 md:px-10">
     <div class="text-center mb-16 reveal">
       <h2 class="font-display text-3xl font-bold text-primary mb-4">Cómo funciona</h2>
-      <p class="text-on-surface-variant max-w-lg mx-auto">Empieza en minutos. Sin tutoriales largos, sin configuraciones complicadas.</p>
+      <p class="text-on-surface-variant max-w-lg mx-auto">Empieza en minutos. Sin configuraciones complicadas.</p>
     </div>
 
-    <div class="space-y-14">
-      <!-- Paso 1 -->
-      <div class="grid md:grid-cols-2 gap-10 items-center reveal">
-        <div class="bg-surface-container-lowest rounded-2xl p-8 border border-outline-variant/30">
-          <span class="inline-block px-3 py-1 bg-secondary-container text-on-secondary-container rounded-full text-xs font-bold mb-5">PASO 01</span>
-          <h3 class="font-display text-xl font-bold text-primary mb-3">Crea tu cuenta gratis</h3>
-          <p class="text-on-surface-variant text-sm leading-relaxed mb-5">
-            Solo necesitas un nombre de usuario, correo y contraseña. Sin tarjetas, sin planes de pago. Tu cuenta es tuya para siempre, sin ningún costo.
-          </p>
-          <div class="flex items-center gap-2 text-secondary text-sm font-semibold">
-            <span class="material-symbols-outlined text-[18px]" style="font-variation-settings:'FILL' 1;">lock</span>
-            Autenticación segura con Firebase
-          </div>
-        </div>
-        <div class="bg-surface-container-lowest rounded-2xl p-8 border border-outline-variant/30">
-          <div class="space-y-3">
-            <div class="bg-surface-container rounded-xl p-4 flex items-center gap-3">
-              <span class="material-symbols-outlined text-on-surface-variant text-[20px]">person</span>
-              <span class="text-on-surface-variant text-sm">tu_nombre_de_usuario</span>
-            </div>
-            <div class="bg-surface-container rounded-xl p-4 flex items-center gap-3">
-              <span class="material-symbols-outlined text-on-surface-variant text-[20px]">email</span>
-              <span class="text-on-surface-variant text-sm">tu@correo.com</span>
-            </div>
-            <div class="bg-surface-container rounded-xl p-4 flex items-center gap-3">
-              <span class="material-symbols-outlined text-on-surface-variant text-[20px]">lock</span>
-              <span class="text-on-surface-variant text-sm">••••••••</span>
-            </div>
-            <a href="/?view=register"
-               class="block w-full bg-secondary text-on-secondary py-3 rounded-xl text-sm font-semibold text-center hover:opacity-90 transition-opacity">
-              Crear cuenta
-            </a>
-          </div>
-        </div>
+    <div id="stepsContainer" class="relative space-y-14">
+      <div class="timeline-track">
+        <div id="timelineFill" class="timeline-fill"></div>
       </div>
-
-      <!-- Paso 2 -->
+      <!-- Paso 1 -->
       <div class="grid md:grid-cols-2 gap-10 items-center reveal">
         <div class="order-2 md:order-1 bg-surface-container-lowest rounded-2xl p-8 border border-outline-variant/30">
           <div class="space-y-3">
@@ -445,7 +474,7 @@
           </div>
         </div>
         <div class="order-1 md:order-2 bg-surface-container-lowest rounded-2xl p-8 border border-outline-variant/30">
-          <span class="inline-block px-3 py-1 bg-primary-container text-on-primary-container rounded-full text-xs font-bold mb-5">PASO 02</span>
+          <span class="inline-block px-3 py-1 bg-primary-container text-on-primary-container rounded-full text-xs font-bold mb-5">PASO 01</span>
           <h3 class="font-display text-xl font-bold text-primary mb-3">Organiza tu dinero en cuentas</h3>
           <p class="text-on-surface-variant text-sm leading-relaxed mb-5">
             Crea una cuenta por cada lugar donde tienes dinero: efectivo, banco, billeteras digitales. Ve cuánto hay en cada una y transfiere entre ellas cuando lo necesites.
@@ -457,10 +486,10 @@
         </div>
       </div>
 
-      <!-- Paso 3 -->
+      <!-- Paso 2 -->
       <div class="grid md:grid-cols-2 gap-10 items-center reveal">
         <div class="bg-surface-container-lowest rounded-2xl p-8 border border-outline-variant/30">
-          <span class="inline-block px-3 py-1 bg-secondary-container text-on-secondary-container rounded-full text-xs font-bold mb-5">PASO 03</span>
+          <span class="inline-block px-3 py-1 bg-secondary-container text-on-secondary-container rounded-full text-xs font-bold mb-5">PASO 02</span>
           <h3 class="font-display text-xl font-bold text-primary mb-3">Registra tus movimientos</h3>
           <p class="text-on-surface-variant text-sm leading-relaxed mb-5">
             Agrega ingresos y gastos fácilmente. Elige la cuenta, la categoría, el monto y la fecha. Tus movimientos quedan guardados en la nube para verlos desde cualquier dispositivo.
@@ -512,6 +541,48 @@
               <span class="text-sm font-bold text-primary">-$35.00</span>
             </div>
           </div>
+        </div>
+      </div>
+
+      <!-- Paso 3 -->
+      <div class="grid md:grid-cols-2 gap-10 items-center reveal">
+        <div class="order-2 md:order-1 bg-surface-container-lowest rounded-2xl p-8 border border-outline-variant/30">
+          <div class="space-y-3 mb-5">
+            <div class="flex items-center justify-between p-3 bg-surface-container rounded-xl">
+              <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-full flex items-center justify-center" style="background-color:#FEF3C7;">
+                  <span class="material-symbols-outlined text-[18px]" style="color:#B45309;">restaurant</span>
+                </div>
+                <p class="text-sm font-semibold text-primary">Comida</p>
+              </div>
+              <div class="w-4 h-4 rounded-full" style="background-color:#F59E0B;"></div>
+            </div>
+            <div class="flex items-center justify-between p-3 bg-surface-container rounded-xl">
+              <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-full flex items-center justify-center" style="background-color:#DBEAFE;">
+                  <span class="material-symbols-outlined text-[18px]" style="color:#1D4ED8;">directions_bus</span>
+                </div>
+                <p class="text-sm font-semibold text-primary">Transporte</p>
+              </div>
+              <div class="w-4 h-4 rounded-full" style="background-color:#3B82F6;"></div>
+            </div>
+            <div class="flex items-center justify-between p-3 bg-surface-container rounded-xl">
+              <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-full flex items-center justify-center" style="background-color:#FCE7F3;">
+                  <span class="material-symbols-outlined text-[18px]" style="color:#BE185D;">shopping_bag</span>
+                </div>
+                <p class="text-sm font-semibold text-primary">Compras</p>
+              </div>
+              <div class="w-4 h-4 rounded-full" style="background-color:#EC4899;"></div>
+            </div>
+          </div>
+        </div>
+        <div class="order-1 md:order-2 bg-surface-container-lowest rounded-2xl p-8 border border-outline-variant/30">
+          <span class="inline-block px-3 py-1 bg-primary-container text-on-primary-container rounded-full text-xs font-bold mb-5">PASO 03</span>
+          <h3 class="font-display text-xl font-bold text-primary mb-3">Personaliza tus categorías</h3>
+          <p class="text-on-surface-variant text-sm leading-relaxed mb-5">
+            Crea tus propias categorías. Así identificas de un vistazo en qué se te va el dinero, sin confundirlas entre sí.
+          </p>
         </div>
       </div>
 
@@ -591,7 +662,7 @@
           <span class="inline-block px-3 py-1 bg-primary-container text-on-primary-container rounded-full text-xs font-bold mb-5">PASO 04</span>
           <h3 class="font-display text-xl font-bold text-primary mb-3">Visualiza tus estadísticas</h3>
           <p class="text-on-surface-variant text-sm leading-relaxed mb-5">
-            Cada mes, ve exactamente en qué gastaste más y cuánto ingresaste. Gráficas simples que te dan una foto clara de tu situación financiera.
+            Cada mes, ve exactamente en qué gastaste más y cuánto ingresaste. Gráficas simples que te dan una imagen clara de tu situación financiera.
           </p>
           <div class="flex items-center gap-2 text-secondary text-sm font-semibold">
             <span class="material-symbols-outlined text-[18px]" style="font-variation-settings:'FILL' 1;">trending_up</span>
@@ -673,7 +744,7 @@
           <span class="inline-block px-3 py-1 bg-primary-container text-on-primary-container rounded-full text-xs font-bold mb-5">PASO 06</span>
           <h3 class="font-display text-xl font-bold text-primary mb-3">Exporta tus datos cuando quieras</h3>
           <p class="text-on-surface-variant text-sm leading-relaxed mb-5">
-            Descarga tus movimientos en Excel o PDF, con la marca Monedo lista para compartir, imprimir o analizar donde prefieras.
+            Descarga tus movimientos en Excel o PDF, listos para compartir, imprimir o analizar donde prefieras.
           </p>
           <div class="flex items-center gap-2 text-secondary text-sm font-semibold">
             <span class="material-symbols-outlined text-[18px]" style="font-variation-settings:'FILL' 1;">ios_share</span>
@@ -699,7 +770,7 @@
           Llévate Monedo<br class="hidden md:block"/> en tu bolsillo
         </h2>
         <p class="text-on-surface-variant text-base leading-relaxed mb-8 max-w-md mx-auto md:mx-0">
-          Descarga el APK e instálalo directamente en tu Android — próximamente también en Play Store. Sin cuentas nuevas: entra con el mismo usuario que ya tienes.
+          Descarga el APK e instálalo directamente en tu Android — próximamente también en Play Store. Entra con el mismo usuario que ya tienes.
         </p>
         <a href="https://github.com/Ericknvp/monedo/releases/download/v2.2.1/monedo.apk" download
            class="inline-flex items-center gap-3 bg-secondary text-on-secondary h-14 px-8 rounded-full font-semibold text-base shadow-lg shadow-secondary/25 hover:scale-105 active:scale-95 transition-all">
@@ -728,14 +799,14 @@
       y siempre lo será.
     </h2>
     <p class="text-on-surface-variant text-lg leading-relaxed mb-10 max-w-xl mx-auto">
-      No hay plan "premium". No hay funciones bloqueadas. No hay tarjeta de crédito necesaria. Monedo fue creado para que cualquier persona pueda tomar control de sus finanzas sin gastar un peso.
+      No hay plan "premium". Monedo fue creado para que cualquier persona pueda tomar control de sus finanzas sin gastar un peso.
     </p>
     <a href="/?view=register"
        class="inline-flex items-center gap-2 bg-secondary text-on-secondary h-14 px-12 rounded-full font-semibold text-base shadow-xl shadow-secondary/30 hover:scale-105 active:scale-95 transition-all">
       Empezar ahora
       <span class="material-symbols-outlined">arrow_forward</span>
     </a>
-    <p class="mt-5 text-on-surface-variant text-sm">Sin tarjeta · Sin compromisos · Para siempre</p>
+    <p class="mt-5 text-on-surface-variant text-sm">Sin compromisos · Para siempre</p>
   </div>
 </section>
 
@@ -844,6 +915,47 @@
   }, { threshold: 0.08 });
 
   document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+
+  // Íconos del hero: rotación continua ligada al scroll
+  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (!prefersReducedMotion) {
+    const spinEls = [
+      { el: document.getElementById('heroIconWallet'), speed: 0.06 },
+      { el: document.getElementById('heroIconSavings'), speed: -0.09 },
+    ];
+    const onSpinScroll = () => {
+      spinEls.forEach(({ el, speed }) => {
+        if (el) el.style.transform = `rotate(${window.scrollY * speed}deg)`;
+      });
+    };
+    window.addEventListener('scroll', onSpinScroll, { passive: true });
+    onSpinScroll();
+  }
+
+  // Nav: sombra sutil al hacer scroll
+  const nav = document.querySelector('nav');
+  const onNavScroll = () => {
+    nav.classList.toggle('nav-scrolled', window.scrollY > 8);
+  };
+  window.addEventListener('scroll', onNavScroll, { passive: true });
+  onNavScroll();
+
+  // "Cómo funciona": línea de progreso que se llena según el scroll
+  const stepsContainer = document.getElementById('stepsContainer');
+  const timelineFill = document.getElementById('timelineFill');
+  if (stepsContainer && timelineFill) {
+    const onTimelineScroll = () => {
+      const rect = stepsContainer.getBoundingClientRect();
+      const viewportCenter = window.innerHeight * 0.65;
+      const total = rect.height;
+      const progressed = viewportCenter - rect.top;
+      const ratio = Math.min(1, Math.max(0, progressed / total));
+      timelineFill.style.height = (ratio * 100) + '%';
+    };
+    window.addEventListener('scroll', onTimelineScroll, { passive: true });
+    window.addEventListener('resize', onTimelineScroll);
+    onTimelineScroll();
+  }
 </script>
 </body>
 </html>
