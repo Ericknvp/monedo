@@ -864,28 +864,50 @@ class _GoalCardState extends State<_GoalCard> {
                     ],
                   ),
 
-                  // Add savings button
-                  if (!isComplete) ...[
-                    const SizedBox(height: 16),
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: () => _showAddSavings(context),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppTheme.secondaryFixed,
-                          foregroundColor: AppTheme.onSecondaryFixed,
-                          shape: const StadiumBorder(),
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          elevation: 0,
+                  // Actions: agregar ahorro (si falta) + ver detalle
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      if (!isComplete) ...[
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed: () => _showAddSavings(context),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppTheme.secondaryFixed,
+                              foregroundColor: AppTheme.onSecondaryFixed,
+                              shape: const StadiumBorder(),
+                              padding:
+                                  const EdgeInsets.symmetric(vertical: 12),
+                              elevation: 0,
+                            ),
+                            child: Text(
+                              'Agregar ahorro',
+                              style: GoogleFonts.beVietnamPro(
+                                  fontWeight: FontWeight.w700, fontSize: 14),
+                            ),
+                          ),
                         ),
-                        child: Text(
-                          'Agregar ahorro',
-                          style: GoogleFonts.beVietnamPro(
-                              fontWeight: FontWeight.w700, fontSize: 14),
+                        const SizedBox(width: 10),
+                      ],
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: () => _showDetail(context),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: AppTheme.primary,
+                            side: const BorderSide(
+                                color: AppTheme.outlineVariant),
+                            shape: const StadiumBorder(),
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                          ),
+                          child: Text(
+                            'Ver',
+                            style: GoogleFonts.beVietnamPro(
+                                fontWeight: FontWeight.w700, fontSize: 14),
+                          ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ],
               ),
             ),

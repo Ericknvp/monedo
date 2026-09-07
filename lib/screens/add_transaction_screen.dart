@@ -83,6 +83,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
   DateTime _selectedDate = DateTime.now();
   String _selectedCategory = 'Otros';
   String? _selectedAccountId;
+  bool _showAllCategories = false;
 
   static const _categories = [
     'Alimentación', 'Transporte', 'Entretenimiento', 'Salud',
@@ -619,6 +620,65 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
           ...customNames,
           _selectedCategory,
         }.toList();
+        // La seleccionada siempre va primero, para que se vea resaltada aun
+        // colapsado (si no, "elegida pero no visible" confunde).
+        final orderedNames = [
+          _selectedCategory,
+          ...allNames.where((c) => c != _selectedCategory),
+        ];
+        const collapsedCount = 5;
+        final hasMore = orderedNames.length > collapsedCount;
+        final visibleNames = _showAllCategories
+            ? orderedNames
+            : orderedNames.take(collapsedCount).toList();
+
+        Widget categoryTile({
+          required Widget icon,
+          required String label,
+          required bool isSelected,
+          required Color color,
+          required VoidCallback onTap,
+        }) {
+          return InkWell(
+            borderRadius: BorderRadius.circular(16),
+            onTap: onTap,
+            child: SizedBox(
+              width: 68,
+              child: Column(
+                children: [
+                  AnimatedContainer(
+                    duration: const Duration(milliseconds: 160),
+                    width: 52,
+                    height: 52,
+                    decoration: BoxDecoration(
+                      color: isSelected ? color : color.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(16),
+                      border: isSelected
+                          ? null
+                          : Border.all(color: color.withOpacity(0.25)),
+                    ),
+                    child: icon,
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    label,
+                    textAlign: TextAlign.center,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.beVietnamPro(
+                      color: isSelected
+                          ? AppTheme.primary
+                          : AppTheme.onSurfaceVariant,
+                      fontSize: 11,
+                      fontWeight:
+                          isSelected ? FontWeight.w700 : FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -632,53 +692,34 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
             Wrap(
               spacing: 12,
               runSpacing: 14,
-              children: allNames.map((c) {
-                final isSelected = c == _selectedCategory;
-                final color = CategoryColors.forCategory(c);
-                return InkWell(
-                  borderRadius: BorderRadius.circular(16),
-                  onTap: () => setState(() => _selectedCategory = c),
-                  child: SizedBox(
-                    width: 68,
-                    child: Column(
-                      children: [
-                        AnimatedContainer(
-                          duration: const Duration(milliseconds: 160),
-                          width: 52,
-                          height: 52,
-                          decoration: BoxDecoration(
-                            color: isSelected ? color : color.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(16),
-                            border: isSelected
-                                ? null
-                                : Border.all(color: color.withOpacity(0.25)),
-                          ),
-                          child: Icon(
-                            CategoryIconRegistry.iconFor(c),
-                            color: isSelected ? Colors.white : color,
-                            size: 22,
-                          ),
-                        ),
-                        const SizedBox(height: 6),
-                        Text(
-                          c,
-                          textAlign: TextAlign.center,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: GoogleFonts.beVietnamPro(
-                            color: isSelected
-                                ? AppTheme.primary
-                                : AppTheme.onSurfaceVariant,
-                            fontSize: 11,
-                            fontWeight:
-                                isSelected ? FontWeight.w700 : FontWeight.w500,
-                          ),
-                        ),
-                      ],
-                    ),
+              children: [
+                ...visibleNames.map((c) {
+                  final isSelected = c == _selectedCategory;
+                  final color = CategoryColors.forCategory(c);
+                  return categoryTile(
+                    icon: Icon(CategoryIconRegistry.iconFor(c),
+                        color: isSelected ? Colors.white : color, size: 22),
+                    label: c,
+                    isSelected: isSelected,
+                    color: color,
+                    onTap: () => setState(() => _selectedCategory = c),
+                  );
+                }),
+                if (hasMore)
+                  categoryTile(
+                    icon: Icon(
+                        _showAllCategories
+                            ? Icons.expand_less_rounded
+                            : Icons.expand_more_rounded,
+                        color: AppTheme.onSurfaceVariant,
+                        size: 22),
+                    label: _showAllCategories ? 'Ver menos' : 'Ver todas',
+                    isSelected: false,
+                    color: AppTheme.outline,
+                    onTap: () => setState(
+                        () => _showAllCategories = !_showAllCategories),
                   ),
-                );
-              }).toList(),
+              ],
             ),
             const SizedBox(height: 12),
             InkWell(
