@@ -67,9 +67,9 @@ Tipografía: **Plus Jakarta Sans** (encabezados y cuerpo) / **Be Vietnam Pro** (
    flutter run
    ```
 
-## Descargar APK
+## Descargar APK última versión.
 
-[Descargar Monedo v1.0](https://github.com/Ericknvp/monedo/releases/tag/v1.0)
+[Descargar Monedo v2.3.0](https://github.com/Ericknvp/monedo/releases/tag/v2.3.0)
 
 ## Changelog
 
