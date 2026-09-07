@@ -36,6 +36,9 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
     'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic',
   ];
   static const _weekdaysShort = ['L', 'M', 'Mi', 'J', 'V', 'S', 'D'];
+  static const _weekdaysFull = [
+    'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo',
+  ];
 
   DateTime _startOfWeek(DateTime d) {
     final date = DateTime(d.year, d.month, d.day);
@@ -1067,7 +1070,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                         getTooltipItem: (group, groupIndex, rod, rodIndex) {
                           final day = dayKeys[group.x.toInt()];
                           return BarTooltipItem(
-                            '${_weekdaysShort[group.x.toInt()]} ${day.day}\n',
+                            '${_weekdaysFull[group.x.toInt()]} ${day.day}\n',
                             GoogleFonts.beVietnamPro(
                               color: Colors.white,
                               fontSize: 11,
