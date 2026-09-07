@@ -377,10 +377,7 @@ class _GoalCardState extends State<_GoalCard> {
                   height: 220,
                   width: double.infinity,
                   child: hasImage
-                      ? BlurredImageFrame(
-                          url: g.imageUrl,
-                          errorBuilder: (_) => _banner(accentColor),
-                        )
+                      ? BlurredImageFrame(url: g.imageUrl)
                       : _banner(accentColor),
                 ),
                 Padding(
@@ -726,10 +723,7 @@ class _GoalCardState extends State<_GoalCard> {
                 borderRadius:
                     const BorderRadius.vertical(top: Radius.circular(20)),
                 child: g.imageUrl != null && g.imageUrl!.isNotEmpty
-                    ? BlurredImageFrame(
-                        url: g.imageUrl,
-                        errorBuilder: (_) => _banner(accentColor),
-                      )
+                    ? BlurredImageFrame(url: g.imageUrl)
                     : _banner(accentColor),
               ),
             ),
@@ -966,6 +960,8 @@ class _GoalCardState extends State<_GoalCard> {
                   return DropdownButtonFormField<String>(
                     value: selectedAccountId,
                     dropdownColor: AppTheme.surfaceContainerLowest,
+                    borderRadius: BorderRadius.circular(14),
+                    elevation: 3,
                     style: GoogleFonts.beVietnamPro(color: AppTheme.primary),
                     hint: Text('¿De qué cuenta sale?',
                         style: GoogleFonts.beVietnamPro(
@@ -1373,10 +1369,7 @@ class _GoalSheetState extends State<_GoalSheet> {
                     BlurredImageFrame(bytes: _pickedBytes)
                   else if (_existingImageUrl != null &&
                       _existingImageUrl!.isNotEmpty)
-                    BlurredImageFrame(
-                      url: _existingImageUrl,
-                      errorBuilder: (_) => _imagePickerEmptyState(),
-                    )
+                    BlurredImageFrame(url: _existingImageUrl)
                   else
                     _imagePickerEmptyState(),
                   if (hasImage) ...[

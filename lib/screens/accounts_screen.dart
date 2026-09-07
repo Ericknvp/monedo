@@ -835,6 +835,8 @@ class _TransferSheetState extends State<_TransferSheet> {
     return DropdownButtonFormField<String>(
       value: value,
       dropdownColor: AppTheme.surfaceContainerLowest,
+      borderRadius: BorderRadius.circular(14),
+      elevation: 3,
       style: GoogleFonts.beVietnamPro(color: AppTheme.primary, fontSize: 15),
       decoration: InputDecoration(
         labelText: label,

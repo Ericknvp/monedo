@@ -386,17 +386,17 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
               ),
               const SizedBox(height: 20),
 
+              _buildCategoryDropdown(),
+              const SizedBox(height: 20),
+
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Expanded(child: _buildCategoryDropdown()),
-                  const SizedBox(width: 20),
                   Expanded(child: _buildDatePicker()),
+                  const SizedBox(width: 20),
+                  Expanded(child: _buildAccountDropdown()),
                 ],
               ),
-              const SizedBox(height: 20),
-
-              _buildAccountDropdown(),
               const SizedBox(height: 20),
 
               _textField(_noteCtrl, 'Nota (opcional)',
@@ -623,35 +623,64 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            DropdownButtonFormField<String>(
-              value: _selectedCategory,
-              dropdownColor: AppTheme.surfaceContainerLowest,
+            Text(
+              'Categoría',
               style: GoogleFonts.beVietnamPro(
-                  color: AppTheme.primary, fontSize: 15),
-              decoration: InputDecoration(
-                labelText: 'Categoría',
-                labelStyle: GoogleFonts.beVietnamPro(
-                    color: AppTheme.onSurfaceVariant, fontSize: 13),
-                prefixIcon: Icon(CategoryIconRegistry.iconFor(_selectedCategory),
-                    color: CategoryColors.forCategory(_selectedCategory), size: 20),
-              ),
-              items: allNames
-                  .map((c) => DropdownMenuItem(
-                        value: c,
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(CategoryIconRegistry.iconFor(c),
-                                size: 18, color: CategoryColors.forCategory(c)),
-                            const SizedBox(width: 10),
-                            Text(c),
-                          ],
-                        ),
-                      ))
-                  .toList(),
-              onChanged: (v) => setState(() => _selectedCategory = v!),
+                  color: AppTheme.onSurfaceVariant, fontSize: 13),
             ),
-            const SizedBox(height: 6),
+            const SizedBox(height: 12),
+            Wrap(
+              spacing: 12,
+              runSpacing: 14,
+              children: allNames.map((c) {
+                final isSelected = c == _selectedCategory;
+                final color = CategoryColors.forCategory(c);
+                return InkWell(
+                  borderRadius: BorderRadius.circular(16),
+                  onTap: () => setState(() => _selectedCategory = c),
+                  child: SizedBox(
+                    width: 68,
+                    child: Column(
+                      children: [
+                        AnimatedContainer(
+                          duration: const Duration(milliseconds: 160),
+                          width: 52,
+                          height: 52,
+                          decoration: BoxDecoration(
+                            color: isSelected ? color : color.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(16),
+                            border: isSelected
+                                ? null
+                                : Border.all(color: color.withOpacity(0.25)),
+                          ),
+                          child: Icon(
+                            CategoryIconRegistry.iconFor(c),
+                            color: isSelected ? Colors.white : color,
+                            size: 22,
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          c,
+                          textAlign: TextAlign.center,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: GoogleFonts.beVietnamPro(
+                            color: isSelected
+                                ? AppTheme.primary
+                                : AppTheme.onSurfaceVariant,
+                            fontSize: 11,
+                            fontWeight:
+                                isSelected ? FontWeight.w700 : FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
+            const SizedBox(height: 12),
             InkWell(
               borderRadius: BorderRadius.circular(8),
               onTap: () async {
@@ -708,6 +737,8 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
             DropdownButtonFormField<String>(
               value: hasSelection ? _selectedAccountId : null,
               dropdownColor: AppTheme.surfaceContainerLowest,
+              borderRadius: BorderRadius.circular(14),
+              elevation: 3,
               style: GoogleFonts.beVietnamPro(
                   color: AppTheme.primary, fontSize: 15),
               decoration: InputDecoration(
