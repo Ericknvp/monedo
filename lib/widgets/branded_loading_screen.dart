@@ -143,3 +143,57 @@ class _BrandedLoadingScreenState extends State<BrandedLoadingScreen>
     );
   }
 }
+
+/// Versión chica del loader de marca, para usar dentro de una pantalla que
+/// ya está montada (una pestaña, una lista) mientras llega su propia data —
+/// el logo de Monedo respirando en vez del círculo verde genérico.
+class BrandedInlineLoader extends StatefulWidget {
+  final double size;
+
+  const BrandedInlineLoader({super.key, this.size = 40});
+
+  @override
+  State<BrandedInlineLoader> createState() => _BrandedInlineLoaderState();
+}
+
+class _BrandedInlineLoaderState extends State<BrandedInlineLoader>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _pulse;
+
+  @override
+  void initState() {
+    super.initState();
+    _pulse = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1100),
+    )..repeat(reverse: true);
+  }
+
+  @override
+  void dispose() {
+    _pulse.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _pulse,
+      builder: (context, _) {
+        final t = Curves.easeInOut.transform(_pulse.value);
+        return Opacity(
+          opacity: 0.45 + 0.55 * t,
+          child: Transform.scale(
+            scale: 0.9 + 0.1 * t,
+            child: Image.asset(
+              'assets/images/logomonedo_new.png',
+              width: widget.size,
+              height: widget.size,
+              fit: BoxFit.contain,
+            ),
+          ),
+        );
+      },
+    );
+  }
+}

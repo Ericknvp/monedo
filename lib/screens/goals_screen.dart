@@ -12,6 +12,7 @@ import '../theme/app_theme.dart';
 import '../utils/currency_formatter.dart';
 import '../utils/amount_input_formatter.dart';
 import '../widgets/app_toast.dart';
+import '../widgets/branded_loading_screen.dart';
 
 class GoalsScreen extends StatelessWidget {
   const GoalsScreen({super.key});
@@ -26,9 +27,7 @@ class GoalsScreen extends StatelessWidget {
       stream: goalService.getGoals(userId),
       builder: (context, snap) {
         if (snap.connectionState == ConnectionState.waiting) {
-          return const Center(
-            child: CircularProgressIndicator(color: AppTheme.secondary),
-          );
+          return const Center(child: BrandedInlineLoader());
         }
 
         final goals = snap.data ?? [];

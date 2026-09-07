@@ -6,6 +6,7 @@ import '../models/transaction.dart';
 import '../theme/app_theme.dart';
 import '../utils/currency_formatter.dart';
 import '../widgets/transaction_tile.dart';
+import '../widgets/branded_loading_screen.dart';
 import 'add_transaction_screen.dart';
 import 'export_screen.dart';
 
@@ -374,9 +375,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
       stream: _txService.getTransactions(userId),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(
-            child: CircularProgressIndicator(color: AppTheme.secondary),
-          );
+          return const Center(child: BrandedInlineLoader());
         }
 
         var all = snapshot.data ?? [];

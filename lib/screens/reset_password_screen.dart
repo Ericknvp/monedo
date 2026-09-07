@@ -4,6 +4,7 @@ import '../services/auth_service.dart';
 import '../theme/app_theme.dart';
 import '../utils/web_redirect.dart' if (dart.library.io) '../utils/web_redirect_stub.dart';
 import 'login_screen.dart';
+import '../widgets/branded_loading_screen.dart';
 
 enum _ResetState { verifying, invalid, form, success }
 
@@ -174,7 +175,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
       case _ResetState.verifying:
         return const Padding(
           padding: EdgeInsets.symmetric(vertical: 24),
-          child: Center(child: CircularProgressIndicator(color: AppTheme.secondary)),
+          child: Center(child: BrandedInlineLoader(size: 32)),
         );
       case _ResetState.invalid:
         return _buildInvalid();

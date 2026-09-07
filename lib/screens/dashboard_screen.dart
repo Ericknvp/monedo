@@ -24,6 +24,7 @@ import '../widgets/balance_card.dart';
 import '../widgets/accounts_summary.dart';
 import '../widgets/transaction_tile.dart';
 import '../widgets/update_dialog.dart';
+import '../widgets/branded_loading_screen.dart';
 import 'add_transaction_screen.dart';
 import 'transactions_screen.dart';
 import 'statistics_screen.dart';
@@ -768,9 +769,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               if (!snap.hasData) {
                 return const SizedBox(
                   height: 200,
-                  child: Center(
-                    child: CircularProgressIndicator(color: AppTheme.secondary),
-                  ),
+                  child: Center(child: BrandedInlineLoader()),
                 );
               }
               final data = snap.data!;
