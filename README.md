@@ -31,7 +31,7 @@ Monedo permite registrar y visualizar movimientos financieros de forma clara e i
 - Landing page pública con características, sección "Cómo funciona" (incluye cuentas y exportación), y sección "Próximamente" (recomendaciones con IA)
 - Redirección automática a landing en web cuando no hay sesión activa
 - Diseño responsive — funciona en Android y Web
-- Soporte PWA con favicon e iconos de aplicación personalizados; ícono de iPhone (acceso directo desde Safari) con fondo blanco a juego con el de Android
+
 
 ## Paleta de colores
 
