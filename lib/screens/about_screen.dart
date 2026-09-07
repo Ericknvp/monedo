@@ -11,12 +11,22 @@ import 'login_screen.dart';
 
 const _kSupportEmail = 'narvaezvegaerick@gmail.com';
 
+const _months = [
+  'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
+  'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre',
+];
+
+String _formatFullDate(DateTime d) => '${d.day} de ${_months[d.month - 1]} de ${d.year}';
+
 class AboutScreen extends StatelessWidget {
   /// En escritorio, Preferencias vive en su propia sección del menú, así
-  /// que aquí no se repite. En móvil sigue mostrándose dentro de Acerca de.
+  /// que aquí no se repite. En móvil sigue mostrándose dentro de Ajustes.
   final bool showPreferences;
 
-  const AboutScreen({super.key, this.showPreferences = true});
+  /// Fecha de registro del usuario, para mostrar "Cuenta creada el...".
+  final DateTime? memberSince;
+
+  const AboutScreen({super.key, this.showPreferences = true, this.memberSince});
 
   @override
   Widget build(BuildContext context) {
@@ -92,50 +102,54 @@ class AboutScreen extends StatelessWidget {
                 const SizedBox(height: 24),
               ],
 
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(24),
-                decoration: BoxDecoration(
-                  color: AppTheme.surfaceContainerLowest,
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: AppTheme.surfaceVariant),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Sobre Monedo',
-                      style: GoogleFonts.plusJakartaSans(
-                        color: AppTheme.primary,
-                        fontSize: 18,
-                        fontWeight: FontWeight.w700,
+              // "Sobre Monedo" solo en escritorio: en móvil sobra (la app ya
+              // se explica sola navegándola) y deja la pantalla más corta.
+              if (isDesktop) ...[
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(24),
+                  decoration: BoxDecoration(
+                    color: AppTheme.surfaceContainerLowest,
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: AppTheme.surfaceVariant),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Sobre Monedo',
+                        style: GoogleFonts.plusJakartaSans(
+                          color: AppTheme.primary,
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      'Monedo es tu app de finanzas personales: organiza el dinero de todas tus cuentas, registra cada movimiento y sigue tus metas de ahorro.',
-                      style: GoogleFonts.beVietnamPro(
-                        color: AppTheme.onSurfaceVariant,
-                        fontSize: 15,
-                        height: 1.6,
+                      const SizedBox(height: 12),
+                      Text(
+                        'Monedo es tu app de finanzas personales: organiza el dinero de todas tus cuentas, registra cada movimiento y sigue tus metas de ahorro.',
+                        style: GoogleFonts.beVietnamPro(
+                          color: AppTheme.onSurfaceVariant,
+                          fontSize: 15,
+                          height: 1.6,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 20),
-                    _featureRow(Icons.account_balance_wallet_rounded,
-                        'Cuentas separadas y transferencias entre ellas'),
-                    const SizedBox(height: 10),
-                    _featureRow(Icons.savings_rounded,
-                        'Metas de ahorro con seguimiento de aportes'),
-                    const SizedBox(height: 10),
-                    _featureRow(Icons.analytics_rounded,
-                        'Estadísticas visuales por mes'),
-                    const SizedBox(height: 10),
-                    _featureRow(Icons.ios_share_rounded,
-                        'Exportación de datos a Excel y PDF'),
-                  ],
+                      const SizedBox(height: 20),
+                      _featureRow(Icons.account_balance_wallet_rounded,
+                          'Cuentas separadas y transferencias entre ellas'),
+                      const SizedBox(height: 10),
+                      _featureRow(Icons.savings_rounded,
+                          'Metas de ahorro con seguimiento de aportes'),
+                      const SizedBox(height: 10),
+                      _featureRow(Icons.analytics_rounded,
+                          'Estadísticas visuales por mes'),
+                      const SizedBox(height: 10),
+                      _featureRow(Icons.ios_share_rounded,
+                          'Exportación de datos a Excel y PDF'),
+                    ],
+                  ),
                 ),
-              ),
-              const SizedBox(height: 24),
+                const SizedBox(height: 24),
+              ],
 
               // Support card
               Builder(builder: (context) {
@@ -222,6 +236,47 @@ class AboutScreen extends StatelessWidget {
                           ],
                         ),
                       ),
+                      if (memberSince != null) ...[
+                        const SizedBox(height: 10),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 12),
+                          decoration: BoxDecoration(
+                            color: AppTheme.surfaceContainerLow,
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                          child: Row(
+                            children: [
+                              const Icon(Icons.event_available_outlined,
+                                  color: AppTheme.onSurfaceVariant, size: 20),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Cuenta creada el',
+                                      style: GoogleFonts.beVietnamPro(
+                                        color: AppTheme.onSurfaceVariant,
+                                        fontSize: 11.5,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      _formatFullDate(memberSince!),
+                                      style: GoogleFonts.beVietnamPro(
+                                        color: AppTheme.primary,
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                       const SizedBox(height: 18),
                       SizedBox(
                         width: double.infinity,

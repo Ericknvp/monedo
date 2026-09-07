@@ -9,10 +9,12 @@ import '../services/category_service.dart';
 import '../services/category_color_service.dart';
 import '../services/category_visibility_service.dart';
 import '../services/account_service.dart';
+import '../services/goal_service.dart';
 import '../models/transaction.dart';
 import '../models/user_model.dart';
 import '../models/category.dart';
 import '../models/account.dart';
+import '../models/goal.dart';
 import '../theme/app_theme.dart';
 import '../utils/currency_formatter.dart';
 import '../utils/category_icons.dart';
@@ -54,6 +56,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   final _categoryColorService = CategoryColorService();
   final _categoryVisibilityService = CategoryVisibilityService();
   final _accountService = AccountService();
+  final _goalService = GoalService();
   StreamSubscription<List<CategoryModel>>? _categorySub;
   StreamSubscription<Map<String, Color>>? _categoryColorSub;
   StreamSubscription<Set<String>>? _categoryVisibilitySub;
@@ -194,7 +197,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       const CategoriesScreen(embedded: true),
       const BudgetsScreen(embedded: true),
       const PreferencesScreen(),
-      const AboutScreen(showPreferences: false),
+      AboutScreen(showPreferences: false, memberSince: _currentUser?.createdAt),
     ];
     final safeIndex = _selectedIndex.clamp(0, pages.length - 1);
 
@@ -491,6 +494,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           AppTheme.secondary,
                         ),
                       ),
+                      const SizedBox(width: 16),
+                      Expanded(child: _buildGoalsStatCard(userId)),
                     ],
                   ),
                   const SizedBox(height: 24),
@@ -514,6 +519,38 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ),
             );
           },
+        );
+      },
+    );
+  }
+
+  // Menciona las metas de ahorro en la vista general de escritorio (en
+  // móvil ya tienen su propia pestaña fija en la barra inferior, así que
+  // no hace falta repetirlas aquí).
+  // Misma forma que _statCard (movimientos / mayor gasto / mayor ingreso),
+  // como una cuarta tarjeta al lado de ellas, tocable para ir a Metas.
+  Widget _buildGoalsStatCard(String userId) {
+    return StreamBuilder<List<GoalModel>>(
+      stream: _goalService.getGoals(userId),
+      builder: (context, snap) {
+        final goals = snap.data ?? [];
+        final avgProgress = goals.isEmpty
+            ? 0.0
+            : goals.map((g) => g.progressPercent).reduce((a, b) => a + b) /
+                goals.length;
+
+        return InkWell(
+          borderRadius: BorderRadius.circular(16),
+          onTap: () => setState(() => _selectedIndex = 3),
+          child: _statCard(
+            goals.isEmpty
+                ? 'Crear meta'
+                : '${goals.length} ${goals.length == 1 ? 'meta' : 'metas'} · ${(avgProgress * 100).toStringAsFixed(0)}%',
+            'Metas de ahorro',
+            Icons.savings_rounded,
+            AppTheme.secondaryContainer.withOpacity(0.2),
+            AppTheme.secondary,
+          ),
         );
       },
     );
@@ -952,7 +989,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       const TransactionsScreen(),
       const StatisticsScreen(),
       const GoalsScreen(),
-      const AboutScreen(),
+      AboutScreen(memberSince: _currentUser?.createdAt),
     ];
     // El menú de escritorio tiene una pestaña más (Preferencias), así que
     // el índice guardado puede no existir aquí si se redimensiona la
@@ -1024,9 +1061,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
             label: 'Metas',
           ),
           NavigationDestination(
-            icon: Icon(Icons.person_outline_rounded),
-            selectedIcon: Icon(Icons.person_rounded),
-            label: 'Info',
+            icon: Icon(Icons.settings_outlined),
+            selectedIcon: Icon(Icons.settings_rounded),
+            label: 'Ajustes',
           ),
         ],
       ),

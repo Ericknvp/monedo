@@ -12,7 +12,7 @@ import 'app_toast.dart';
 import 'change_password_dialog.dart';
 
 /// Contenido de preferencias del usuario: moneda activa y acceso a sus
-/// categorías personalizadas. Se reutiliza tanto dentro de "Acerca de"
+/// categorías personalizadas. Se reutiliza tanto dentro de "Ajustes"
 /// (móvil) como en su propia sección del menú (escritorio).
 class PreferencesSection extends StatefulWidget {
   /// En escritorio, "Mis cuentas", "Mis categorías" y "Presupuestos" ya
