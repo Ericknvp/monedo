@@ -59,6 +59,7 @@ class GoalModel {
     double? targetAmount,
     double? savedAmount,
     String? imageUrl,
+    bool removeImage = false,
     String? note,
     DateTime? createdAt,
   }) {
@@ -68,7 +69,7 @@ class GoalModel {
       title: title ?? this.title,
       targetAmount: targetAmount ?? this.targetAmount,
       savedAmount: savedAmount ?? this.savedAmount,
-      imageUrl: imageUrl ?? this.imageUrl,
+      imageUrl: removeImage ? null : (imageUrl ?? this.imageUrl),
       note: note ?? this.note,
       createdAt: createdAt ?? this.createdAt,
     );

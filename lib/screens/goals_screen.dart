@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:image_picker/image_picker.dart';
 import '../services/goal_service.dart';
 import '../services/account_service.dart';
 import '../services/transaction_service.dart';
+import '../services/image_upload_service.dart';
 import '../models/goal.dart';
 import '../models/account.dart';
 import '../models/transaction.dart';
@@ -885,7 +887,6 @@ class _GoalSheet extends StatefulWidget {
 class _GoalSheetState extends State<_GoalSheet> {
   late final TextEditingController _titleCtrl;
   late final TextEditingController _targetCtrl;
-  late final TextEditingController _imageCtrl;
   late final TextEditingController _noteCtrl;
   late final TextEditingController _initialSavedCtrl;
   bool _isLoading = false;
@@ -894,6 +895,15 @@ class _GoalSheetState extends State<_GoalSheet> {
   // SIN descontarlo de ninguna cuenta ni registrar un movimiento, porque no
   // es dinero que esté saliendo ahora del balance.
   bool _hasExistingSavings = false;
+
+  // Imagen: _existingImageUrl es la que ya tenía la meta (al editar);
+  // _pickedImage/_pickedBytes son la foto nueva elegida en esta sesión, que
+  // se sube a Cloudinary recién al guardar. _pickedBytes se guarda aparte
+  // para previsualizar con Image.memory sin depender de dart:io (necesario
+  // para que funcione también en web).
+  String? _existingImageUrl;
+  XFile? _pickedImage;
+  Uint8List? _pickedBytes;
 
   bool get _isEditing => widget.existing != null;
 
@@ -904,9 +914,28 @@ class _GoalSheetState extends State<_GoalSheet> {
     _titleCtrl = TextEditingController(text: g?.title ?? '');
     _targetCtrl = TextEditingController(
         text: g != null ? CurrencyFormatter.formatNumber(g.targetAmount) : '');
-    _imageCtrl = TextEditingController(text: g?.imageUrl ?? '');
+    _existingImageUrl = g?.imageUrl;
     _noteCtrl = TextEditingController(text: g?.note ?? '');
     _initialSavedCtrl = TextEditingController();
+  }
+
+  Future<void> _pickImage() async {
+    final picked = await ImagePicker()
+        .pickImage(source: ImageSource.gallery, maxWidth: 1600, imageQuality: 85);
+    if (picked == null) return;
+    final bytes = await picked.readAsBytes();
+    setState(() {
+      _pickedImage = picked;
+      _pickedBytes = bytes;
+    });
+  }
+
+  void _removeImage() {
+    setState(() {
+      _pickedImage = null;
+      _pickedBytes = null;
+      _existingImageUrl = null;
+    });
   }
 
   Future<void> _save() async {
@@ -930,11 +959,32 @@ class _GoalSheetState extends State<_GoalSheet> {
       return;
     }
     setState(() => _isLoading = true);
+
+    // Si se eligió una foto nueva, se sube recién ahora (no en cuanto se
+    // elige) para no gastar cupo de Cloudinary si al final no se guarda.
+    String? imageUrl = _existingImageUrl;
+    if (_pickedImage != null) {
+      imageUrl = await ImageUploadService().uploadImage(_pickedImage!);
+      if (imageUrl == null) {
+        setState(() => _isLoading = false);
+        if (mounted) {
+          showAppToast(
+            context,
+            message: 'No se pudo subir la foto, intenta de nuevo',
+            icon: Icons.error_outline_rounded,
+            accentColor: AppTheme.errorRed,
+          );
+        }
+        return;
+      }
+    }
+
     if (_isEditing) {
       await widget.goalService.updateGoal(widget.existing!.copyWith(
         title: _titleCtrl.text.trim(),
         targetAmount: target,
-        imageUrl: _imageCtrl.text.trim().isEmpty ? null : _imageCtrl.text.trim(),
+        imageUrl: imageUrl,
+        removeImage: imageUrl == null,
         note: _noteCtrl.text.trim().isEmpty ? null : _noteCtrl.text.trim(),
       ));
     } else {
@@ -947,7 +997,7 @@ class _GoalSheetState extends State<_GoalSheet> {
         title: _titleCtrl.text.trim(),
         targetAmount: target,
         savedAmount: initialSaved,
-        imageUrl: _imageCtrl.text.trim().isEmpty ? null : _imageCtrl.text.trim(),
+        imageUrl: imageUrl,
         note: _noteCtrl.text.trim().isEmpty ? null : _noteCtrl.text.trim(),
         createdAt: DateTime.now(),
       ));
@@ -960,7 +1010,6 @@ class _GoalSheetState extends State<_GoalSheet> {
   void dispose() {
     _titleCtrl.dispose();
     _targetCtrl.dispose();
-    _imageCtrl.dispose();
     _noteCtrl.dispose();
     _initialSavedCtrl.dispose();
     super.dispose();
@@ -1055,8 +1104,7 @@ class _GoalSheetState extends State<_GoalSheet> {
               ],
             ],
             const SizedBox(height: 20),
-            _field(_imageCtrl, 'URL de imagen (opcional)',
-                hint: 'https://...'),
+            _buildImagePicker(),
             const SizedBox(height: 20),
             _field(_noteCtrl, 'Nota (opcional)', maxLines: 2),
             const SizedBox(height: 28),
@@ -1082,6 +1130,117 @@ class _GoalSheetState extends State<_GoalSheet> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildImagePicker() {
+    final hasImage = _pickedBytes != null ||
+        (_existingImageUrl != null && _existingImageUrl!.isNotEmpty);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Foto de la meta (opcional)',
+          style: GoogleFonts.beVietnamPro(
+              color: AppTheme.onSurfaceVariant, fontSize: 13),
+        ),
+        const SizedBox(height: 8),
+        MouseRegion(
+          cursor: SystemMouseCursors.click,
+          child: GestureDetector(
+            onTap: _pickImage,
+            child: Container(
+              height: 140,
+              width: double.infinity,
+              clipBehavior: Clip.antiAlias,
+              decoration: BoxDecoration(
+                color: AppTheme.surfaceContainerLow,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: AppTheme.outlineVariant),
+              ),
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  if (_pickedBytes != null)
+                    Image.memory(_pickedBytes!, fit: BoxFit.cover)
+                  else if (_existingImageUrl != null &&
+                      _existingImageUrl!.isNotEmpty)
+                    Image.network(
+                      _existingImageUrl!,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => _imagePickerEmptyState(),
+                    )
+                  else
+                    _imagePickerEmptyState(),
+                  if (hasImage) ...[
+                    Positioned(
+                      top: 8,
+                      right: 8,
+                      child: MouseRegion(
+                        cursor: SystemMouseCursors.click,
+                        child: GestureDetector(
+                          onTap: _removeImage,
+                          child: Container(
+                            padding: const EdgeInsets.all(6),
+                            decoration: BoxDecoration(
+                              color: Colors.black.withOpacity(0.55),
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(Icons.close_rounded,
+                                color: Colors.white, size: 16),
+                          ),
+                        ),
+                      ),
+                    ),
+                    Positioned(
+                      bottom: 8,
+                      right: 8,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withOpacity(0.55),
+                          borderRadius: BorderRadius.circular(100),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.edit_rounded,
+                                color: Colors.white, size: 13),
+                            const SizedBox(width: 4),
+                            Text('Cambiar',
+                                style: GoogleFonts.beVietnamPro(
+                                    color: Colors.white, fontSize: 11)),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _imagePickerEmptyState() {
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(Icons.add_photo_alternate_outlined,
+              color: AppTheme.onSurfaceVariant, size: 28),
+          const SizedBox(height: 6),
+          Text(
+            'Agregar foto',
+            style: GoogleFonts.beVietnamPro(
+                color: AppTheme.onSurfaceVariant, fontSize: 12.5),
+          ),
+        ],
       ),
     );
   }
