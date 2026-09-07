@@ -4,8 +4,10 @@
 // registro, login, logout y verificación de sesión.
 // ============================================================
 
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import '../models/user_model.dart';
 
 class AuthService {
@@ -102,6 +104,81 @@ class AuthService {
           return 'Error al iniciar sesión. Intenta de nuevo';
       }
     }
+  }
+
+  // ---- Inicio de sesión o registro con Google ----
+  // Retorna un mensaje de error (o null si todo salió bien) junto con si
+  // la cuenta de Firestore se acaba de crear (usuario nuevo).
+  Future<(String? error, bool isNewUser)> signInWithGoogle() async {
+    try {
+      UserCredential credential;
+
+      if (kIsWeb) {
+        credential = await _auth.signInWithPopup(GoogleAuthProvider());
+      } else {
+        final googleUser = await GoogleSignIn().signIn();
+        if (googleUser == null) {
+          // El usuario cerró el selector de cuentas sin elegir ninguna
+          return (null, false);
+        }
+        final googleAuth = await googleUser.authentication;
+        final oauthCredential = GoogleAuthProvider.credential(
+          accessToken: googleAuth.accessToken,
+          idToken: googleAuth.idToken,
+        );
+        credential = await _auth.signInWithCredential(oauthCredential);
+      }
+
+      final user = credential.user!;
+      final doc = await _firestore.collection('users').doc(user.uid).get();
+      final isNewUser = !doc.exists;
+
+      if (isNewUser) {
+        final username = await _generateUsernameFrom(user);
+        final userModel = UserModel(
+          id: user.uid,
+          username: username,
+          email: user.email ?? '',
+          createdAt: DateTime.now(),
+        );
+        await _firestore
+            .collection('users')
+            .doc(user.uid)
+            .set(userModel.toMap());
+      }
+
+      return (null, isNewUser);
+    } on FirebaseAuthException catch (e) {
+      switch (e.code) {
+        case 'account-exists-with-different-credential':
+          return (
+            'Ya existe una cuenta con ese correo usando otro método de inicio de sesión',
+            false
+          );
+        case 'popup-closed-by-user':
+        case 'cancelled-popup-request':
+          return (null, false);
+        default:
+          return ('Error al iniciar sesión con Google. Intenta de nuevo', false);
+      }
+    } catch (_) {
+      return ('Error al iniciar sesión con Google. Intenta de nuevo', false);
+    }
+  }
+
+  // ---- Genera un nombre de usuario único a partir del perfil de Google ----
+  Future<String> _generateUsernameFrom(User user) async {
+    final base = (user.displayName?.trim().isNotEmpty == true
+            ? user.displayName!.trim().replaceAll(RegExp(r'\s+'), '_')
+            : user.email?.split('@').first) ??
+        'usuario';
+    var candidate = base;
+    var suffix = 0;
+    while (await usernameExists(candidate)) {
+      suffix++;
+      candidate = '$base$suffix';
+    }
+    return candidate;
   }
 
   // ---- Cerrar sesión ----

@@ -4,6 +4,7 @@ import '../services/auth_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/setup_gate.dart';
 import '../widgets/app_toast.dart';
+import '../widgets/google_logo.dart';
 import 'register_screen.dart';
 import 'dashboard_screen.dart';
 
@@ -40,6 +41,24 @@ class _LoginScreenState extends State<LoginScreen> {
         context,
         MaterialPageRoute(
           builder: (_) => const SetupGate(child: DashboardScreen()),
+        ),
+      );
+    }
+  }
+
+  Future<void> _signInWithGoogle() async {
+    setState(() => _isLoading = true);
+    final (error, isNewUser) = await _authService.signInWithGoogle();
+    setState(() => _isLoading = false);
+    if (error != null) {
+      _showError(error);
+    } else if (mounted && _authService.currentUser != null) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (_) => isNewUser
+              ? const PostAuthOnboarding()
+              : const SetupGate(child: DashboardScreen()),
         ),
       );
     }
@@ -428,6 +447,49 @@ class _LoginScreenState extends State<LoginScreen> {
                       const Icon(Icons.arrow_forward_rounded, size: 20),
                     ],
                   ),
+          ),
+        ),
+        const SizedBox(height: 28),
+        Row(
+          children: [
+            const Expanded(child: Divider(color: AppTheme.outlineVariant)),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: Text(
+                'o continúa con',
+                style: GoogleFonts.beVietnamPro(
+                    color: AppTheme.onSurfaceVariant, fontSize: 13),
+              ),
+            ),
+            const Expanded(child: Divider(color: AppTheme.outlineVariant)),
+          ],
+        ),
+        const SizedBox(height: 24),
+        SizedBox(
+          width: double.infinity,
+          child: OutlinedButton(
+            onPressed: _isLoading ? null : _signInWithGoogle,
+            style: OutlinedButton.styleFrom(
+              foregroundColor: AppTheme.primary,
+              shape: const StadiumBorder(),
+              side: const BorderSide(color: AppTheme.outlineVariant),
+              padding: const EdgeInsets.symmetric(vertical: 18),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const GoogleLogo(size: 20),
+                const SizedBox(width: 12),
+                Text(
+                  'Continuar con Google',
+                  style: GoogleFonts.beVietnamPro(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                    color: AppTheme.primary,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
         const SizedBox(height: 24),

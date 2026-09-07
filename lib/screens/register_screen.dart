@@ -3,6 +3,8 @@ import 'package:google_fonts/google_fonts.dart';
 import '../services/auth_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/app_toast.dart';
+import '../widgets/google_logo.dart';
+import '../widgets/setup_gate.dart';
 import 'dashboard_screen.dart';
 import 'login_screen.dart';
 import 'onboarding_screen.dart';
@@ -52,7 +54,25 @@ class _RegisterScreenState extends State<RegisterScreen> {
     } else if (mounted) {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (_) => const _PostRegisterOnboarding()),
+        MaterialPageRoute(builder: (_) => const PostAuthOnboarding()),
+      );
+    }
+  }
+
+  Future<void> _signInWithGoogle() async {
+    setState(() => _isLoading = true);
+    final (error, isNewUser) = await _authService.signInWithGoogle();
+    setState(() => _isLoading = false);
+    if (error != null) {
+      _showError(error);
+    } else if (mounted && _authService.currentUser != null) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (_) => isNewUser
+              ? const PostAuthOnboarding()
+              : const SetupGate(child: DashboardScreen()),
+        ),
       );
     }
   }
@@ -412,6 +432,49 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ),
           ),
         ),
+        const SizedBox(height: 28),
+        Row(
+          children: [
+            const Expanded(child: Divider(color: AppTheme.outlineVariant)),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: Text(
+                'o continúa con',
+                style: GoogleFonts.beVietnamPro(
+                    color: AppTheme.onSurfaceVariant, fontSize: 13),
+              ),
+            ),
+            const Expanded(child: Divider(color: AppTheme.outlineVariant)),
+          ],
+        ),
+        const SizedBox(height: 24),
+        SizedBox(
+          width: double.infinity,
+          child: OutlinedButton(
+            onPressed: _isLoading ? null : _signInWithGoogle,
+            style: OutlinedButton.styleFrom(
+              foregroundColor: AppTheme.primary,
+              shape: const StadiumBorder(),
+              side: const BorderSide(color: AppTheme.outlineVariant),
+              padding: const EdgeInsets.symmetric(vertical: 18),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const GoogleLogo(size: 20),
+                const SizedBox(width: 12),
+                Text(
+                  'Continuar con Google',
+                  style: GoogleFonts.beVietnamPro(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                    color: AppTheme.primary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
         const SizedBox(height: 24),
         Center(
           child: TextButton(
@@ -444,15 +507,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
 /// Muestra el onboarding siempre después de un registro nuevo (sin
 /// importar si ya se vio antes en este dispositivo) y luego el Dashboard.
-class _PostRegisterOnboarding extends StatefulWidget {
-  const _PostRegisterOnboarding();
+/// También se usa tras un primer inicio de sesión con Google.
+class PostAuthOnboarding extends StatefulWidget {
+  const PostAuthOnboarding({super.key});
 
   @override
-  State<_PostRegisterOnboarding> createState() =>
-      _PostRegisterOnboardingState();
+  State<PostAuthOnboarding> createState() => _PostAuthOnboardingState();
 }
 
-class _PostRegisterOnboardingState extends State<_PostRegisterOnboarding> {
+class _PostAuthOnboardingState extends State<PostAuthOnboarding> {
   bool _done = false;
 
   @override
