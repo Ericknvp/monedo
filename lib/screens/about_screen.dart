@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../services/auth_service.dart';
+import '../services/update_service.dart';
 import '../theme/app_theme.dart';
 import '../utils/web_redirect.dart' if (dart.library.io) '../utils/web_redirect_stub.dart';
 import '../widgets/preferences_section.dart';
@@ -61,7 +62,7 @@ class AboutScreen extends StatelessWidget {
                 ),
               ),
               Text(
-                'v2.4.0',
+                'v2.4.1',
                 style: GoogleFonts.beVietnamPro(
                     color: AppTheme.onSurfaceVariant, fontSize: 14),
               ),
@@ -72,6 +73,14 @@ class AboutScreen extends StatelessWidget {
                     color: AppTheme.onSurfaceVariant, fontSize: 16),
               ),
               const SizedBox(height: 40),
+
+              // Aviso persistente si hay una versión más nueva: sigue visible
+              // aquí aunque el usuario haya descartado el diálogo emergente
+              // con "Más tarde" al abrir la app.
+              if (!isDesktop) ...[
+                _buildUpdateBanner(),
+                const SizedBox(height: 24),
+              ],
 
               // About app card
               if (showPreferences) ...[
@@ -447,6 +456,62 @@ class AboutScreen extends StatelessWidget {
       },
     );
     openExternalUrl(uri.toString());
+  }
+
+  Widget _buildUpdateBanner() {
+    return FutureBuilder<UpdateInfo?>(
+      future: UpdateService().checkForUpdate(),
+      builder: (context, snap) {
+        final update = snap.data;
+        if (update == null) return const SizedBox.shrink();
+
+        return InkWell(
+          borderRadius: BorderRadius.circular(16),
+          onTap: () => openExternalUrl(update.downloadUrl),
+          child: Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+            decoration: BoxDecoration(
+              color: AppTheme.secondary.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: AppTheme.secondary.withOpacity(0.3)),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.system_update_rounded,
+                    color: AppTheme.secondary, size: 20),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Nueva versión disponible',
+                        style: GoogleFonts.beVietnamPro(
+                          color: AppTheme.primary,
+                          fontSize: 13.5,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        'Monedo v${update.version} · toca para descargar',
+                        style: GoogleFonts.beVietnamPro(
+                          color: AppTheme.onSurfaceVariant,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const Icon(Icons.chevron_right_rounded,
+                    color: AppTheme.secondary, size: 18),
+              ],
+            ),
+          ),
+        );
+      },
+    );
   }
 
   Widget _featureRow(IconData icon, String text) {
