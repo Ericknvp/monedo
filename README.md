@@ -20,7 +20,7 @@ Monedo permite registrar y visualizar movimientos financieros de forma clara e i
 - Registro de ingresos y gastos con cuenta, categoría, fecha y nota opcional
 - Categorías personalizadas con selector de ícono, además de las categorías por defecto
 - Edición y eliminación de movimientos
-- Filtros por tipo: Todos, Ingresos, Gastos
+- Filtros por tipo: Todos, Ingresos, Gastos y por rango de fechas.
 - Balance actual con desglose mensual de ingresos y gastos
 - Estadísticas mensuales con selector de mes
 - Gráfica de torta de gastos por categoría
