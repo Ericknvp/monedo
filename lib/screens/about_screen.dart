@@ -27,7 +27,16 @@ class AboutScreen extends StatelessWidget {
   /// Fecha de registro del usuario, para mostrar "Cuenta creada el...".
   final DateTime? memberSince;
 
-  const AboutScreen({super.key, this.showPreferences = true, this.memberSince});
+  /// Se llama tras guardar un nombre de usuario nuevo, para que el dashboard
+  /// refresque el usuario que tiene en caché (saludo, avatar, etc.).
+  final VoidCallback? onUsernameChanged;
+
+  const AboutScreen({
+    super.key,
+    this.showPreferences = true,
+    this.memberSince,
+    this.onUsernameChanged,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -104,7 +113,7 @@ class AboutScreen extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 16),
-                      const PreferencesSection(),
+                      PreferencesSection(onUsernameChanged: onUsernameChanged),
                     ],
                   ),
                 ),

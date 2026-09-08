@@ -20,7 +20,16 @@ class PreferencesSection extends StatefulWidget {
   /// En móvil (sin esos ítems en la barra inferior) siguen apareciendo.
   final bool showQuickLinks;
 
-  const PreferencesSection({super.key, this.showQuickLinks = true});
+  /// Se llama tras guardar un nombre de usuario nuevo, para que la pantalla
+  /// que la contiene pueda refrescar el usuario que tiene en caché (por
+  /// ejemplo el saludo o el avatar del dashboard).
+  final VoidCallback? onUsernameChanged;
+
+  const PreferencesSection({
+    super.key,
+    this.showQuickLinks = true,
+    this.onUsernameChanged,
+  });
 
   @override
   State<PreferencesSection> createState() => _PreferencesSectionState();
@@ -93,6 +102,7 @@ class _PreferencesSectionState extends State<PreferencesSection> {
       );
     } else {
       setState(() => _username = newUsername);
+      widget.onUsernameChanged?.call();
       showAppToast(
         context,
         message: 'Nombre de usuario actualizado',

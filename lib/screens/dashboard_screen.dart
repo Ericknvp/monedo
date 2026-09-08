@@ -205,7 +205,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       const AccountsScreen(embedded: true),
       const CategoriesScreen(embedded: true),
       const BudgetsScreen(embedded: true),
-      const PreferencesScreen(),
+      PreferencesScreen(onUsernameChanged: _loadUser),
       AboutScreen(showPreferences: false, memberSince: _currentUser?.createdAt),
     ];
     final safeIndex = _selectedIndex.clamp(0, pages.length - 1);
@@ -996,7 +996,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
       const TransactionsScreen(),
       const StatisticsScreen(),
       const GoalsScreen(),
-      AboutScreen(memberSince: _currentUser?.createdAt),
+      AboutScreen(
+        memberSince: _currentUser?.createdAt,
+        onUsernameChanged: _loadUser,
+      ),
     ];
     // El menú de escritorio tiene una pestaña más (Preferencias), así que
     // el índice guardado puede no existir aquí si se redimensiona la

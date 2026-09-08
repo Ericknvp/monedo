@@ -5,7 +5,11 @@ import '../widgets/preferences_section.dart';
 
 /// Sección "Preferencias" como su propio destino del menú (escritorio).
 class PreferencesScreen extends StatelessWidget {
-  const PreferencesScreen({super.key});
+  /// Se llama tras guardar un nombre de usuario nuevo, para que el dashboard
+  /// refresque el usuario que tiene en caché (saludo, avatar, etc.).
+  final VoidCallback? onUsernameChanged;
+
+  const PreferencesScreen({super.key, this.onUsernameChanged});
 
   @override
   Widget build(BuildContext context) {
@@ -45,7 +49,10 @@ class PreferencesScreen extends StatelessWidget {
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(color: AppTheme.surfaceVariant),
                 ),
-                child: const PreferencesSection(showQuickLinks: false),
+                child: PreferencesSection(
+                  showQuickLinks: false,
+                  onUsernameChanged: onUsernameChanged,
+                ),
               ),
             ],
           ),
