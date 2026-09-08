@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <title>Monedo</title>
+  <path d="M 178 130 L 395 130 A 21 21 0 0 1 416 151 L 416 319 A 66 66 0 0 1 350 385 L 162 385 A 66 66 0 0 1 96 319 L 96 212 A 82 82 0 0 1 178 130 Z" fill="#006C4B"/>
+  <circle cx="336" cy="257" r="31" fill="#FFFFFF"/>
+</svg>
