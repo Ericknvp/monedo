@@ -86,9 +86,18 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
   bool _showAllCategories = false;
 
   static const _categories = [
-    'Alimentación', 'Transporte', 'Entretenimiento', 'Salud',
-    'Educación', 'Ropa', 'Hogar', 'Trabajo', 'Inversión',
-    'Ahorro', 'Ocio', 'Otros',
+    'Alimentación',
+    'Transporte',
+    'Entretenimiento',
+    'Salud',
+    'Educación',
+    'Ropa',
+    'Hogar',
+    'Trabajo',
+    'Inversión',
+    'Ahorro',
+    'Ocio',
+    'Otros',
   ];
 
   @override
@@ -134,7 +143,8 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
     );
   }
 
-  Future<bool> _confirmInsufficientFunds(String accountName, double balance) async {
+  Future<bool> _confirmInsufficientFunds(
+      String accountName, double balance) async {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -195,12 +205,11 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
       if (account != null) {
         // Si se está editando el mismo movimiento sin cambiar de cuenta,
         // el monto anterior ya estaba descontado: se repone antes de comparar.
-        final alreadyDeducted =
-            (widget.transaction != null &&
-                    !widget.transaction!.isIncome &&
-                    widget.transaction!.accountId == _selectedAccountId)
-                ? widget.transaction!.amount
-                : 0.0;
+        final alreadyDeducted = (widget.transaction != null &&
+                !widget.transaction!.isIncome &&
+                widget.transaction!.accountId == _selectedAccountId)
+            ? widget.transaction!.amount
+            : 0.0;
         final availableBalance = account.balance + alreadyDeducted;
         if (amount > availableBalance) {
           final proceed =
@@ -460,51 +469,47 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-              _buildTypeSelector(),
-              const SizedBox(height: 28),
-
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    flex: 3,
-                    child: _textField(
-                      _titleCtrl,
-                      'Descripción',
-                      icon: Icons.description_outlined,
-                    ),
-                  ),
-                  const SizedBox(width: 20),
-                  Expanded(
-                    flex: 2,
-                    child: _textField(
-                      _amountCtrl,
-                      'Monto',
-                      icon: Icons.attach_money_rounded,
-                      keyboardType:
-                          const TextInputType.numberWithOptions(decimal: true),
-                      inputFormatters: [AmountInputFormatter()],
-                    ),
-                  ),
-                ],
+        _buildTypeSelector(),
+        const SizedBox(height: 28),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              flex: 3,
+              child: _textField(
+                _titleCtrl,
+                'Descripción',
+                icon: Icons.description_outlined,
               ),
-              const SizedBox(height: 20),
-
-              _buildCategoryDropdown(),
-              const SizedBox(height: 20),
-
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(child: _buildDatePicker()),
-                  const SizedBox(width: 20),
-                  Expanded(child: _buildAccountDropdown()),
-                ],
+            ),
+            const SizedBox(width: 20),
+            Expanded(
+              flex: 2,
+              child: _textField(
+                _amountCtrl,
+                'Monto',
+                icon: Icons.attach_money_rounded,
+                keyboardType:
+                    const TextInputType.numberWithOptions(decimal: true),
+                inputFormatters: [AmountInputFormatter()],
               ),
-              const SizedBox(height: 20),
-
-              _textField(_noteCtrl, 'Nota (opcional)',
-                  icon: Icons.note_outlined, maxLines: 3),
+            ),
+          ],
+        ),
+        const SizedBox(height: 20),
+        _buildCategoryDropdown(),
+        const SizedBox(height: 20),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(child: _buildDatePicker()),
+            const SizedBox(width: 20),
+            Expanded(child: _buildAccountDropdown()),
+          ],
+        ),
+        const SizedBox(height: 20),
+        _textField(_noteCtrl, 'Nota (opcional)',
+            icon: Icons.note_outlined, maxLines: 3),
       ],
     );
   }
@@ -673,156 +678,166 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
         return ValueListenableBuilder<Set<String>>(
           valueListenable: CategoryVisibilityRegistry.disabled,
           builder: (context, disabledDefaults, __) {
-        final customNames = customIcons.keys
-            .where((n) => !_categories.contains(n))
-            .toList()
-          ..sort();
-        // Las categorías predeterminadas deshabilitadas no aparecen para
-        // elegir, salvo que sea la que ya tenía asignada este movimiento.
-        final visibleDefaults =
-            _categories.where((n) => !disabledDefaults.contains(n));
-        final allNames = <String>{
-          ...visibleDefaults,
-          ...customNames,
-          _selectedCategory,
-        }.toList();
-        // La seleccionada siempre va primero, para que se vea resaltada aun
-        // colapsado (si no, "elegida pero no visible" confunde).
-        final orderedNames = [
-          _selectedCategory,
-          ...allNames.where((c) => c != _selectedCategory),
-        ];
-        const collapsedCount = 5;
-        final hasMore = orderedNames.length > collapsedCount;
-        final visibleNames = _showAllCategories
-            ? orderedNames
-            : orderedNames.take(collapsedCount).toList();
+            final customNames = customIcons.keys
+                .where((n) => !_categories.contains(n))
+                .toList()
+              ..sort();
+            // Las categorías predeterminadas deshabilitadas no aparecen para
+            // elegir, salvo que sea la que ya tenía asignada este movimiento.
+            final visibleDefaults =
+                _categories.where((n) => !disabledDefaults.contains(n));
+            final allNames = <String>{
+              ...visibleDefaults,
+              ...customNames,
+              _selectedCategory,
+            }.toList();
+            // La seleccionada siempre va primero, para que se vea resaltada aun
+            // colapsado (si no, "elegida pero no visible" confunde).
+            final orderedNames = [
+              _selectedCategory,
+              ...allNames.where((c) => c != _selectedCategory),
+            ];
+            const collapsedCount = 5;
+            final hasMore = orderedNames.length > collapsedCount;
+            final visibleNames = _showAllCategories
+                ? orderedNames
+                : orderedNames.take(collapsedCount).toList();
 
-        Widget categoryTile({
-          required Widget icon,
-          required String label,
-          required bool isSelected,
-          required Color color,
-          required VoidCallback onTap,
-        }) {
-          return InkWell(
-            borderRadius: BorderRadius.circular(16),
-            onTap: onTap,
-            child: SizedBox(
-              width: 68,
-              child: Column(
-                children: [
-                  AnimatedContainer(
-                    duration: const Duration(milliseconds: 160),
-                    width: 52,
-                    height: 52,
-                    decoration: BoxDecoration(
-                      color: isSelected ? color : color.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(16),
-                      border: isSelected
-                          ? null
-                          : Border.all(color: color.withOpacity(0.25)),
-                    ),
-                    child: icon,
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    label,
-                    textAlign: TextAlign.center,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.beVietnamPro(
-                      color: isSelected
-                          ? AppTheme.primary
-                          : AppTheme.onSurfaceVariant,
-                      fontSize: 11,
-                      fontWeight:
-                          isSelected ? FontWeight.w700 : FontWeight.w500,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          );
-        }
-
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Categoría',
-              style: GoogleFonts.beVietnamPro(
-                  color: AppTheme.onSurfaceVariant, fontSize: 13),
-            ),
-            const SizedBox(height: 12),
-            Wrap(
-              spacing: 12,
-              runSpacing: 14,
-              children: [
-                ...visibleNames.map((c) {
-                  final isSelected = c == _selectedCategory;
-                  final color = CategoryColors.forCategory(c);
-                  return categoryTile(
-                    icon: Icon(CategoryIconRegistry.iconFor(c),
-                        color: isSelected ? Colors.white : color, size: 22),
-                    label: c,
-                    isSelected: isSelected,
-                    color: color,
-                    onTap: () => setState(() => _selectedCategory = c),
-                  );
-                }),
-                if (hasMore)
-                  categoryTile(
-                    icon: Icon(
-                        _showAllCategories
-                            ? Icons.expand_less_rounded
-                            : Icons.expand_more_rounded,
-                        color: AppTheme.onSurfaceVariant,
-                        size: 22),
-                    label: _showAllCategories ? 'Ver menos' : 'Ver todas',
-                    isSelected: false,
-                    color: AppTheme.outline,
-                    onTap: () => setState(
-                        () => _showAllCategories = !_showAllCategories),
-                  ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            InkWell(
-              borderRadius: BorderRadius.circular(8),
-              onTap: () async {
-                final userId = FirebaseAuth.instance.currentUser?.uid ?? '';
-                final created = await showAddCategorySheet(
-                  context,
-                  userId: userId,
-                  existingNames: {..._categories, ...customNames},
-                );
-                if (created != null) {
-                  setState(() => _selectedCategory = created);
-                }
-              },
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 4),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(Icons.add_circle_outline_rounded,
-                        size: 15, color: AppTheme.secondary),
-                    const SizedBox(width: 6),
-                    Text(
-                      'Agregar categoría',
-                      style: GoogleFonts.beVietnamPro(
-                        color: AppTheme.secondary,
-                        fontSize: 12.5,
-                        fontWeight: FontWeight.w600,
+            Widget categoryTile({
+              required Widget icon,
+              required String label,
+              required bool isSelected,
+              required Color color,
+              required VoidCallback onTap,
+            }) {
+              return InkWell(
+                borderRadius: BorderRadius.circular(16),
+                onTap: onTap,
+                child: SizedBox(
+                  width: 68,
+                  child: Column(
+                    children: [
+                      AnimatedContainer(
+                        duration: const Duration(milliseconds: 160),
+                        width: 52,
+                        height: 52,
+                        decoration: BoxDecoration(
+                          color: isSelected ? color : color.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(16),
+                          border: isSelected
+                              ? null
+                              : Border.all(color: color.withOpacity(0.25)),
+                        ),
+                        child: icon,
                       ),
-                    ),
-                  ],
+                      const SizedBox(height: 6),
+                      Text(
+                        label,
+                        textAlign: TextAlign.center,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.beVietnamPro(
+                          color: isSelected
+                              ? AppTheme.primary
+                              : AppTheme.onSurfaceVariant,
+                          fontSize: 11,
+                          fontWeight:
+                              isSelected ? FontWeight.w700 : FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            ),
-          ],
-        );
+              );
+            }
+
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Categoría',
+                  style: GoogleFonts.beVietnamPro(
+                      color: AppTheme.onSurfaceVariant, fontSize: 13),
+                ),
+                const SizedBox(height: 12),
+                // AnimatedSize hace que el contenedor crezca/encoja con
+                // transición al mostrar u ocultar el resto de categorías, en
+                // vez de que la grilla salte de golpe a su tamaño final.
+                AnimatedSize(
+                  duration: const Duration(milliseconds: 260),
+                  curve: Curves.easeOutCubic,
+                  alignment: Alignment.topLeft,
+                  child: Wrap(
+                    spacing: 12,
+                    runSpacing: 14,
+                    children: [
+                      ...visibleNames.map((c) {
+                        final isSelected = c == _selectedCategory;
+                        final color = CategoryColors.forCategory(c);
+                        return categoryTile(
+                          icon: Icon(CategoryIconRegistry.iconFor(c),
+                              color: isSelected ? Colors.white : color,
+                              size: 22),
+                          label: c,
+                          isSelected: isSelected,
+                          color: color,
+                          onTap: () => setState(() => _selectedCategory = c),
+                        );
+                      }),
+                      if (hasMore)
+                        categoryTile(
+                          icon: AnimatedRotation(
+                            duration: const Duration(milliseconds: 260),
+                            curve: Curves.easeOutCubic,
+                            turns: _showAllCategories ? 0.5 : 0,
+                            child: const Icon(Icons.expand_more_rounded,
+                                color: AppTheme.onSurfaceVariant, size: 22),
+                          ),
+                          label: _showAllCategories ? 'Ver menos' : 'Ver todas',
+                          isSelected: false,
+                          color: AppTheme.outline,
+                          onTap: () => setState(
+                              () => _showAllCategories = !_showAllCategories),
+                        ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 12),
+                InkWell(
+                  borderRadius: BorderRadius.circular(8),
+                  onTap: () async {
+                    final userId = FirebaseAuth.instance.currentUser?.uid ?? '';
+                    final created = await showAddCategorySheet(
+                      context,
+                      userId: userId,
+                      existingNames: {..._categories, ...customNames},
+                    );
+                    if (created != null) {
+                      setState(() => _selectedCategory = created);
+                    }
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 4),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.add_circle_outline_rounded,
+                            size: 15, color: AppTheme.secondary),
+                        const SizedBox(width: 6),
+                        Text(
+                          'Agregar categoría',
+                          style: GoogleFonts.beVietnamPro(
+                            color: AppTheme.secondary,
+                            fontSize: 12.5,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            );
           },
         );
       },
@@ -835,8 +850,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
       stream: _accountService.getAccounts(userId),
       builder: (context, snap) {
         final accounts = snap.data ?? [];
-        final hasSelection =
-            accounts.any((a) => a.id == _selectedAccountId);
+        final hasSelection = accounts.any((a) => a.id == _selectedAccountId);
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -905,8 +919,8 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
   InputDecoration _fieldDecoration(String label, {IconData? prefixIcon}) {
     return InputDecoration(
       labelText: label,
-      labelStyle:
-          GoogleFonts.beVietnamPro(color: AppTheme.onSurfaceVariant, fontSize: 13),
+      labelStyle: GoogleFonts.beVietnamPro(
+          color: AppTheme.onSurfaceVariant, fontSize: 13),
       prefixIcon: prefixIcon != null
           ? Icon(prefixIcon, color: AppTheme.secondary, size: 20)
           : null,
@@ -920,11 +934,12 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
     return GestureDetector(
       onTap: _selectDate,
       child: InputDecorator(
-        decoration:
-            _fieldDecoration('Fecha', prefixIcon: Icons.calendar_today_outlined),
+        decoration: _fieldDecoration('Fecha',
+            prefixIcon: Icons.calendar_today_outlined),
         child: Text(
           '${_selectedDate.day}/${_selectedDate.month}/${_selectedDate.year}',
-          style: GoogleFonts.beVietnamPro(color: AppTheme.primary, fontSize: 15),
+          style:
+              GoogleFonts.beVietnamPro(color: AppTheme.primary, fontSize: 15),
         ),
       ),
     );

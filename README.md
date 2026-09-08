@@ -73,6 +73,12 @@ Tipografía: **Plus Jakarta Sans** (encabezados y cuerpo) / **Be Vietnam Pro** (
 
 ## Changelog
 
+### v2.4.1 — Septiembre 2026
+
+- Filtro Mensual / Semana / Hoy en la gráfica de torta de gastos por categoría, con animación deslizante fluida entre los tres rangos
+- Botones "Cancelar" y "Agregar/Guardar movimiento" flotantes con sombra propia en el diálogo de escritorio, en vez de una barra sólida fija
+- Corregido: el logo "Monedo" en el encabezado de Android estaba pegado al borde izquierdo; ahora respeta el mismo margen que el resto del contenido
+
 ### v2.2.0 — Septiembre 2026
 
 - **Cuentas**: nuevo sistema de cuentas de dinero (efectivo, banco, billeteras) con saldo propio; cada movimiento se registra desde una cuenta específica y se puede transferir entre cuentas
