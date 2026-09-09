@@ -213,7 +213,7 @@ class _ForgotPasswordDialogState extends State<ForgotPasswordDialog> {
         ),
         const SizedBox(height: 8),
         Text(
-          'Si tu correo está registrado, te enviamos el link. Revisa la sección de spam.',
+          'Te enviamos el link para restablecer tu contraseña. Revisa también la sección de spam.',
           style: GoogleFonts.beVietnamPro(
             fontSize: 14,
             color: AppTheme.onSurfaceVariant,
