@@ -28,6 +28,138 @@ Future<String?> showAddAccountSheet(
   );
 }
 
+/// Abre el diálogo para editar el nombre y el saldo de una cuenta a la vez.
+Future<void> showEditAccountDialog(
+  BuildContext context,
+  AccountModel account,
+) async {
+  final accountService = AccountService();
+  final nameCtrl = TextEditingController(text: account.name);
+  final balanceCtrl = TextEditingController(
+      text: CurrencyFormatter.formatNumber(account.balance));
+  String? error;
+  final result = await showDialog<(String, double)>(
+    context: context,
+    builder: (ctx) => StatefulBuilder(
+      builder: (ctx, setState) => AlertDialog(
+        backgroundColor: AppTheme.surfaceContainerLowest,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Text('Editar cuenta',
+            style: GoogleFonts.plusJakartaSans(
+                color: AppTheme.primary, fontWeight: FontWeight.w700)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: nameCtrl,
+              autofocus: true,
+              textCapitalization: TextCapitalization.sentences,
+              style: GoogleFonts.beVietnamPro(color: AppTheme.primary),
+              decoration: InputDecoration(
+                labelText: 'Nombre',
+                labelStyle:
+                    GoogleFonts.beVietnamPro(color: AppTheme.onSurfaceVariant),
+              ),
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: balanceCtrl,
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              inputFormatters: [AmountInputFormatter()],
+              style: GoogleFonts.beVietnamPro(color: AppTheme.primary),
+              decoration: InputDecoration(
+                labelText: 'Saldo',
+                errorText: error,
+                labelStyle:
+                    GoogleFonts.beVietnamPro(color: AppTheme.onSurfaceVariant),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text('Cancelar',
+                style: TextStyle(color: AppTheme.onSurfaceVariant)),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              final name = nameCtrl.text.trim();
+              if (name.isEmpty) {
+                setState(() => error = 'Ponle un nombre a la cuenta');
+                return;
+              }
+              final parsed = CurrencyFormatter.parse(balanceCtrl.text.trim());
+              if (parsed == null) {
+                setState(() => error = 'Ingresa un monto válido');
+                return;
+              }
+              if (name != account.name &&
+                  await accountService.nameExists(account.userId, name,
+                      excludeId: account.id)) {
+                setState(() => error = 'Ya existe una cuenta "$name"');
+                return;
+              }
+              if (parsed != account.balance) {
+                final confirmed = await showDialog<bool>(
+                  context: ctx,
+                  builder: (confirmCtx) => AlertDialog(
+                    backgroundColor: AppTheme.surfaceContainerLowest,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20)),
+                    title: Text('¿Confirmar cambio de saldo?',
+                        style: GoogleFonts.plusJakartaSans(
+                            color: AppTheme.primary,
+                            fontWeight: FontWeight.w700)),
+                    content: Text(
+                      'El saldo de "$name" cambiará de '
+                      '${CurrencyFormatter.format(account.balance)} a '
+                      '${CurrencyFormatter.format(parsed)}.',
+                      style:
+                          GoogleFonts.beVietnamPro(color: AppTheme.onSurfaceVariant),
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(confirmCtx, false),
+                        child: Text('Cancelar',
+                            style: TextStyle(color: AppTheme.onSurfaceVariant)),
+                      ),
+                      ElevatedButton(
+                        onPressed: () => Navigator.pop(confirmCtx, true),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppTheme.secondary,
+                          shape: const StadiumBorder(),
+                        ),
+                        child: const Text('Confirmar'),
+                      ),
+                    ],
+                  ),
+                );
+                if (confirmed != true) return;
+              }
+              Navigator.pop(ctx, (name, parsed));
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppTheme.secondary,
+              shape: const StadiumBorder(),
+            ),
+            child: const Text('Guardar'),
+          ),
+        ],
+      ),
+    ),
+  );
+  if (result != null) {
+    final (name, balance) = result;
+    if (name != account.name) {
+      await accountService.renameAccount(account.id, name);
+    }
+    if (balance != account.balance) {
+      await accountService.setBalance(account.id, balance);
+    }
+  }
+}
+
 /// Abre la hoja para transferir dinero entre dos cuentas propias.
 Future<void> showTransferSheet(
   BuildContext context, {
@@ -133,43 +265,8 @@ class _AccountsScreenState extends State<AccountsScreen> {
     }
   }
 
-  Future<void> _rename(AccountModel account) async {
-    final ctrl = TextEditingController(text: account.name);
-    final newName = await showDialog<String>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: AppTheme.surfaceContainerLowest,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text('Renombrar cuenta',
-            style: GoogleFonts.plusJakartaSans(
-                color: AppTheme.primary, fontWeight: FontWeight.w700)),
-        content: TextField(
-          controller: ctrl,
-          autofocus: true,
-          textCapitalization: TextCapitalization.sentences,
-          style: GoogleFonts.beVietnamPro(color: AppTheme.primary),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text('Cancelar',
-                style: TextStyle(color: AppTheme.onSurfaceVariant)),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(ctx, ctrl.text.trim()),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.secondary,
-              shape: const StadiumBorder(),
-            ),
-            child: const Text('Guardar'),
-          ),
-        ],
-      ),
-    );
-    if (newName != null && newName.isNotEmpty) {
-      await _accountService.renameAccount(account.id, newName);
-    }
-  }
+  Future<void> _editAccount(AccountModel account) =>
+      showEditAccountDialog(context, account);
 
   @override
   Widget build(BuildContext context) {
@@ -386,88 +483,95 @@ class _AccountsScreenState extends State<AccountsScreen> {
                         final color = AccountColors.forAccount(a);
                         return Container(
                           margin: const EdgeInsets.only(bottom: 10),
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 18, vertical: 14),
                           decoration: BoxDecoration(
                             color: AppTheme.surfaceContainerLowest,
                             borderRadius: BorderRadius.circular(14),
                             border:
                                 Border.all(color: AppTheme.surfaceVariant),
                           ),
-                          child: Row(
-                            children: [
-                              Container(
-                                width: 40,
-                                height: 40,
-                                decoration: BoxDecoration(
-                                  color: color.withOpacity(0.1),
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: Icon(
-                                    Icons.account_balance_wallet_rounded,
-                                    color: color,
-                                    size: 20),
-                              ),
-                              const SizedBox(width: 14),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment:
-                                      CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      a.name,
-                                      style: GoogleFonts.beVietnamPro(
-                                        color: AppTheme.primary,
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.w600,
-                                      ),
+                          clipBehavior: Clip.antiAlias,
+                          child: InkWell(
+                            onTap: () => _editAccount(a),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 18, vertical: 14),
+                              child: Row(
+                                children: [
+                                  Container(
+                                    width: 40,
+                                    height: 40,
+                                    decoration: BoxDecoration(
+                                      color: color.withOpacity(0.1),
+                                      borderRadius: BorderRadius.circular(12),
                                     ),
-                                    Text(
-                                      CurrencyFormatter.format(a.balance),
-                                      style: GoogleFonts.beVietnamPro(
-                                        color: AppTheme.onSurfaceVariant,
-                                        fontSize: 12,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              Tooltip(
-                                message: 'Cambiar color',
-                                child: InkWell(
-                                  borderRadius: BorderRadius.circular(100),
-                                  onTap: () => showAccountColorPicker(
-                                      context,
-                                      account: a),
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(8),
-                                    child: Container(
-                                      width: 16,
-                                      height: 16,
-                                      decoration: BoxDecoration(
+                                    child: Icon(
+                                        Icons.account_balance_wallet_rounded,
                                         color: color,
-                                        shape: BoxShape.circle,
-                                        border: Border.all(
-                                            color: AppTheme.surfaceVariant),
+                                        size: 20),
+                                  ),
+                                  const SizedBox(width: 14),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          a.name,
+                                          style: GoogleFonts.beVietnamPro(
+                                            color: AppTheme.primary,
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                        Text(
+                                          CurrencyFormatter.format(a.balance),
+                                          style: GoogleFonts.beVietnamPro(
+                                            color: AppTheme.onSurfaceVariant,
+                                            fontSize: 12,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  Tooltip(
+                                    message: 'Cambiar color',
+                                    child: InkWell(
+                                      borderRadius: BorderRadius.circular(100),
+                                      onTap: () => showAccountColorPicker(
+                                          context,
+                                          account: a),
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(8),
+                                        child: Container(
+                                          width: 16,
+                                          height: 16,
+                                          decoration: BoxDecoration(
+                                            color: color,
+                                            shape: BoxShape.circle,
+                                            border: Border.all(
+                                                color:
+                                                    AppTheme.surfaceVariant),
+                                          ),
+                                        ),
                                       ),
                                     ),
                                   ),
-                                ),
+                                  IconButton(
+                                    icon: const Icon(Icons.edit_outlined,
+                                        color: AppTheme.onSurfaceVariant,
+                                        size: 18),
+                                    onPressed: () => _editAccount(a),
+                                  ),
+                                  IconButton(
+                                    icon: const Icon(
+                                        Icons.delete_outline_rounded,
+                                        color: AppTheme.errorRed,
+                                        size: 18),
+                                    onPressed: () => _confirmDelete(a),
+                                  ),
+                                ],
                               ),
-                              IconButton(
-                                icon: const Icon(Icons.edit_outlined,
-                                    color: AppTheme.onSurfaceVariant,
-                                    size: 18),
-                                onPressed: () => _rename(a),
-                              ),
-                              IconButton(
-                                icon: const Icon(
-                                    Icons.delete_outline_rounded,
-                                    color: AppTheme.errorRed,
-                                    size: 18),
-                                onPressed: () => _confirmDelete(a),
-                              ),
-                            ],
+                            ),
                           ),
                         );
                       }),
@@ -557,6 +661,13 @@ class _AddAccountSheetState extends State<_AddAccountSheet> {
       _saving = true;
       _error = null;
     });
+    if (await _accountService.nameExists(widget.userId, name)) {
+      setState(() {
+        _saving = false;
+        _error = 'Ya existe una cuenta "$name"';
+      });
+      return;
+    }
     final id = await _accountService.addAccount(
       userId: widget.userId,
       name: name,

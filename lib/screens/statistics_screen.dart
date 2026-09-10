@@ -29,6 +29,8 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
   int _selectedYear = DateTime.now().year;
   int? _touchedIndex;
   _PieRange _pieRange = _PieRange.month;
+  // 0 = semana actual, -1 = la anterior, etc. No se permite ir al futuro.
+  int _weekOffset = 0;
   final Map<String, Stream<List<TransactionModel>>> _rangeStreamCache = {};
 
   static const _months = [
@@ -99,6 +101,18 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
           _selectedMonth++;
         }
       });
+
+  void _prevWeek() => setState(() {
+        _weekOffset--;
+        _touchedIndex = null;
+      });
+
+  void _nextWeek() => setState(() {
+        if (_weekOffset < 0) _weekOffset++;
+        _touchedIndex = null;
+      });
+
+  String _fmtShortDate(DateTime d) => '${d.day} ${_monthsShort[d.month - 1]}';
 
   @override
   Widget build(BuildContext context) {
@@ -642,9 +656,10 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
             userId, _selectedYear, _selectedMonth);
         break;
       case _PieRange.week:
-        cacheKey = 'week';
+        cacheKey = 'week-$_weekOffset';
         createStream = () {
-          final start = _startOfWeek(DateTime.now());
+          final start =
+              _startOfWeek(DateTime.now()).add(Duration(days: 7 * _weekOffset));
           final end = start.add(const Duration(days: 7));
           return _txService.getTransactionsByDateRange(userId, start, end);
         };
@@ -735,6 +750,50 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
     );
   }
 
+  /// Flechas para moverse entre semanas, usadas tanto en el pie "Semana"
+  /// como en la sección "Esta semana" (comparten el mismo `_weekOffset`).
+  Widget _weekNavigator() {
+    final weekStart =
+        _startOfWeek(DateTime.now()).add(Duration(days: 7 * _weekOffset));
+    final weekEndDisplay = weekStart.add(const Duration(days: 6));
+    final isCurrentWeek = _weekOffset == 0;
+    final label = isCurrentWeek
+        ? 'Esta semana'
+        : (_weekOffset == -1 ? 'Semana pasada' : 'Semana');
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        IconButton(
+          onPressed: _prevWeek,
+          icon: const Icon(Icons.chevron_left_rounded, size: 20),
+          color: AppTheme.onSurfaceVariant,
+          visualDensity: VisualDensity.compact,
+          padding: EdgeInsets.zero,
+          constraints: const BoxConstraints(),
+        ),
+        const SizedBox(width: 6),
+        Text(
+          '$label · ${_fmtShortDate(weekStart)} - ${_fmtShortDate(weekEndDisplay)}',
+          style: GoogleFonts.beVietnamPro(
+            color: AppTheme.onSurfaceVariant,
+            fontSize: 12.5,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(width: 6),
+        IconButton(
+          onPressed: isCurrentWeek ? null : _nextWeek,
+          icon: const Icon(Icons.chevron_right_rounded, size: 20),
+          color: AppTheme.onSurfaceVariant,
+          visualDensity: VisualDensity.compact,
+          padding: EdgeInsets.zero,
+          constraints: const BoxConstraints(),
+        ),
+      ],
+    );
+  }
+
   Widget _pieRangeBtn(String label, _PieRange range) {
     final isSelected = _pieRange == range;
     return GestureDetector(
@@ -794,6 +853,10 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
           ),
           const SizedBox(height: 14),
           _pieRangeSelector(),
+          if (_pieRange == _PieRange.week) ...[
+            const SizedBox(height: 10),
+            _weekNavigator(),
+          ],
           if (isEmpty) ...[
             const SizedBox(height: 34),
             Center(
@@ -1072,10 +1135,14 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
     final hasChange = changePercent != null && changePercent.isFinite;
     final isGood =
         hasChange && (higherIsBetter ? changePercent >= 0 : changePercent <= 0);
+    final trendColor = isGood ? AppTheme.secondary : AppTheme.errorRed;
 
-    final trendRow = FittedBox(
-      fit: BoxFit.scaleDown,
-      alignment: Alignment.centerLeft,
+    final trendPill = Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        color: trendColor.withOpacity(0.12),
+        borderRadius: BorderRadius.circular(100),
+      ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -1083,8 +1150,8 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
             (changePercent ?? 0) >= 0
                 ? Icons.arrow_upward_rounded
                 : Icons.arrow_downward_rounded,
-            size: 13,
-            color: isGood ? AppTheme.secondary : AppTheme.errorRed,
+            size: 11,
+            color: trendColor,
           ),
           const SizedBox(width: 2),
           Text(
@@ -1092,9 +1159,9 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                 ? '${(changePercent ?? 0).abs().toStringAsFixed(0)}%'
                 : '${(changePercent ?? 0).abs().toStringAsFixed(0)}% vs mes anterior',
             style: GoogleFonts.beVietnamPro(
-              color: isGood ? AppTheme.secondary : AppTheme.errorRed,
-              fontSize: 11,
-              fontWeight: FontWeight.w600,
+              color: trendColor,
+              fontSize: 10.5,
+              fontWeight: FontWeight.w700,
             ),
           ),
         ],
@@ -1103,64 +1170,65 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppTheme.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppTheme.surfaceVariant),
+        color: AppTheme.surfaceContainerLowest,
+        borderRadius: BorderRadius.circular(18),
+        boxShadow: [
+          BoxShadow(
+            color: color.withOpacity(0.08),
+            blurRadius: 18,
+            offset: const Offset(0, 6),
+          ),
+        ],
       ),
-      child: Row(
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            width: 4,
-            height: 36,
-            margin: const EdgeInsets.only(right: 10),
-            decoration: BoxDecoration(
-              color: color,
-              borderRadius: BorderRadius.circular(4),
-            ),
-          ),
-          Container(
-            width: 36,
-            height: 36,
-            decoration: BoxDecoration(
-                color: bg, borderRadius: BorderRadius.circular(100)),
-            child: Icon(icon, color: color, size: 18),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(title,
+          Row(
+            children: [
+              Container(
+                width: 32,
+                height: 32,
+                decoration: BoxDecoration(
+                  color: bg,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(icon, color: color, size: 16),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(title,
                     style: GoogleFonts.beVietnamPro(
                         color: AppTheme.onSurfaceVariant,
                         fontSize: 12,
                         fontWeight: FontWeight.w600)),
-                const SizedBox(height: 3),
-                FittedBox(
-                  fit: BoxFit.scaleDown,
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    CurrencyFormatter.format(amount),
-                    style: GoogleFonts.plusJakartaSans(
-                      color: color,
-                      fontSize: 18,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                ),
-                // Alto siempre reservado para esta línea (haya o no dato del
-                // mes anterior) para que las cajas de Ingresos y Gastos, una
-                // al lado de la otra, siempre queden con la misma altura.
-                const SizedBox(height: 4),
-                SizedBox(
-                  height: 15,
-                  child: hasChange ? trendRow : null,
-                ),
-              ],
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Text(
+              CurrencyFormatter.format(amount),
+              style: GoogleFonts.plusJakartaSans(
+                color: color,
+                fontSize: 19,
+                fontWeight: FontWeight.w800,
+              ),
             ),
+          ),
+          // Alto siempre reservado para esta línea (haya o no dato del mes
+          // anterior) para que las cajas de Ingresos y Gastos, una al lado
+          // de la otra, siempre queden con la misma altura.
+          const SizedBox(height: 8),
+          SizedBox(
+            height: 20,
+            child: hasChange ? Align(
+              alignment: Alignment.centerLeft,
+              child: trendPill,
+            ) : null,
           ),
         ],
       ),
@@ -1170,12 +1238,15 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
   Widget _buildWeeklySection(String userId) {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
-    final weekStart = _startOfWeek(now);
+    final weekStart =
+        _startOfWeek(now).add(Duration(days: 7 * _weekOffset));
     final weekEnd = weekStart.add(const Duration(days: 7));
     final prevWeekStart = weekStart.subtract(const Duration(days: 7));
     final weekEndDisplay = weekStart.add(const Duration(days: 6));
-
-    String fmtShort(DateTime d) => '${d.day} ${_monthsShort[d.month - 1]}';
+    final isCurrentWeek = _weekOffset == 0;
+    final title = isCurrentWeek
+        ? 'Esta semana'
+        : (_weekOffset == -1 ? 'Semana pasada' : 'Semana');
 
     return StreamBuilder<List<TransactionModel>>(
       // Se pide un solo rango de 14 días (semana pasada + esta semana) y se
@@ -1213,25 +1284,44 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Expanded(
-                    child: Text(
-                      'Esta semana',
-                      style: GoogleFonts.plusJakartaSans(
-                        color: AppTheme.primary,
-                        fontSize: 17,
-                        fontWeight: FontWeight.w600,
-                      ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          title,
+                          style: GoogleFonts.plusJakartaSans(
+                            color: AppTheme.primary,
+                            fontSize: 17,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        Text(
+                          '${_fmtShortDate(weekStart)} - ${_fmtShortDate(weekEndDisplay)}',
+                          style: GoogleFonts.beVietnamPro(
+                            color: AppTheme.onSurfaceVariant,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  Text(
-                    '${fmtShort(weekStart)} - ${fmtShort(weekEndDisplay)}',
-                    style: GoogleFonts.beVietnamPro(
-                      color: AppTheme.onSurfaceVariant,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
-                    ),
+                  IconButton(
+                    onPressed: _prevWeek,
+                    icon: const Icon(Icons.chevron_left_rounded),
+                    color: AppTheme.onSurfaceVariant,
+                    visualDensity: VisualDensity.compact,
+                    tooltip: 'Semana anterior',
+                  ),
+                  IconButton(
+                    onPressed: isCurrentWeek ? null : _nextWeek,
+                    icon: const Icon(Icons.chevron_right_rounded),
+                    color: AppTheme.onSurfaceVariant,
+                    visualDensity: VisualDensity.compact,
+                    tooltip: 'Semana siguiente',
                   ),
                 ],
               ),
@@ -1499,7 +1589,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Evolución del mes',
+                      'Evolución de ${_months[month - 1]}',
                       style: GoogleFonts.plusJakartaSans(
                         color: AppTheme.primary,
                         fontSize: 17,

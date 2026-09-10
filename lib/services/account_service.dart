@@ -23,6 +23,19 @@ class AccountService {
     });
   }
 
+  // ---- Indica si el usuario ya tiene una cuenta con ese nombre (sin distinguir
+  // mayúsculas/espacios); `excludeId` se usa al renombrar para no chocar consigo misma ----
+  Future<bool> nameExists(String userId, String name, {String? excludeId}) async {
+    final target = name.trim().toLowerCase();
+    final snap = await _accounts.where('userId', isEqualTo: userId).get();
+    return snap.docs.any((d) {
+      if (excludeId != null && d.id == excludeId) return false;
+      final data = d.data() as Map<String, dynamic>;
+      final existingName = (data['name'] ?? '').toString().trim().toLowerCase();
+      return existingName == target;
+    });
+  }
+
   // ---- Crea una nueva cuenta con su saldo inicial; devuelve su id ----
   //
   // Si es la PRIMERA cuenta del usuario, migra automáticamente el saldo de
@@ -90,6 +103,11 @@ class AccountService {
     await _accounts.doc(accountId).update({
       'balance': FieldValue.increment(delta),
     });
+  }
+
+  // ---- Fija el saldo de la cuenta a un valor absoluto ----
+  Future<void> setBalance(String accountId, double balance) async {
+    await _accounts.doc(accountId).update({'balance': balance});
   }
 
   // ---- Elimina una cuenta ----

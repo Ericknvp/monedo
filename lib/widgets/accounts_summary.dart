@@ -118,41 +118,45 @@ class AccountsSummaryCard extends StatelessWidget {
                     );
                   }
                   final a = accounts[i];
-                  return Container(
-                    width: 138,
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                    decoration: BoxDecoration(
-                      color: AppTheme.surfaceContainerLow,
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.account_balance_wallet_rounded,
-                            color: AccountColors.forAccount(a), size: 18),
-                        const SizedBox(height: 8),
-                        Text(
-                          a.name,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: GoogleFonts.beVietnamPro(
-                            color: AppTheme.primary,
-                            fontSize: 12.5,
-                            fontWeight: FontWeight.w600,
-                          ),
+                  return Material(
+                    color: AppTheme.surfaceContainerLow,
+                    borderRadius: BorderRadius.circular(14),
+                    clipBehavior: Clip.antiAlias,
+                    child: InkWell(
+                      onTap: () => showEditAccountDialog(context, a),
+                      child: Container(
+                        width: 138,
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 14, vertical: 12),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.account_balance_wallet_rounded,
+                                color: AccountColors.forAccount(a), size: 18),
+                            const SizedBox(height: 8),
+                            Text(
+                              a.name,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: GoogleFonts.beVietnamPro(
+                                color: AppTheme.primary,
+                                fontSize: 12.5,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            Text(
+                              CurrencyFormatter.format(a.balance),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: GoogleFonts.beVietnamPro(
+                                color: AppTheme.onSurfaceVariant,
+                                fontSize: 11.5,
+                              ),
+                            ),
+                          ],
                         ),
-                        Text(
-                          CurrencyFormatter.format(a.balance),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: GoogleFonts.beVietnamPro(
-                            color: AppTheme.onSurfaceVariant,
-                            fontSize: 11.5,
-                          ),
-                        ),
-                      ],
+                      ),
                     ),
                   );
                 },
