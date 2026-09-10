@@ -69,9 +69,13 @@ Tipografía: **Plus Jakarta Sans** (encabezados y cuerpo) / **Be Vietnam Pro** (
 
 ## Descargar APK última versión.
 
-[Descargar Monedo v2.4.1](https://github.com/Ericknvp/monedo/releases/tag/v2.4.1)
+[Descargar Monedo v2.4.2](https://github.com/Ericknvp/monedo/releases/tag/v2.4.2)
 
 ## Changelog
+
+### v2.4.2 — Septiembre 2026
+
+- Corregido: no se podía crear una cuenta con correo y contraseña (fallaba silenciosamente por un problema de permisos en Firestore); el registro con Google no se veía afectado
 
 ### v2.4.1 — Septiembre 2026
 
