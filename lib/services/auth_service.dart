@@ -38,16 +38,19 @@ class AuthService {
     String? currency,
   }) async {
     try {
-      // Verifica que el nombre de usuario no exista
-      if (await usernameExists(username)) {
-        return 'El nombre de usuario ya está en uso';
-      }
-
-      // Crea el usuario en Firebase Auth
+      // Crea el usuario en Firebase Auth primero: las reglas de Firestore
+      // solo permiten leer la colección 'users' a usuarios autenticados
+      // (igual que en el flujo de Google), así que la verificación de
+      // username único debe hacerse después de tener sesión.
       final credential = await _auth.createUserWithEmailAndPassword(
         email: email,
         password: password,
       );
+
+      if (await usernameExists(username)) {
+        await credential.user!.delete();
+        return 'El nombre de usuario ya está en uso';
+      }
 
       // Guarda la info del usuario en Firestore
       final user = UserModel(
@@ -76,6 +79,8 @@ class AuthService {
         default:
           return 'Error al registrarse. Intenta de nuevo';
       }
+    } catch (_) {
+      return 'Error al registrarse. Intenta de nuevo';
     }
   }
 
