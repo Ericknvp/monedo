@@ -7,6 +7,7 @@ import '../theme/app_theme.dart';
 import '../utils/currency_formatter.dart';
 import '../widgets/transaction_tile.dart';
 import '../widgets/branded_loading_screen.dart';
+import '../widgets/app_date_picker.dart';
 import 'add_transaction_screen.dart';
 import 'export_screen.dart';
 
@@ -206,8 +207,8 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                         label: 'Desde',
                         date: rangeStart,
                         onTap: () async {
-                          final picked = await showDatePicker(
-                            context: ctx,
+                          final picked = await showAppDatePicker(
+                            ctx,
                             initialDate: rangeStart ?? DateTime.now(),
                             firstDate: DateTime(2020),
                             lastDate: DateTime.now(),
@@ -224,8 +225,8 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                         label: 'Hasta',
                         date: rangeEnd,
                         onTap: () async {
-                          final picked = await showDatePicker(
-                            context: ctx,
+                          final picked = await showAppDatePicker(
+                            ctx,
                             initialDate: rangeEnd ?? DateTime.now(),
                             firstDate: DateTime(2020),
                             lastDate: DateTime.now(),

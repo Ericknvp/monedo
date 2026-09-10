@@ -15,6 +15,7 @@ import '../utils/category_visibility.dart';
 import 'categories_screen.dart';
 import 'accounts_screen.dart';
 import '../widgets/app_toast.dart';
+import '../widgets/app_date_picker.dart';
 
 /// Abre el formulario de movimiento: como una ventana modal centrada (con
 /// fondo oscurecido) en escritorio, o a pantalla completa en móvil.
@@ -116,20 +117,11 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
   }
 
   Future<void> _selectDate() async {
-    final picked = await showDatePicker(
-      context: context,
+    final picked = await showAppDatePicker(
+      context,
       initialDate: _selectedDate,
       firstDate: DateTime(2020),
       lastDate: DateTime.now(),
-      builder: (ctx, child) => Theme(
-        data: Theme.of(ctx).copyWith(
-          colorScheme: const ColorScheme.light(
-            primary: AppTheme.secondary,
-            surface: AppTheme.surfaceContainerLowest,
-          ),
-        ),
-        child: child!,
-      ),
     );
     if (picked != null) setState(() => _selectedDate = picked);
   }

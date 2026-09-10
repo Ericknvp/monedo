@@ -149,10 +149,13 @@ class _PreferencesSectionState extends State<PreferencesSection> {
               const SizedBox(width: 14),
               Expanded(
                 child: _loadingUsername
-                    ? const SizedBox(
-                        height: 16,
-                        width: 16,
-                        child: CircularProgressIndicator(strokeWidth: 2),
+                    ? const Align(
+                        alignment: Alignment.centerLeft,
+                        child: SizedBox(
+                          height: 16,
+                          width: 16,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        ),
                       )
                     : Text(
                         _username ?? 'Sin nombre de usuario',
