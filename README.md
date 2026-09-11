@@ -54,7 +54,7 @@ Tipografía: **Plus Jakarta Sans** (encabezados y cuerpo) / **Be Vietnam Pro** (
 
 ## Instalación
 
-1. Clonar el repositorie
+1. Clonar el repositorio
 2. Instalar dependencias:
    ```
    flutter pub get
