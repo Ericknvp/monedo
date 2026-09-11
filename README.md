@@ -36,7 +36,6 @@ Monedo permite registrar y visualizar movimientos financieros de forma clara e i
 
 ## Paleta de colores
 
-La interfaz utiliza Material Design 3 con una paleta azul petróleo / verde esmeralda sobre fondo claro.
 
 | Token                    | Color     | Uso principal                        |
 |--------------------------|-----------|--------------------------------------|
