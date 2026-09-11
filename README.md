@@ -12,7 +12,7 @@ Monedo permite registrar y visualizar movimientos financieros de forma clara e i
 - Firebase Firestore
 - Firebase Auth
 - Firebase Hosting
-- Android Studio
+
 
 ## Funcionalidades
 
