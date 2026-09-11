@@ -85,7 +85,7 @@ Tipografía: **Plus Jakarta Sans** (encabezados y cuerpo) / **Be Vietnam Pro** (
 
 ### v2.2.0 — Septiembre 2026
 
-- **Cuentas**: nuevo sistema de cuentas de dinero (efectivo, banco, billeteras) con saldo propio; cada movimiento se registra desde una cuenta específica y se puede transferir entre cuentas
+- **Cuentas**: nuevo sistema de cuentas de dinero (efectivo, banco, billeteras) con saldo propio; cada movimiento se registra desde una cuenta específica y se puede transferir entre bolsillos
 - Migración automática del saldo histórico al crear la primera cuenta, para que el dinero registrado antes de esta función no desaparezca
 - Advertencia de fondos insuficientes al registrar un gasto que dejaría una cuenta en negativo
 - Resumen "Dónde está tu dinero" en el dashboard, con acceso directo para agregar o editar cuentas
