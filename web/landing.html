@@ -279,6 +279,21 @@
 </head>
 <body class="text-on-surface">
 
+<!-- ═══════════ BANNER APP ANDROID (solo móvil) ═══════════ -->
+<div id="androidAppBanner" class="hidden items-center gap-3 bg-primary text-on-primary px-4 py-3">
+  <span class="material-symbols-outlined text-secondary-fixed text-[26px] flex-none" style="font-variation-settings:'FILL' 1;">android</span>
+  <div class="flex-1 min-w-0">
+    <p class="text-xs font-bold leading-tight">Monedo también es app para Android</p>
+    <p class="text-[11px] text-on-primary/60 leading-tight">Descarga el APK gratis e instálalo en tu celular</p>
+  </div>
+  <a href="#descargar" class="flex-none bg-secondary text-on-secondary text-xs font-bold px-3.5 py-2 rounded-full active:scale-95 transition-transform">
+    Ver
+  </a>
+  <button id="androidAppBannerClose" aria-label="Cerrar aviso" class="flex-none text-on-primary/50 active:text-on-primary/80">
+    <span class="material-symbols-outlined text-[20px]">close</span>
+  </button>
+</div>
+
 <!-- ═══════════ NAV ═══════════ -->
 
 <nav class="sticky top-0 z-50 bg-background/80 backdrop-blur-md border-b border-outline-variant/30">
@@ -1105,6 +1120,28 @@
       });
     });
   }
+
+  // Banner de app Android: solo en móvil, y respeta si el usuario lo cerró antes
+  (function () {
+    const banner = document.getElementById('androidAppBanner');
+    const closeBtn = document.getElementById('androidAppBannerClose');
+    if (!banner || !closeBtn) return;
+    const DISMISS_KEY = 'monedoAndroidBannerDismissed';
+    let dismissed = false;
+    try { dismissed = localStorage.getItem(DISMISS_KEY) === '1'; } catch (e) {}
+    const updateBannerVisibility = () => {
+      const isMobile = window.matchMedia('(max-width: 767px)').matches;
+      banner.classList.toggle('hidden', dismissed || !isMobile);
+      banner.classList.toggle('flex', !dismissed && isMobile);
+    };
+    updateBannerVisibility();
+    window.addEventListener('resize', updateBannerVisibility);
+    closeBtn.addEventListener('click', () => {
+      dismissed = true;
+      try { localStorage.setItem(DISMISS_KEY, '1'); } catch (e) {}
+      updateBannerVisibility();
+    });
+  })();
 
   // Nav: sombra sutil al hacer scroll
   const nav = document.querySelector('nav');
