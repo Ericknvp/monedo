@@ -941,6 +941,7 @@ class _GoalCardState extends State<_GoalCard> {
     final userId = FirebaseAuth.instance.currentUser?.uid ?? '';
     String? selectedAccountId;
     List<AccountModel> accountsCache = [];
+    bool isSubmitting = false;
 
     showDialog(
       context: context,
@@ -1013,43 +1014,66 @@ class _GoalCardState extends State<_GoalCard> {
                   style: TextStyle(color: AppTheme.onSurfaceVariant)),
             ),
             ElevatedButton(
-              onPressed: () async {
-                final amount = CurrencyFormatter.parse(ctrl.text.trim());
-                if (amount != null && amount > 0 && selectedAccountId != null) {
-                  AccountModel? account;
-                  for (final a in accountsCache) {
-                    if (a.id == selectedAccountId) {
-                      account = a;
-                      break;
-                    }
-                  }
-                  if (account != null && amount > account.balance) {
-                    final proceed = await _confirmInsufficientFunds(
-                        context, account.name, account.balance);
-                    if (!proceed) return;
-                  }
-                  await widget.goalService.addSavingsToGoal(
-                    goal: widget.goal,
-                    amount: amount,
-                    accountId: selectedAccountId!,
-                  );
-                  if (ctx.mounted) Navigator.pop(ctx);
-                  if (context.mounted) {
-                    showAppToast(
-                      context,
-                      message:
-                          '${CurrencyFormatter.format(amount)} ahorrado',
-                      icon: Icons.savings_rounded,
-                      accentColor: AppTheme.secondary,
-                    );
-                  }
-                }
-              },
+              onPressed: isSubmitting
+                  ? null
+                  : () async {
+                      if (isSubmitting) return;
+                      final amount =
+                          CurrencyFormatter.parse(ctrl.text.trim());
+                      if (amount != null &&
+                          amount > 0 &&
+                          selectedAccountId != null) {
+                        AccountModel? account;
+                        for (final a in accountsCache) {
+                          if (a.id == selectedAccountId) {
+                            account = a;
+                            break;
+                          }
+                        }
+                        if (account != null && amount > account.balance) {
+                          final proceed = await _confirmInsufficientFunds(
+                              context, account.name, account.balance);
+                          if (!proceed) return;
+                        }
+                        setDialogState(() => isSubmitting = true);
+                        try {
+                          await widget.goalService.addSavingsToGoal(
+                            goal: widget.goal,
+                            amount: amount,
+                            accountId: selectedAccountId!,
+                          );
+                          if (ctx.mounted) Navigator.pop(ctx);
+                          if (context.mounted) {
+                            showAppToast(
+                              context,
+                              message:
+                                  '${CurrencyFormatter.format(amount)} ahorrado',
+                              icon: Icons.savings_rounded,
+                              accentColor: AppTheme.secondary,
+                            );
+                          }
+                        } finally {
+                          if (ctx.mounted) {
+                            setDialogState(() => isSubmitting = false);
+                          }
+                        }
+                      }
+                    },
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppTheme.secondary,
                 shape: const StadiumBorder(),
               ),
-              child: const Text('Ahorrar'),
+              child: isSubmitting
+                  ? const SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor:
+                            AlwaysStoppedAnimation<Color>(Colors.white),
+                      ),
+                    )
+                  : const Text('Ahorrar'),
             ),
           ],
         ),

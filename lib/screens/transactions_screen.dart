@@ -401,6 +401,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
               color: AppTheme.background,
               padding: const EdgeInsets.fromLTRB(24, 16, 24, 16),
               child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Expanded(
                     child: Wrap(
