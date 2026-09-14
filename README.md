@@ -66,9 +66,17 @@ Tipografía: **Plus Jakarta Sans** (encabezados y cuerpo) / **Be Vietnam Pro** (
 
 ## Descargar APK última versión.
 
-[Descargar Monedo v2.4.2](https://github.com/Ericknvp/monedo/releases/tag/v2.4.2)
+[Descargar Monedo v2.4.3](https://github.com/Ericknvp/monedo/releases/tag/v2.4.3)
 
 ## Changelog
+
+### v2.4.3 — Septiembre 2026
+
+- Corregido: se podían duplicar los aportes a una meta de ahorro (y la app llegaba a fallar) al tocar varias veces seguidas el botón "Ahorrar"; ahora se deshabilita y muestra un indicador de carga mientras procesa
+- Corregida la alineación del botón de exportar en Android cuando el filtro de fecha ocupaba dos líneas
+- Nuevo botón "Eliminar" junto a "Guardar cambios" al editar un movimiento, con confirmación previa
+- El campo "Nota (opcional)" ahora está colapsado por defecto para no ocupar espacio innecesario
+- Nuevo enlace "Mis categorías" en el formulario de movimiento, para deshabilitar categorías que no uses
 
 ### v2.4.2 — Septiembre 2026
 
