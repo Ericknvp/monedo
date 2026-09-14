@@ -85,6 +85,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
   String _selectedCategory = 'Otros';
   String? _selectedAccountId;
   bool _showAllCategories = false;
+  bool _showNoteField = false;
 
   static const _categories = [
     'Alimentación',
@@ -113,6 +114,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
       _selectedDate = t.date;
       _selectedCategory = t.category;
       _selectedAccountId = t.accountId;
+      _showNoteField = _noteCtrl.text.isNotEmpty;
     }
   }
 
@@ -231,6 +233,42 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
       await _txService.addTransaction(tx);
     }
     setState(() => _isLoading = false);
+    if (mounted) Navigator.pop(context);
+  }
+
+  Future<void> _confirmDelete() async {
+    final t = widget.transaction;
+    if (t == null || _isLoading) return;
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppTheme.surfaceContainerLowest,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text('¿Eliminar movimiento?',
+            style: GoogleFonts.plusJakartaSans(
+                color: AppTheme.primary, fontWeight: FontWeight.w600)),
+        content: Text(
+          'Se eliminará "${t.title}" (${CurrencyFormatter.format(t.amount)}). Esta acción no se puede deshacer.',
+          style: GoogleFonts.beVietnamPro(color: AppTheme.onSurfaceVariant),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text('Cancelar',
+                style: TextStyle(color: AppTheme.onSurfaceVariant)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text('Eliminar',
+                style: TextStyle(
+                    color: AppTheme.errorRed, fontWeight: FontWeight.w600)),
+          ),
+        ],
+      ),
+    );
+    if (confirm != true || !mounted) return;
+    setState(() => _isLoading = true);
+    await _txService.deleteTransaction(t);
     if (mounted) Navigator.pop(context);
   }
 
@@ -387,6 +425,29 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
               ),
             ),
           ),
+          if (isEditing) ...[
+            const SizedBox(width: 12),
+            _floatingPill(
+              color: AppTheme.surfaceContainerLowest,
+              onTap: _isLoading ? null : _confirmDelete,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.delete_outline_rounded,
+                      color: AppTheme.errorRed, size: 18),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Eliminar',
+                    style: GoogleFonts.plusJakartaSans(
+                      color: AppTheme.errorRed,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 14,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
           const SizedBox(width: 12),
           _floatingPill(
             color: AppTheme.secondary,
@@ -500,8 +561,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
           ],
         ),
         const SizedBox(height: 20),
-        _textField(_noteCtrl, 'Nota (opcional)',
-            icon: Icons.note_outlined, maxLines: 3),
+        _buildNoteField(),
       ],
     );
   }
@@ -529,26 +589,46 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
           const SizedBox(height: 16),
           _buildAccountDropdown(),
           const SizedBox(height: 16),
-          _textField(_noteCtrl, 'Nota (opcional)',
-              icon: Icons.note_outlined, maxLines: 3),
+          _buildNoteField(),
           const SizedBox(height: 32),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: _isLoading ? null : _save,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.secondary,
-                shape: const StadiumBorder(),
-                padding: const EdgeInsets.symmetric(vertical: 18),
-                elevation: 0,
-              ),
-              child: _isLoading
-                  ? const CircularProgressIndicator(color: Colors.white)
-                  : Text(
-                      isEditing ? 'Guardar cambios' : 'Agregar movimiento',
-                      style: GoogleFonts.plusJakartaSans(
-                          fontSize: 16, fontWeight: FontWeight.w600),
+          IntrinsicHeight(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                if (isEditing) ...[
+                  OutlinedButton(
+                    onPressed: _isLoading ? null : _confirmDelete,
+                    style: OutlinedButton.styleFrom(
+                      side: const BorderSide(color: AppTheme.errorRed),
+                      shape: const StadiumBorder(),
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
                     ),
+                    child: const Icon(Icons.delete_outline_rounded,
+                        color: AppTheme.errorRed),
+                  ),
+                  const SizedBox(width: 12),
+                ],
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: _isLoading ? null : _save,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppTheme.secondary,
+                      shape: const StadiumBorder(),
+                      padding: const EdgeInsets.symmetric(vertical: 18),
+                      elevation: 0,
+                    ),
+                    child: _isLoading
+                        ? const CircularProgressIndicator(color: Colors.white)
+                        : Text(
+                            isEditing
+                                ? 'Guardar cambios'
+                                : 'Agregar movimiento',
+                            style: GoogleFonts.plusJakartaSans(
+                                fontSize: 16, fontWeight: FontWeight.w600),
+                          ),
+                  ),
+                ),
+              ],
             ),
           ),
         ],
@@ -660,6 +740,65 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
             ? Icon(icon, color: AppTheme.secondary, size: 20)
             : null,
       ),
+    );
+  }
+
+  /// Campo de nota colapsado por defecto: muestra un botón compacto que,
+  /// al tocarlo, revela el campo de texto (evita ocupar espacio fijo
+  /// cuando la mayoría de movimientos no llevan nota).
+  Widget _buildNoteField() {
+    if (!_showNoteField) {
+      return InkWell(
+        borderRadius: BorderRadius.circular(100),
+        onTap: () => setState(() => _showNoteField = true),
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          decoration: BoxDecoration(
+            color: AppTheme.surfaceContainer,
+            borderRadius: BorderRadius.circular(100),
+          ),
+          child: Row(
+            children: [
+              const Icon(Icons.note_add_outlined,
+                  size: 18, color: AppTheme.onSurfaceVariant),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  _noteCtrl.text.isEmpty
+                      ? 'Agregar nota (opcional)'
+                      : _noteCtrl.text,
+                  overflow: TextOverflow.ellipsis,
+                  style: GoogleFonts.beVietnamPro(
+                    color: AppTheme.onSurfaceVariant,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        _textField(_noteCtrl, 'Nota (opcional)',
+            icon: Icons.note_outlined, maxLines: 3),
+        TextButton.icon(
+          onPressed: () => setState(() => _showNoteField = false),
+          icon: const Icon(Icons.expand_less_rounded, size: 18),
+          label: Text('Ocultar',
+              style: GoogleFonts.beVietnamPro(fontSize: 12)),
+          style: TextButton.styleFrom(
+            foregroundColor: AppTheme.onSurfaceVariant,
+            padding: EdgeInsets.zero,
+            minimumSize: const Size(0, 28),
+            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          ),
+        ),
+      ],
     );
   }
 
@@ -795,38 +934,69 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                   ),
                 ),
                 const SizedBox(height: 12),
-                InkWell(
-                  borderRadius: BorderRadius.circular(8),
-                  onTap: () async {
-                    final userId = FirebaseAuth.instance.currentUser?.uid ?? '';
-                    final created = await showAddCategorySheet(
-                      context,
-                      userId: userId,
-                      existingNames: {..._categories, ...customNames},
-                    );
-                    if (created != null) {
-                      setState(() => _selectedCategory = created);
-                    }
-                  },
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 4),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(Icons.add_circle_outline_rounded,
-                            size: 15, color: AppTheme.secondary),
-                        const SizedBox(width: 6),
-                        Text(
-                          'Agregar categoría',
-                          style: GoogleFonts.beVietnamPro(
-                            color: AppTheme.secondary,
-                            fontSize: 12.5,
-                            fontWeight: FontWeight.w600,
-                          ),
+                Wrap(
+                  spacing: 18,
+                  runSpacing: 4,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: [
+                    InkWell(
+                      borderRadius: BorderRadius.circular(8),
+                      onTap: () async {
+                        final userId =
+                            FirebaseAuth.instance.currentUser?.uid ?? '';
+                        final created = await showAddCategorySheet(
+                          context,
+                          userId: userId,
+                          existingNames: {..._categories, ...customNames},
+                        );
+                        if (created != null) {
+                          setState(() => _selectedCategory = created);
+                        }
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 4),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.add_circle_outline_rounded,
+                                size: 15, color: AppTheme.secondary),
+                            const SizedBox(width: 6),
+                            Text(
+                              'Agregar categoría',
+                              style: GoogleFonts.beVietnamPro(
+                                color: AppTheme.secondary,
+                                fontSize: 12.5,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
                         ),
-                      ],
+                      ),
                     ),
-                  ),
+                    InkWell(
+                      borderRadius: BorderRadius.circular(8),
+                      onTap: () => openCategoriesScreen(context),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 4),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.tune_rounded,
+                                size: 15, color: AppTheme.onSurfaceVariant),
+                            const SizedBox(width: 6),
+                            Text(
+                              'Mis categorías',
+                              style: GoogleFonts.beVietnamPro(
+                                color: AppTheme.onSurfaceVariant,
+                                fontSize: 12.5,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             );
