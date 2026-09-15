@@ -59,25 +59,19 @@
       display: inline-block;
       vertical-align: middle;
     }
-    .blob {
+    /* ── Textura de puntos decorativa, reutilizada en secciones con fondo sólido ── */
+    .dot-pattern {
       position: absolute;
-      filter: blur(72px);
+      inset: 0;
       z-index: 0;
-      opacity: 0.16;
-      border-radius: 9999px;
       pointer-events: none;
-      animation: float-blob 14s ease-in-out infinite alternate;
-    }
-    .blob-delay {
-      animation-delay: -7s;
-      animation-duration: 18s;
-    }
-    @keyframes float-blob {
-      from { transform: translate(0, 0) scale(1); }
-      to   { transform: translate(36px, -28px) scale(1.08); }
+      background-image: radial-gradient(currentColor 1px, transparent 1.3px);
+      background-size: 22px 22px;
+      -webkit-mask-image: radial-gradient(ellipse 65% 60% at var(--dot-x, 50%) var(--dot-y, 50%), #000 30%, transparent 85%);
+      mask-image: radial-gradient(ellipse 65% 60% at var(--dot-x, 50%) var(--dot-y, 50%), #000 30%, transparent 85%);
     }
     @media (prefers-reduced-motion: reduce) {
-      .blob, .float-icon, .marquee-track { animation: none !important; }
+      .float-icon, .marquee-track { animation: none !important; }
     }
     .float-icon {
       animation: float-icon 5s ease-in-out infinite;
@@ -127,11 +121,11 @@
       box-shadow: 0 8px 24px rgba(0,31,45,0.08);
     }
     .btn-glow {
-      animation: btn-glow 2.6s ease-in-out infinite;
+      box-shadow: 0 10px 20px -6px rgba(0,108,75,0.45);
+      transition: box-shadow 0.25s var(--ease-out), transform 0.25s var(--ease-out);
     }
-    @keyframes btn-glow {
-      0%, 100% { box-shadow: 0 8px 24px rgba(0,108,75,0.25); }
-      50%      { box-shadow: 0 8px 32px rgba(0,108,75,0.45); }
+    .btn-glow:hover {
+      box-shadow: 0 14px 28px -6px rgba(0,108,75,0.55);
     }
     .timeline-track {
       position: absolute;
@@ -179,12 +173,12 @@
     #caracteristicas .grid > .reveal:nth-child(5) { transition-delay: 200ms; }
     #caracteristicas .grid > .reveal:nth-child(6) { transition-delay: 260ms; }
     .gradient-text-shimmer {
-      background: linear-gradient(90deg, #006c4b, #34d399, #00734f, #006c4b);
+      background: linear-gradient(100deg, #00503a, #006c4b 45%, #34d399 60%, #006c4b 75%);
       background-size: 300% auto;
       -webkit-background-clip: text;
       background-clip: text;
       color: transparent;
-      animation: shimmer-text 5s linear infinite;
+      animation: shimmer-text 1.8s var(--ease-out) 0.3s 1 both;
     }
     @keyframes shimmer-text {
       to { background-position: -300% center; }
@@ -296,7 +290,6 @@
       .badge-pulse { transition: none !important; transform: scale(1) !important; opacity: 1 !important; }
     }
     @media (prefers-reduced-motion: reduce) {
-      .btn-glow { animation: none !important; }
       .timeline-fill { transition: none !important; }
       .gradient-text-shimmer { animation: none !important; }
     }
@@ -397,7 +390,7 @@
       margin-top: -5.5px;
       border-radius: 50%;
       background: #34d399;
-      box-shadow: 0 0 0 4px rgba(0,108,75,0.16), 0 0 14px 2px rgba(0,108,75,0.5);
+      box-shadow: 0 0 0 4px rgba(0,108,75,0.18);
       pointer-events: none;
       z-index: 2;
       will-change: top;
@@ -451,12 +444,22 @@
       .ripple-effect { display: none; }
     }
 
-    /* ── Íconos de enlaces del footer: se deslizan al pasar el mouse ── */
-    .footer-link .material-symbols-outlined {
-      transition: transform 0.25s var(--ease-out);
+    /* ── Íconos sociales del footer ── */
+    .social-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 9999px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255,255,255,0.06);
+      color: rgba(255,255,255,0.55);
+      transition: background-color 0.25s var(--ease-out), color 0.25s var(--ease-out), transform 0.25s var(--ease-out);
     }
-    .footer-link:hover .material-symbols-outlined {
-      transform: translateX(3px);
+    .social-icon:hover {
+      background: #006c4b;
+      color: #ffffff;
+      transform: translateY(-2px);
     }
 
     /* ── Logo: pequeño giro vivo al pasar el mouse ── */
@@ -518,10 +521,8 @@
 
 <!-- ═══════════ HERO ═══════════ -->
 
-<header class="relative overflow-hidden">
+<header class="relative overflow-hidden bg-background">
   <canvas id="heroGrid" aria-hidden="true"></canvas>
-  <div id="heroBlob1" class="blob w-[560px] h-[560px] bg-secondary-container top-0 -left-40"></div>
-  <div id="heroBlob2" class="blob blob-delay w-[420px] h-[420px] bg-primary-container bottom-0 -right-16"></div>
   <div id="heroIconWallet" class="hidden md:block absolute top-24 left-[10%] z-0">
     <span class="float-icon material-symbols-outlined text-secondary/25 text-[40px]" style="font-variation-settings:'FILL' 1;">account_balance_wallet</span>
   </div>
@@ -754,8 +755,8 @@
 <section id="proximamente" class="py-24 px-6 md:px-10 relative overflow-hidden">
   <div class="max-w-6xl mx-auto reveal">
     <div class="relative overflow-hidden bg-primary rounded-[32px] px-8 py-16 md:px-16 md:py-20 text-center">
-      <div class="blob w-[420px] h-[420px] bg-secondary-fixed top-[-140px] left-[-100px] opacity-[0.18]"></div>
-      <div class="blob w-[360px] h-[360px] bg-secondary bottom-[-140px] right-[-90px] opacity-[0.22]"></div>
+      <div class="dot-pattern text-white/25" style="--dot-x:15%; --dot-y:10%;"></div>
+      <div class="dot-pattern text-secondary-fixed/25" style="--dot-x:85%; --dot-y:95%;"></div>
 
       <div class="relative z-10 max-w-2xl mx-auto">
         <div class="badge-pulse inline-flex items-center gap-2 bg-white/8 border border-white/15 px-5 py-2 rounded-full text-secondary-fixed font-bold text-xs tracking-wide uppercase mb-8">
@@ -1133,7 +1134,7 @@
 <section id="descargar" class="py-24 px-6 md:px-10">
   <div class="max-w-5xl mx-auto reveal">
     <div class="relative overflow-hidden bg-surface-container-lowest border border-outline-variant/40 rounded-[32px] px-8 py-14 md:px-16 md:py-16 flex flex-col md:flex-row items-center gap-10">
-      <div class="blob w-[280px] h-[280px] bg-secondary-container top-[-80px] right-[-60px] opacity-[0.35]"></div>
+      <div class="dot-pattern text-secondary/20" style="--dot-x:88%; --dot-y:5%;"></div>
       <div class="relative z-10 flex-1 text-center md:text-left">
         <div class="inline-flex items-center gap-2 bg-secondary-container/60 px-4 py-1.5 rounded-full text-on-secondary-container text-xs font-bold uppercase tracking-wide mb-5">
           <span class="material-symbols-outlined text-[16px]">android</span>
@@ -1165,7 +1166,6 @@
 
 <!-- ═══════════ 100% GRATIS ═══════════ -->
 <section id="gratis" class="py-28 px-6 md:px-10 relative overflow-hidden">
-  <div class="blob w-[700px] h-[700px] bg-secondary-container top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"></div>
   <div class="max-w-3xl mx-auto text-center relative z-10 reveal">
     <div class="inline-flex items-center gap-2 bg-secondary-container px-5 py-2 rounded-full text-on-secondary-container font-bold text-sm mb-8">
       <span class="material-symbols-outlined text-[18px]" style="font-variation-settings:'FILL' 1;">favorite</span>
@@ -1187,83 +1187,59 @@
 </section>
 
 <!-- ═══════════ FOOTER ═══════════ -->
-<footer class="bg-primary text-on-primary pt-14 pb-10 px-6 md:px-10">
-  <div class="max-w-6xl mx-auto">
-    <div class="flex flex-col md:flex-row justify-between gap-12 border-b border-on-primary/10 pb-12 mb-10">
+<footer class="relative bg-primary text-on-primary pt-16 pb-8 px-6 md:px-10 overflow-hidden">
+  <div class="dot-pattern text-white/[0.05]" style="--dot-x:12%; --dot-y:0%;"></div>
+  <div class="max-w-6xl mx-auto relative z-10">
+    <div class="grid md:grid-cols-[1.3fr_1fr_1fr] gap-x-10 gap-y-12 border-b border-on-primary/10 pb-12 mb-8">
 
       <!-- Brand -->
-      <div class="space-y-4 max-w-xs">
+      <div class="space-y-5 max-w-xs">
         <div class="flex items-center gap-2.5">
-          <img src="favicon.png" alt="Monedo" class="brand-mark h-8 w-8 rounded-xl object-cover"/>
-          <span class="font-display font-bold text-xl">Monedo</span>
+          <img src="favicon.png" alt="Monedo" class="brand-mark h-9 w-9 rounded-xl object-cover"/>
+          <span class="font-display font-bold text-2xl">Monedo</span>
         </div>
-        <p class="text-on-primary/60 text-sm leading-relaxed">
+        <p class="text-on-primary/55 text-sm leading-relaxed">
           App de finanzas personales. Registra, visualiza y controla tu dinero desde cualquier dispositivo.
         </p>
-        <div class="inline-flex items-center gap-2 px-3 py-1.5 bg-secondary rounded-full text-on-secondary text-xs font-bold">
-          <span class="material-symbols-outlined text-[14px]" style="font-variation-settings:'FILL' 1;">verified</span>
-          100% Gratis para siempre
+        <div class="inline-flex items-center gap-2 px-3.5 py-2 bg-secondary/15 border border-secondary/30 rounded-full text-secondary-fixed text-xs font-bold">
+          <span class="material-symbols-outlined text-[15px]" style="font-variation-settings:'FILL' 1;">verified</span>
+          100% gratis para siempre
         </div>
       </div>
 
-      <!-- Links -->
-      <div class="grid grid-cols-2 gap-12">
-        <div>
-          <h3 class="font-semibold text-sm text-secondary-fixed mb-5">Proyecto</h3>
-          <ul class="space-y-3 text-sm text-on-primary/60">
-            <li>
-              <a href="https://github.com/Ericknvp/monedo" target="_blank" rel="noopener noreferrer"
-                 class="footer-link hover:text-secondary-fixed transition-colors flex items-center gap-2">
-                <span class="material-symbols-outlined text-[16px]">code</span>
-                Repositorio en GitHub
-              </a>
-            </li>
-            <li>
-              <a href="/?view=register" class="footer-link hover:text-secondary-fixed transition-colors flex items-center gap-2">
-                <span class="material-symbols-outlined text-[16px]">person_add</span>
-                Crear cuenta
-              </a>
-            </li>
-            <li>
-              <a href="/?view=login" class="footer-link hover:text-secondary-fixed transition-colors flex items-center gap-2">
-                <span class="material-symbols-outlined text-[16px]">login</span>
-                Iniciar sesión
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div>
-          <h3 class="font-semibold text-sm text-secondary-fixed mb-5">Creador</h3>
-          <ul class="space-y-3 text-sm text-on-primary/60">
-            <li class="font-semibold text-on-primary/80">Ericknvp</li>
-            <li>
-              <a href="https://ericknvp-dev.vercel.app" target="_blank" rel="noopener noreferrer"
-                 class="footer-link hover:text-secondary-fixed transition-colors flex items-center gap-2">
-                <span class="material-symbols-outlined text-[16px]">language</span>
-                Portafolio
-              </a>
-            </li>
-            <li>
-              <a href="https://github.com/Ericknvp" target="_blank" rel="noopener noreferrer"
-                 class="footer-link hover:text-secondary-fixed transition-colors flex items-center gap-2">
-                <span class="material-symbols-outlined text-[16px]">code</span>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://ko-fi.com/ericknvp" target="_blank" rel="noopener noreferrer"
-                 class="footer-link hover:text-secondary-fixed transition-colors flex items-center gap-2">
-                <span class="material-symbols-outlined text-[16px]">coffee</span>
-                Ko-fi
-              </a>
-            </li>
-          </ul>
-        </div>
+      <!-- Producto -->
+      <div>
+        <h3 class="font-display font-semibold text-xs tracking-[0.14em] uppercase text-on-primary/35 mb-5">Producto</h3>
+        <ul class="space-y-3.5 text-sm text-on-primary/70">
+          <li><a href="#caracteristicas" class="footer-link hover:text-secondary-fixed transition-colors">Características</a></li>
+          <li><a href="#como-funciona" class="footer-link hover:text-secondary-fixed transition-colors">Cómo funciona</a></li>
+          <li><a href="/?view=register" class="footer-link hover:text-secondary-fixed transition-colors">Crear cuenta</a></li>
+          <li><a href="/?view=login" class="footer-link hover:text-secondary-fixed transition-colors">Iniciar sesión</a></li>
+        </ul>
+      </div>
+
+      <!-- Creador -->
+      <div>
+        <h3 class="font-display font-semibold text-xs tracking-[0.14em] uppercase text-on-primary/35 mb-5">Creador</h3>
+        <ul class="space-y-3.5 text-sm text-on-primary/70">
+          <li class="font-semibold text-on-primary/90">Ericknvp</li>
+          <li><a href="https://ericknvp-dev.vercel.app" target="_blank" rel="noopener noreferrer" class="footer-link hover:text-secondary-fixed transition-colors">Portafolio</a></li>
+          <li><a href="https://github.com/Ericknvp" target="_blank" rel="noopener noreferrer" class="footer-link hover:text-secondary-fixed transition-colors">GitHub personal</a></li>
+        </ul>
       </div>
     </div>
 
-    <div class="flex justify-center items-center text-xs text-on-primary/40">
-      <p>© 2026 Monedo. Pereira, Colombia</p>
+    <!-- Barra inferior -->
+    <div class="flex flex-col-reverse sm:flex-row items-center justify-between gap-5 text-xs text-on-primary/40">
+      <p>© 2026 Monedo · Pereira, Colombia</p>
+      <div class="flex items-center gap-3">
+        <a href="https://github.com/Ericknvp/monedo" target="_blank" rel="noopener noreferrer" aria-label="Repositorio en GitHub" class="social-icon">
+          <span class="material-symbols-outlined text-[18px]">code</span>
+        </a>
+        <a href="https://ko-fi.com/ericknvp" target="_blank" rel="noopener noreferrer" aria-label="Apoyar en Ko-fi" class="social-icon">
+          <span class="material-symbols-outlined text-[18px]">coffee</span>
+        </a>
+      </div>
     </div>
   </div>
 </footer>
@@ -1475,17 +1451,6 @@
     };
     window.addEventListener('scroll', onSpinScroll, { passive: true });
     onSpinScroll();
-
-    // Blobs del hero: parallax con el scroll (usa margin-top para no
-    // pelear con la animación CSS de flotación, que ya usa transform)
-    const heroBlob1 = document.getElementById('heroBlob1');
-    const heroBlob2 = document.getElementById('heroBlob2');
-    const onBlobParallax = () => {
-      if (heroBlob1) heroBlob1.style.marginTop = (window.scrollY * 0.18) + 'px';
-      if (heroBlob2) heroBlob2.style.marginTop = (-window.scrollY * 0.12) + 'px';
-    };
-    window.addEventListener('scroll', onBlobParallax, { passive: true });
-    onBlobParallax();
 
     // Tarjetas de características: inclinación 3D + borde con spotlight siguiendo el cursor
     document.querySelectorAll('.card-hover').forEach(card => {
