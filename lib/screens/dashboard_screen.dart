@@ -25,6 +25,7 @@ import '../widgets/accounts_summary.dart';
 import '../widgets/transaction_tile.dart';
 import '../widgets/update_dialog.dart';
 import '../widgets/branded_loading_screen.dart';
+import '../widgets/fade_slide_in.dart';
 import 'add_transaction_screen.dart';
 import 'transactions_screen.dart';
 import 'statistics_screen.dart';
@@ -467,46 +468,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   AccountsSummaryCard(accounts: accSnap.data ?? []),
                   const SizedBox(height: 24),
 
-                  // Stat cards row
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _statCard(
-                          '${monthTx.length} movimientos',
-                          'Este mes',
-                          Icons.receipt_long_rounded,
-                          AppTheme.primaryContainer.withOpacity(0.15),
-                          AppTheme.primary,
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: _statCard(
-                          maxExpTx == null
-                              ? CurrencyFormatter.format(0)
-                              : '${CurrencyFormatter.format(maxExpTx.amount)} de ${maxExpTx.title}',
-                          'Mayor gasto',
-                          Icons.trending_down_rounded,
-                          AppTheme.errorContainer.withOpacity(0.3),
-                          AppTheme.errorRed,
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: _statCard(
-                          maxIncTx == null
-                              ? CurrencyFormatter.format(0)
-                              : '${CurrencyFormatter.format(maxIncTx.amount)} de ${maxIncTx.title}',
-                          'Mayor ingreso',
-                          Icons.trending_up_rounded,
-                          AppTheme.secondaryContainer.withOpacity(0.4),
-                          AppTheme.secondary,
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(child: _buildGoalsStatCard(userId)),
-                    ],
-                  ),
+                  // Franja de métricas: un solo contenedor dividido en vez de
+                  // cuatro tarjetas idénticas ícono+valor+label repetidas.
+                  _buildStatsStrip(monthTx.length, maxExpTx, maxIncTx, userId),
                   const SizedBox(height: 24),
 
                   // Chart + Recent transactions
@@ -538,7 +502,134 @@ class _DashboardScreenState extends State<DashboardScreen> {
   // no hace falta repetirlas aquí).
   // Misma forma que _statCard (movimientos / mayor gasto / mayor ingreso),
   // como una cuarta tarjeta al lado de ellas, tocable para ir a Metas.
-  Widget _buildGoalsStatCard(String userId) {
+  Widget _buildStatsStrip(int txCount, TransactionModel? maxExpTx,
+      TransactionModel? maxIncTx, String userId) {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppTheme.surfaceContainerLowest,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppTheme.surfaceVariant),
+      ),
+      child: IntrinsicHeight(
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Expanded(
+              child: _statSegment(
+                '$txCount',
+                'Movimientos este mes',
+                Icons.receipt_long_rounded,
+                AppTheme.primary,
+              ),
+            ),
+            _statDivider(),
+            Expanded(
+              flex: 2,
+              child: _statComparisonSegment(maxExpTx, maxIncTx),
+            ),
+            _statDivider(),
+            Expanded(child: _buildGoalsStatSegment(userId)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _statDivider() =>
+      Container(width: 1, color: AppTheme.surfaceVariant);
+
+  Widget _statSegment(String value, String label, IconData icon, Color color) {
+    return Padding(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(
+            value,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: GoogleFonts.plusJakartaSans(
+                color: AppTheme.primary, fontSize: 22, fontWeight: FontWeight.w700),
+          ),
+          const SizedBox(height: 6),
+          Row(
+            children: [
+              Icon(icon, size: 14, color: color),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: GoogleFonts.beVietnamPro(
+                      color: AppTheme.onSurfaceVariant, fontSize: 12),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _statComparisonSegment(
+      TransactionModel? maxExpTx, TransactionModel? maxIncTx) {
+    return Padding(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          _comparisonRow(
+            Icons.trending_up_rounded,
+            AppTheme.secondary,
+            'Mayor ingreso',
+            maxIncTx == null
+                ? '—'
+                : '${CurrencyFormatter.format(maxIncTx.amount)} · ${maxIncTx.title}',
+          ),
+          const SizedBox(height: 12),
+          _comparisonRow(
+            Icons.trending_down_rounded,
+            AppTheme.errorRed,
+            'Mayor gasto',
+            maxExpTx == null
+                ? '—'
+                : '${CurrencyFormatter.format(maxExpTx.amount)} · ${maxExpTx.title}',
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _comparisonRow(IconData icon, Color color, String label, String value) {
+    return Row(
+      children: [
+        Icon(icon, size: 16, color: color),
+        const SizedBox(width: 8),
+        SizedBox(
+          width: 84,
+          child: Text(
+            label,
+            style: GoogleFonts.beVietnamPro(
+                color: AppTheme.onSurfaceVariant, fontSize: 12),
+          ),
+        ),
+        Expanded(
+          child: Text(
+            value,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: GoogleFonts.plusJakartaSans(
+                color: AppTheme.primary, fontSize: 14, fontWeight: FontWeight.w700),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildGoalsStatSegment(String userId) {
     return StreamBuilder<List<GoalModel>>(
       stream: _goalService.getGoals(userId),
       builder: (context, snap) {
@@ -549,15 +640,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 goals.length;
 
         return InkWell(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(20),
           onTap: () => setState(() => _selectedIndex = 3),
-          child: _statCard(
+          child: _statSegment(
             goals.isEmpty
                 ? 'Crear meta'
-                : '${goals.length} ${goals.length == 1 ? 'meta' : 'metas'} · ${(avgProgress * 100).toStringAsFixed(0)}%',
-            'Metas de ahorro',
+                : '${(avgProgress * 100).toStringAsFixed(0)}%',
+            goals.isEmpty
+                ? 'Metas de ahorro'
+                : '${goals.length} ${goals.length == 1 ? 'meta activa' : 'metas activas'}',
             Icons.savings_rounded,
-            AppTheme.secondaryContainer.withOpacity(0.2),
             AppTheme.secondary,
           ),
         );
@@ -570,14 +662,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       width: double.infinity,
       padding: const EdgeInsets.all(32),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Color(0xFF0C3547),
-            Color(0xFF082D3C),
-          ],
-        ),
+        gradient: AppTheme.heroGradient,
         borderRadius: BorderRadius.circular(20),
       ),
       child: Stack(
@@ -603,21 +688,32 @@ class _DashboardScreenState extends State<DashboardScreen> {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                'BALANCE DISPONIBLE',
-                style: GoogleFonts.beVietnamPro(
-                  color: AppTheme.secondaryFixed,
-                  fontSize: 11,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: 1.5,
-                ),
+              Row(
+                children: [
+                  Icon(Icons.account_balance_wallet_rounded,
+                      color: AppTheme.secondaryFixed, size: 17),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Balance total',
+                    style: GoogleFonts.beVietnamPro(
+                      color: AppTheme.secondaryFixed,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(height: 10),
-              RichText(
-                text: TextSpan(
-                  children: [
-                    TextSpan(
-                      text: 'Balance total: ${CurrencyFormatter.format(balance)}',
+              const SizedBox(height: 12),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.baseline,
+                textBaseline: TextBaseline.alphabetic,
+                children: [
+                  TweenAnimationBuilder<double>(
+                    tween: Tween(begin: 0, end: balance),
+                    duration: const Duration(milliseconds: 700),
+                    curve: Curves.easeOutCubic,
+                    builder: (context, value, child) => Text(
+                      CurrencyFormatter.format(value),
                       style: GoogleFonts.plusJakartaSans(
                         color: Colors.white,
                         fontSize: 36,
@@ -625,16 +721,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         letterSpacing: -0.72,
                       ),
                     ),
-                    TextSpan(
-                      text: ' ${CurrencyFormatter.current.code}',
-                      style: GoogleFonts.beVietnamPro(
-                        color: AppTheme.secondaryFixed,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                      ),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    CurrencyFormatter.current.code,
+                    style: GoogleFonts.beVietnamPro(
+                      color: AppTheme.secondaryFixed,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
               const SizedBox(height: 20),
               Wrap(
@@ -642,13 +739,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 runSpacing: 8,
                 children: [
                   _heroChip(
-                    Icons.arrow_downward_rounded,
+                    Icons.arrow_upward_rounded,
                     'Ingresos del mes: ${CurrencyFormatter.format(income)}',
                     AppTheme.secondaryFixed,
                     AppTheme.onSecondaryFixed,
                   ),
                   _heroChip(
-                    Icons.arrow_upward_rounded,
+                    Icons.arrow_downward_rounded,
                     'Gastos del mes: ${CurrencyFormatter.format(expenses)}',
                     Colors.white.withOpacity(0.12),
                     Colors.white,
@@ -678,43 +775,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
             text,
             style: GoogleFonts.beVietnamPro(
                 color: fg, fontSize: 13, fontWeight: FontWeight.w600),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _statCard(
-      String value, String label, IconData icon, Color bg, Color color) {
-    return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: AppTheme.surfaceContainerLowest,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppTheme.surfaceVariant),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(100)),
-            child: Icon(icon, color: color, size: 22),
-          ),
-          const SizedBox(height: 14),
-          Text(
-            value,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: GoogleFonts.plusJakartaSans(
-                color: AppTheme.primary, fontSize: 18, fontWeight: FontWeight.w700),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            label,
-            style: GoogleFonts.beVietnamPro(
-                color: AppTheme.onSurfaceVariant, fontSize: 12),
           ),
         ],
       ),
@@ -947,10 +1007,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ),
             )
           else
-            ...monthTx.take(7).map((t) => TransactionTile(
-                  transaction: t,
-                  onEdit: () => openAddTransaction(context, transaction: t),
-                  onDelete: () => _deleteTransaction(t),
+            ...monthTx.take(7).toList().asMap().entries.map((e) => FadeSlideIn(
+                  delay: Duration(milliseconds: e.key * 35),
+                  child: TransactionTile(
+                    transaction: e.value,
+                    onEdit: () =>
+                        openAddTransaction(context, transaction: e.value),
+                    onDelete: () => _deleteTransaction(e.value),
+                  ),
                 )),
           const SizedBox(height: 8),
         ],
@@ -1148,12 +1212,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       ),
                     )
                   else
-                    ...monthTx.take(5).map((t) => TransactionTile(
-                          transaction: t,
-                          onEdit: () =>
-                              openAddTransaction(context, transaction: t),
-                          onDelete: () => _deleteTransaction(t),
-                        )),
+                    ...monthTx
+                        .take(5)
+                        .toList()
+                        .asMap()
+                        .entries
+                        .map((e) => FadeSlideIn(
+                              delay: Duration(milliseconds: e.key * 35),
+                              child: TransactionTile(
+                                transaction: e.value,
+                                onEdit: () => openAddTransaction(context,
+                                    transaction: e.value),
+                                onDelete: () => _deleteTransaction(e.value),
+                              ),
+                            )),
                 ],
               ),
             );

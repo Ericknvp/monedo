@@ -21,14 +21,7 @@ class BalanceCard extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(28),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Color(0xFF0C3547),
-            Color(0xFF082D3C),
-          ],
-        ),
+        gradient: AppTheme.heroGradient,
         borderRadius: BorderRadius.circular(20),
       ),
       child: Stack(
@@ -54,27 +47,38 @@ class BalanceCard extends StatelessWidget {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                'BALANCE DISPONIBLE',
-                style: GoogleFonts.beVietnamPro(
-                  color: AppTheme.secondaryFixed,
-                  fontSize: 11,
-                  fontWeight: FontWeight.w600,
-                  letterSpacing: 1.5,
-                ),
+              Row(
+                children: [
+                  Icon(Icons.account_balance_wallet_rounded,
+                      color: AppTheme.secondaryFixed, size: 16),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Balance disponible',
+                    style: GoogleFonts.beVietnamPro(
+                      color: AppTheme.secondaryFixed,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 12),
               Row(
                 crossAxisAlignment: CrossAxisAlignment.baseline,
                 textBaseline: TextBaseline.alphabetic,
                 children: [
-                  Text(
-                    CurrencyFormatter.format(balance),
-                    style: GoogleFonts.plusJakartaSans(
-                      color: Colors.white,
-                      fontSize: 34,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: -0.68,
+                  TweenAnimationBuilder<double>(
+                    tween: Tween(begin: 0, end: balance),
+                    duration: const Duration(milliseconds: 700),
+                    curve: Curves.easeOutCubic,
+                    builder: (context, value, child) => Text(
+                      CurrencyFormatter.format(value),
+                      style: GoogleFonts.plusJakartaSans(
+                        color: Colors.white,
+                        fontSize: 34,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: -0.68,
+                      ),
                     ),
                   ),
                   const SizedBox(width: 8),
@@ -94,12 +98,14 @@ class BalanceCard extends StatelessWidget {
                 runSpacing: 8,
                 children: [
                   _chip(
-                    '↑  Ingresos: ${CurrencyFormatter.format(income)}',
+                    Icons.arrow_upward_rounded,
+                    'Ingresos: ${CurrencyFormatter.format(income)}',
                     AppTheme.secondaryFixed,
                     AppTheme.onSecondaryFixed,
                   ),
                   _chip(
-                    '↓  Gastos: ${CurrencyFormatter.format(expenses)}',
+                    Icons.arrow_downward_rounded,
+                    'Gastos: ${CurrencyFormatter.format(expenses)}',
                     Colors.white.withOpacity(0.1),
                     Colors.white,
                   ),
@@ -112,20 +118,27 @@ class BalanceCard extends StatelessWidget {
     );
   }
 
-  Widget _chip(String text, Color bg, Color fg) {
+  Widget _chip(IconData icon, String text, Color bg, Color fg) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
       decoration: BoxDecoration(
         color: bg,
         borderRadius: BorderRadius.circular(100),
       ),
-      child: Text(
-        text,
-        style: GoogleFonts.beVietnamPro(
-          color: fg,
-          fontSize: 13,
-          fontWeight: FontWeight.w600,
-        ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 14, color: fg),
+          const SizedBox(width: 6),
+          Text(
+            text,
+            style: GoogleFonts.beVietnamPro(
+              color: fg,
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -10,6 +10,7 @@ import '../utils/amount_input_formatter.dart';
 import '../utils/currency_formatter.dart';
 import '../widgets/account_color_picker.dart';
 import '../widgets/app_toast.dart';
+import '../widgets/fade_slide_in.dart';
 
 /// Abre la hoja para crear una cuenta nueva (ej. Efectivo, Nu, Nequi).
 /// Devuelve el id de la cuenta creada, o null si se canceló.
@@ -371,35 +372,39 @@ class _AccountsScreenState extends State<AccountsScreen> {
                       width: double.infinity,
                       padding: const EdgeInsets.all(24),
                       decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [
-                            Color(0xFF0C3547),
-                            Color(0xFF082D3C),
-                          ],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
+                        gradient: AppTheme.heroGradient,
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            'BALANCE TOTAL',
-                            style: GoogleFonts.beVietnamPro(
-                              color: AppTheme.secondaryFixed,
-                              fontSize: 11,
-                              fontWeight: FontWeight.w600,
-                              letterSpacing: 1.5,
-                            ),
+                          Row(
+                            children: [
+                              Icon(Icons.account_balance_wallet_rounded,
+                                  color: AppTheme.secondaryFixed, size: 16),
+                              const SizedBox(width: 8),
+                              Text(
+                                'Balance total',
+                                style: GoogleFonts.beVietnamPro(
+                                  color: AppTheme.secondaryFixed,
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
                           ),
-                          const SizedBox(height: 8),
-                          Text(
-                            CurrencyFormatter.format(total),
-                            style: GoogleFonts.plusJakartaSans(
-                              color: Colors.white,
-                              fontSize: 30,
-                              fontWeight: FontWeight.w700,
+                          const SizedBox(height: 10),
+                          TweenAnimationBuilder<double>(
+                            tween: Tween(begin: 0, end: total),
+                            duration: const Duration(milliseconds: 700),
+                            curve: Curves.easeOutCubic,
+                            builder: (context, value, child) => Text(
+                              CurrencyFormatter.format(value),
+                              style: GoogleFonts.plusJakartaSans(
+                                color: Colors.white,
+                                fontSize: 30,
+                                fontWeight: FontWeight.w700,
+                              ),
                             ),
                           ),
                           const SizedBox(height: 4),
@@ -479,9 +484,12 @@ class _AccountsScreenState extends State<AccountsScreen> {
                         ),
                       )
                     else
-                      ...accounts.map((a) {
+                      ...accounts.asMap().entries.map((entry) {
+                        final a = entry.value;
                         final color = AccountColors.forAccount(a);
-                        return Container(
+                        return FadeSlideIn(
+                          delay: Duration(milliseconds: entry.key * 35),
+                          child: Container(
                           margin: const EdgeInsets.only(bottom: 10),
                           decoration: BoxDecoration(
                             color: AppTheme.surfaceContainerLowest,
@@ -572,6 +580,7 @@ class _AccountsScreenState extends State<AccountsScreen> {
                                 ],
                               ),
                             ),
+                          ),
                           ),
                         );
                       }),

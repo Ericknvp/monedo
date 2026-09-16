@@ -16,6 +16,7 @@ import 'categories_screen.dart';
 import 'accounts_screen.dart';
 import '../widgets/app_toast.dart';
 import '../widgets/app_date_picker.dart';
+import '../widgets/pressable_scale.dart';
 
 /// Abre el formulario de movimiento: como una ventana modal centrada (con
 /// fondo oscurecido) en escritorio, o a pantalla completa en móvil.
@@ -545,6 +546,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                 keyboardType:
                     const TextInputType.numberWithOptions(decimal: true),
                 inputFormatters: [AmountInputFormatter()],
+                emphasize: true,
               ),
             ),
           ],
@@ -581,7 +583,8 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
               icon: Icons.attach_money_rounded,
               keyboardType:
                   const TextInputType.numberWithOptions(decimal: true),
-              inputFormatters: [AmountInputFormatter()]),
+              inputFormatters: [AmountInputFormatter()],
+              emphasize: true),
           const SizedBox(height: 16),
           _buildCategoryDropdown(),
           const SizedBox(height: 16),
@@ -618,7 +621,12 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                       elevation: 0,
                     ),
                     child: _isLoading
-                        ? const CircularProgressIndicator(color: Colors.white)
+                        ? const SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(
+                                color: Colors.white, strokeWidth: 2.4),
+                          )
                         : Text(
                             isEditing
                                 ? 'Guardar cambios'
@@ -687,7 +695,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
     final isSelected = _isIncome == isIncome;
     final icon =
         isIncome ? Icons.trending_up_rounded : Icons.trending_down_rounded;
-    return GestureDetector(
+    return PressableScale(
       onTap: () => setState(() => _isIncome = isIncome),
       behavior: HitTestBehavior.opaque,
       child: Row(
@@ -724,6 +732,11 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
     int maxLines = 1,
     TextInputType? keyboardType,
     List<TextInputFormatter>? inputFormatters,
+    // El monto es el dato que el usuario debe reconocer de un vistazo, así
+    // que usa Jakarta (números/títulos) en vez de Be Vietnam Pro (texto de
+    // soporte) y se ve claramente más grande que el resto del formulario —
+    // ver DESIGN.md §3.
+    bool emphasize = false,
   }) {
     return TextField(
       controller: ctrl,
@@ -731,7 +744,14 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
       keyboardType: keyboardType,
       inputFormatters: inputFormatters,
       textCapitalization: TextCapitalization.sentences,
-      style: GoogleFonts.beVietnamPro(color: AppTheme.primary, fontSize: 15),
+      style: emphasize
+          ? GoogleFonts.plusJakartaSans(
+              color: AppTheme.primary,
+              fontSize: 22,
+              fontWeight: FontWeight.w700,
+              letterSpacing: -0.4,
+            )
+          : GoogleFonts.beVietnamPro(color: AppTheme.primary, fontSize: 15),
       decoration: InputDecoration(
         labelText: label,
         labelStyle: GoogleFonts.beVietnamPro(
@@ -1093,7 +1113,8 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
     // Se usa InputDecorator (con la misma _fieldDecoration de los demás
     // campos) para que la caja tenga exactamente el mismo alto y estilo
     // que el dropdown de categoría de al lado, y no se vean desalineados.
-    return GestureDetector(
+    return InkWell(
+      borderRadius: BorderRadius.circular(8),
       onTap: _selectDate,
       child: InputDecorator(
         decoration: _fieldDecoration('Fecha',

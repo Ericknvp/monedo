@@ -11,6 +11,7 @@ import '../utils/category_colors.dart';
 import '../utils/category_visibility.dart';
 import '../widgets/icon_picker.dart';
 import '../widgets/category_color_picker.dart';
+import '../widgets/fade_slide_in.dart';
 
 /// Abre la hoja para crear (o editar, si se pasa [existing]) una categoría
 /// propia. Devuelve el nombre de la categoría creada/editada (para poder
@@ -294,7 +295,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                         padding: const EdgeInsets.all(28),
                         decoration: BoxDecoration(
                           color: AppTheme.surfaceContainerLowest,
-                          borderRadius: BorderRadius.circular(18),
+                          borderRadius: BorderRadius.circular(20),
                           border: Border.all(color: AppTheme.surfaceVariant),
                         ),
                         child: Column(
@@ -312,11 +313,16 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                         ),
                       )
                     else
-                      ...custom.map((c) => _categoryTile(
-                            icon: c.icon,
-                            name: c.name,
-                            onEdit: () => _openEditCategory(c, custom),
-                            onDelete: () => _confirmDelete(c),
+                      ...custom.asMap().entries.map((entry) => FadeSlideIn(
+                            delay: Duration(milliseconds: entry.key * 35),
+                            child: _CategoryTile(
+                              icon: entry.value.icon,
+                              name: entry.value.name,
+                              userId: _userId,
+                              onEdit: () =>
+                                  _openEditCategory(entry.value, custom),
+                              onDelete: () => _confirmDelete(entry.value),
+                            ),
                           )),
                     const SizedBox(height: 32),
                     Text(
@@ -341,15 +347,24 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                       valueListenable: CategoryVisibilityRegistry.disabled,
                       builder: (context, disabledSet, __) => Column(
                         children: kDefaultCategoryIcons.entries
-                            .map((e) => _categoryTile(
-                                  icon: e.value,
-                                  name: e.key,
-                                  isDefault: true,
-                                  disabled: disabledSet.contains(e.key),
-                                  onToggle: (v) => _visibilityService.setDisabled(
+                            .toList()
+                            .asMap()
+                            .entries
+                            .map((entry) => FadeSlideIn(
+                                  delay: Duration(milliseconds: entry.key * 25),
+                                  child: _CategoryTile(
+                                    icon: entry.value.value,
+                                    name: entry.value.key,
                                     userId: _userId,
-                                    category: e.key,
-                                    disabled: v,
+                                    isDefault: true,
+                                    disabled:
+                                        disabledSet.contains(entry.value.key),
+                                    onToggle: (v) =>
+                                        _visibilityService.setDisabled(
+                                      userId: _userId,
+                                      category: entry.value.key,
+                                      disabled: v,
+                                    ),
                                   ),
                                 ))
                             .toList(),
@@ -371,87 +386,142 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
       );
   }
 
-  Widget _categoryTile({
-    required IconData icon,
-    required String name,
-    VoidCallback? onEdit,
-    VoidCallback? onDelete,
-    bool isDefault = false,
-    bool disabled = false,
-    ValueChanged<bool>? onToggle,
-  }) {
+}
+
+/// Fila de categoría con el mismo lenguaje de hover/tap que
+/// [TransactionTile]: reposo en `surfaceContainerLow`, borde + sombra sutil
+/// al pasar el mouse, y (para categorías propias) toda la fila abre editar.
+class _CategoryTile extends StatefulWidget {
+  final IconData icon;
+  final String name;
+  final String userId;
+  final VoidCallback? onEdit;
+  final VoidCallback? onDelete;
+  final bool isDefault;
+  final bool disabled;
+  final ValueChanged<bool>? onToggle;
+
+  const _CategoryTile({
+    required this.icon,
+    required this.name,
+    required this.userId,
+    this.onEdit,
+    this.onDelete,
+    this.isDefault = false,
+    this.disabled = false,
+    this.onToggle,
+  });
+
+  @override
+  State<_CategoryTile> createState() => _CategoryTileState();
+}
+
+class _CategoryTileState extends State<_CategoryTile> {
+  bool _hovered = false;
+
+  @override
+  Widget build(BuildContext context) {
     return Opacity(
-      opacity: disabled ? 0.5 : 1,
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 10),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        decoration: BoxDecoration(
-          color: AppTheme.surfaceContainerLowest,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: AppTheme.surfaceVariant),
-        ),
-        child: Row(
-          children: [
-            ValueListenableBuilder<Map<String, Color>>(
-              valueListenable: CategoryColorRegistry.customColors,
-              builder: (context, _, __) {
-                final color = CategoryColors.forCategory(name);
-                return Tooltip(
-                  message: 'Cambiar color',
-                  child: InkWell(
-                    borderRadius: BorderRadius.circular(12),
-                    onTap: () => showCategoryColorPicker(
-                      context,
-                      userId: _userId,
-                      category: name,
-                    ),
-                    child: Container(
-                      width: 40,
-                      height: 40,
-                      decoration: BoxDecoration(
-                        color: color.withOpacity(0.14),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Icon(icon, color: color, size: 20),
-                    ),
-                  ),
-                );
-              },
+      opacity: widget.disabled ? 0.5 : 1,
+      child: MouseRegion(
+        onEnter: (_) => setState(() => _hovered = true),
+        onExit: (_) => setState(() => _hovered = false),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          margin: const EdgeInsets.only(bottom: 10),
+          decoration: BoxDecoration(
+            color: _hovered
+                ? AppTheme.surfaceContainerLowest
+                : AppTheme.surfaceContainerLow,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: _hovered ? AppTheme.outlineVariant : AppTheme.surfaceVariant,
             ),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Text(
-                name,
-                style: GoogleFonts.beVietnamPro(
-                  color: AppTheme.primary,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
+            boxShadow: _hovered
+                ? [
+                    BoxShadow(
+                      color: AppTheme.primary.withOpacity(0.08),
+                      blurRadius: 16,
+                      offset: const Offset(0, 6),
+                    )
+                  ]
+                : [],
+          ),
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: widget.onEdit,
+              borderRadius: BorderRadius.circular(16),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                child: Row(
+                  children: [
+                    ValueListenableBuilder<Map<String, Color>>(
+                      valueListenable: CategoryColorRegistry.customColors,
+                      builder: (context, _, __) {
+                        final color = CategoryColors.forCategory(widget.name);
+                        return Tooltip(
+                          message: 'Cambiar color',
+                          child: InkWell(
+                            borderRadius: BorderRadius.circular(14),
+                            onTap: () => showCategoryColorPicker(
+                              context,
+                              userId: widget.userId,
+                              category: widget.name,
+                            ),
+                            child: Container(
+                              width: 40,
+                              height: 40,
+                              decoration: BoxDecoration(
+                                color: color.withOpacity(0.14),
+                                borderRadius: BorderRadius.circular(14),
+                              ),
+                              child: Icon(widget.icon, color: color, size: 20),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Text(
+                        widget.name,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.beVietnamPro(
+                          color: AppTheme.primary,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                    if (widget.isDefault)
+                      Switch(
+                        value: !widget.disabled,
+                        activeThumbColor: AppTheme.secondary,
+                        onChanged: widget.onToggle == null
+                            ? null
+                            : (v) => widget.onToggle!(!v),
+                      )
+                    else ...[
+                      if (widget.onEdit != null)
+                        IconButton(
+                          icon: const Icon(Icons.edit_outlined,
+                              color: AppTheme.onSurfaceVariant, size: 20),
+                          onPressed: widget.onEdit,
+                        ),
+                      if (widget.onDelete != null)
+                        IconButton(
+                          icon: const Icon(Icons.delete_outline_rounded,
+                              color: AppTheme.errorRed, size: 20),
+                          onPressed: widget.onDelete,
+                        ),
+                    ],
+                  ],
                 ),
               ),
             ),
-            if (isDefault)
-              Switch(
-                value: !disabled,
-                activeThumbColor: AppTheme.secondary,
-                onChanged: onToggle == null
-                    ? null
-                    : (v) => onToggle(!v),
-              )
-            else ...[
-              if (onEdit != null)
-                IconButton(
-                  icon: const Icon(Icons.edit_outlined,
-                      color: AppTheme.onSurfaceVariant, size: 20),
-                  onPressed: onEdit,
-                ),
-              if (onDelete != null)
-                IconButton(
-                  icon: const Icon(Icons.delete_outline_rounded,
-                      color: AppTheme.errorRed, size: 20),
-                  onPressed: onDelete,
-                ),
-            ],
-          ],
+          ),
         ),
       ),
     );

@@ -8,6 +8,8 @@ import '../utils/currency_formatter.dart';
 import '../widgets/transaction_tile.dart';
 import '../widgets/branded_loading_screen.dart';
 import '../widgets/app_date_picker.dart';
+import '../widgets/pressable_scale.dart';
+import '../widgets/fade_slide_in.dart';
 import 'add_transaction_screen.dart';
 import 'export_screen.dart';
 
@@ -273,7 +275,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
   }
 
   Widget _sheetChoiceChip(String label, bool selected, VoidCallback onTap) {
-    return GestureDetector(
+    return PressableScale(
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 160),
@@ -410,7 +412,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                       children: [
                         ..._filters.map((f) {
                           final isSelected = _filter == f;
-                          return GestureDetector(
+                          return PressableScale(
                             onTap: () => _setFilter(f),
                             child: AnimatedContainer(
                               duration: const Duration(milliseconds: 180),
@@ -437,7 +439,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                             ),
                           );
                         }),
-                        GestureDetector(
+                        PressableScale(
                           onTap: _showDateFilterSheet,
                           child: AnimatedContainer(
                             duration: const Duration(milliseconds: 180),
@@ -472,7 +474,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                                 ),
                                 if (_dateFilterActive) ...[
                                   const SizedBox(width: 6),
-                                  GestureDetector(
+                                  PressableScale(
                                     onTap: () => setState(() {
                                       _dateMode = _DateFilterMode.all;
                                       _currentPage = 0;
@@ -549,23 +551,65 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const Icon(Icons.receipt_long_outlined,
-                              size: 64, color: AppTheme.outlineVariant),
-                          const SizedBox(height: 16),
+                          Container(
+                            width: 88,
+                            height: 88,
+                            decoration: BoxDecoration(
+                              color: AppTheme.surfaceContainer,
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(Icons.receipt_long_outlined,
+                                size: 36, color: AppTheme.onSurfaceVariant),
+                          ),
+                          const SizedBox(height: 20),
                           Text(
-                            'No hay movimientos',
+                            _filter == 'Todos' && !_dateFilterActive
+                                ? 'Aún no hay movimientos'
+                                : 'Nada que coincida con este filtro',
                             style: GoogleFonts.plusJakartaSans(
-                              color: AppTheme.onSurfaceVariant,
+                              color: AppTheme.primary,
                               fontSize: 16,
-                              fontWeight: FontWeight.w600,
+                              fontWeight: FontWeight.w700,
                             ),
                           ),
-                          const SizedBox(height: 8),
+                          const SizedBox(height: 6),
                           Text(
-                            'Agrega tu primer movimiento',
+                            _filter == 'Todos' && !_dateFilterActive
+                                ? 'Tus ingresos y gastos aparecerán aquí'
+                                : 'Prueba con otro filtro o rango de fechas',
                             style: GoogleFonts.beVietnamPro(
-                                color: AppTheme.outlineVariant, fontSize: 13),
+                                color: AppTheme.onSurfaceVariant, fontSize: 13),
                           ),
+                          if (_filter == 'Todos' && !_dateFilterActive) ...[
+                            const SizedBox(height: 20),
+                            PressableScale(
+                              onTap: () => openAddTransaction(context),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 20, vertical: 12),
+                                decoration: BoxDecoration(
+                                  color: AppTheme.secondary,
+                                  borderRadius: BorderRadius.circular(100),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    const Icon(Icons.add_rounded,
+                                        size: 16, color: Colors.white),
+                                    const SizedBox(width: 6),
+                                    Text(
+                                      'Agregar movimiento',
+                                      style: GoogleFonts.beVietnamPro(
+                                        color: Colors.white,
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
                         ],
                       ),
                     )
@@ -574,11 +618,14 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                       itemCount: pageItems.length,
                       itemBuilder: (ctx, i) {
                         final t = pageItems[i];
-                        return TransactionTile(
-                          transaction: t,
-                          onEdit: () =>
-                              openAddTransaction(context, transaction: t),
-                          onDelete: () => _delete(t),
+                        return FadeSlideIn(
+                          delay: Duration(milliseconds: i * 35),
+                          child: TransactionTile(
+                            transaction: t,
+                            onEdit: () =>
+                                openAddTransaction(context, transaction: t),
+                            onDelete: () => _delete(t),
+                          ),
                         );
                       },
                     ),
@@ -643,7 +690,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
   }
 
   Widget _pageBtn(IconData icon, bool enabled, VoidCallback onTap) {
-    return GestureDetector(
+    return PressableScale(
       onTap: enabled ? onTap : null,
       child: Container(
         width: 32,
@@ -663,7 +710,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
 
   Widget _pageNumBtn(int page, int current) {
     final isSelected = page == current;
-    return GestureDetector(
+    return PressableScale(
       onTap: () => setState(() => _currentPage = page),
       child: Container(
         width: 32,

@@ -10,6 +10,8 @@ import '../theme/app_theme.dart';
 import '../utils/currency_formatter.dart';
 import '../utils/category_colors.dart';
 import '../utils/category_icons.dart';
+import '../widgets/pressable_scale.dart';
+import '../widgets/fade_slide_in.dart';
 import 'budgets_screen.dart';
 import '../widgets/budget_editor.dart';
 
@@ -267,7 +269,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
   }
 
   Widget _monthPill(String label, bool isActive, VoidCallback? onTap) {
-    return GestureDetector(
+    return PressableScale(
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 180),
@@ -320,40 +322,34 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
               child: _buildDonutCard(userId),
             ),
             const SizedBox(width: 24),
-            // Stat cards (right, 4/12)
+            // Stat panel (right, 4/12): un solo panel dividido, no tres
+            // tarjetas idénticas con ícono+título+número+sombra flotante.
             Expanded(
               flex: 4,
-              child: Column(
-                children: [
-                  _summaryCard(
-                      'Ingresos',
-                      income,
-                      Icons.trending_up_rounded,
-                      AppTheme.secondaryContainer.withOpacity(0.7),
-                      AppTheme.onSecondaryContainer,
-                      changePercent: incomeChange),
-                  const SizedBox(height: 16),
-                  _summaryCard(
-                      'Gastos',
-                      expenses,
-                      Icons.trending_down_rounded,
-                      AppTheme.errorContainer.withOpacity(0.45),
-                      AppTheme.errorRed,
-                      changePercent: expensesChange,
-                      higherIsBetter: false),
-                  const SizedBox(height: 16),
-                  _summaryCard(
-                    'Balance',
-                    balance,
-                    Icons.account_balance_wallet_rounded,
-                    balance >= 0
-                        ? AppTheme.secondaryContainer.withOpacity(0.6)
-                        : AppTheme.errorContainer.withOpacity(0.45),
-                    balance >= 0 ? AppTheme.secondary : AppTheme.errorRed,
-                    changePercent: balanceChange,
-                  ),
-                ],
-              ),
+              child: _metricPanelColumn([
+                _metricSegment(
+                  title: 'Ingresos',
+                  amount: income,
+                  icon: Icons.trending_up_rounded,
+                  color: AppTheme.secondary,
+                  changePercent: incomeChange,
+                ),
+                _metricSegment(
+                  title: 'Gastos',
+                  amount: expenses,
+                  icon: Icons.trending_down_rounded,
+                  color: AppTheme.errorRed,
+                  changePercent: expensesChange,
+                  higherIsBetter: false,
+                ),
+                _metricSegment(
+                  title: 'Balance',
+                  amount: balance,
+                  icon: Icons.account_balance_wallet_rounded,
+                  color: balance >= 0 ? AppTheme.secondary : AppTheme.errorRed,
+                  changePercent: balanceChange,
+                ),
+              ]),
             ),
           ],
         ),
@@ -382,45 +378,47 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
   ) {
     return Column(
       children: [
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              child: _summaryCard(
-                  'Ingresos',
-                  income,
-                  Icons.trending_up_rounded,
-                  AppTheme.secondaryContainer.withOpacity(0.7),
-                  AppTheme.onSecondaryContainer,
-                  changePercent: incomeChange,
-                  compact: true),
+        // Un solo panel dividido (Ingresos | Gastos, Balance debajo) en vez
+        // de tres tarjetas idénticas con ícono+título+número+sombra.
+        _metricPanelColumn([
+          IntrinsicHeight(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Expanded(
+                  child: _metricSegment(
+                    title: 'Ingresos',
+                    amount: income,
+                    icon: Icons.trending_up_rounded,
+                    color: AppTheme.secondary,
+                    changePercent: incomeChange,
+                    compact: true,
+                  ),
+                ),
+                Container(width: 1, color: AppTheme.surfaceVariant),
+                Expanded(
+                  child: _metricSegment(
+                    title: 'Gastos',
+                    amount: expenses,
+                    icon: Icons.trending_down_rounded,
+                    color: AppTheme.errorRed,
+                    changePercent: expensesChange,
+                    higherIsBetter: false,
+                    compact: true,
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _summaryCard(
-                  'Gastos',
-                  expenses,
-                  Icons.trending_down_rounded,
-                  AppTheme.errorContainer.withOpacity(0.45),
-                  AppTheme.errorRed,
-                  changePercent: expensesChange,
-                  higherIsBetter: false,
-                  compact: true),
-            ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        _summaryCard(
-          'Balance',
-          balance,
-          Icons.account_balance_wallet_rounded,
-          balance >= 0
-              ? AppTheme.secondaryContainer.withOpacity(0.6)
-              : AppTheme.errorContainer.withOpacity(0.45),
-          balance >= 0 ? AppTheme.secondary : AppTheme.errorRed,
-          changePercent: balanceChange,
-          compact: true,
-        ),
+          ),
+          _metricSegment(
+            title: 'Balance',
+            amount: balance,
+            icon: Icons.account_balance_wallet_rounded,
+            color: balance >= 0 ? AppTheme.secondary : AppTheme.errorRed,
+            changePercent: balanceChange,
+            compact: true,
+          ),
+        ]),
         const SizedBox(height: 24),
         _buildDonutCard(userId),
         const SizedBox(height: 24),
@@ -551,7 +549,8 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                 ],
               ),
               const SizedBox(height: 10),
-              ...budgets.map((b) {
+              ...budgets.asMap().entries.map((entry) {
+                final b = entry.value;
                 final spent = categoryData[b.category] ?? 0;
                 final ratio = b.monthlyLimit > 0 ? spent / b.monthlyLimit : 0.0;
                 final isOver = ratio > 1;
@@ -559,10 +558,12 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                 final barColor = isOver
                     ? AppTheme.errorRed
                     : (isWarning
-                        ? const Color(0xFFC98500)
+                        ? AppTheme.warningAmber
                         : CategoryColors.forCategory(b.category));
 
-                return InkWell(
+                return FadeSlideIn(
+                  delay: Duration(milliseconds: entry.key * 35),
+                  child: InkWell(
                   borderRadius: BorderRadius.circular(12),
                   onTap: () => showBudgetEditor(
                     context,
@@ -626,6 +627,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                         ],
                       ],
                     ),
+                  ),
                   ),
                 );
               }),
@@ -796,7 +798,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
 
   Widget _pieRangeBtn(String label, _PieRange range) {
     final isSelected = _pieRange == range;
-    return GestureDetector(
+    return PressableScale(
       onTap: () => setState(() {
         _pieRange = range;
         _touchedIndex = null;
@@ -1070,7 +1072,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                       final idx = e.key;
                       final cat = e.value;
                       final isTouched = idx == _touchedIndex;
-                      return GestureDetector(
+                      return PressableScale(
                         onTap: () => setState(
                             () => _touchedIndex = isTouched ? null : idx),
                         child: AnimatedContainer(
@@ -1122,22 +1124,110 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
     );
   }
 
-  Widget _summaryCard(
-    String title,
-    double amount,
-    IconData icon,
-    Color bg,
-    Color color, {
+  // ── Panel de métricas ────────────────────────────────────────
+  // Un único panel dividido (bordeado) o una fila/columna divididas sin
+  // borde propio (para no anidar tarjetas dentro de otra tarjeta), en vez
+  // de repetir la misma tarjeta ícono+título+número+sombra 2-3 veces.
+
+  Widget _metricPanelColumn(List<Widget> segments) {
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: AppTheme.surfaceContainerLowest,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppTheme.surfaceVariant),
+      ),
+      child: Column(
+        children: [
+          for (var i = 0; i < segments.length; i++) ...[
+            if (i > 0) Container(height: 1, color: AppTheme.surfaceVariant),
+            segments[i],
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _metricRowInline(List<Widget> segments) {
+    return IntrinsicHeight(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          for (var i = 0; i < segments.length; i++) ...[
+            if (i > 0) Container(width: 1, color: AppTheme.surfaceVariant),
+            Expanded(child: segments[i]),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _metricSegment({
+    required String title,
+    required double amount,
+    required IconData icon,
+    required Color color,
     double? changePercent,
     bool higherIsBetter = true,
     bool compact = false,
   }) {
     final hasChange = changePercent != null && changePercent.isFinite;
+
+    return Padding(
+      padding: EdgeInsets.all(compact ? 16 : 20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(icon, color: color, size: 14),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.beVietnamPro(
+                        color: AppTheme.onSurfaceVariant,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600)),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Flexible(
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    CurrencyFormatter.format(amount),
+                    style: GoogleFonts.plusJakartaSans(
+                      color: color,
+                      fontSize: compact ? 17 : 19,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              ),
+              if (hasChange) ...[
+                const SizedBox(width: 8),
+                _trendPill(changePercent, higherIsBetter, compact),
+              ],
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _trendPill(double changePercent, bool higherIsBetter, bool compact) {
     final isGood =
-        hasChange && (higherIsBetter ? changePercent >= 0 : changePercent <= 0);
+        higherIsBetter ? changePercent >= 0 : changePercent <= 0;
     final trendColor = isGood ? AppTheme.secondary : AppTheme.errorRed;
 
-    final trendPill = Container(
+    return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration: BoxDecoration(
         color: trendColor.withOpacity(0.12),
@@ -1147,7 +1237,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(
-            (changePercent ?? 0) >= 0
+            changePercent >= 0
                 ? Icons.arrow_upward_rounded
                 : Icons.arrow_downward_rounded,
             size: 11,
@@ -1156,79 +1246,13 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
           const SizedBox(width: 2),
           Text(
             compact
-                ? '${(changePercent ?? 0).abs().toStringAsFixed(0)}%'
-                : '${(changePercent ?? 0).abs().toStringAsFixed(0)}% vs mes anterior',
+                ? '${changePercent.abs().toStringAsFixed(0)}%'
+                : '${changePercent.abs().toStringAsFixed(0)}% vs mes anterior',
             style: GoogleFonts.beVietnamPro(
               color: trendColor,
               fontSize: 10.5,
               fontWeight: FontWeight.w700,
             ),
-          ),
-        ],
-      ),
-    );
-
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppTheme.surfaceContainerLowest,
-        borderRadius: BorderRadius.circular(18),
-        boxShadow: [
-          BoxShadow(
-            color: color.withOpacity(0.08),
-            blurRadius: 18,
-            offset: const Offset(0, 6),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                width: 32,
-                height: 32,
-                decoration: BoxDecoration(
-                  color: bg,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Icon(icon, color: color, size: 16),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Text(title,
-                    style: GoogleFonts.beVietnamPro(
-                        color: AppTheme.onSurfaceVariant,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600)),
-              ),
-            ],
-          ),
-          const SizedBox(height: 14),
-          FittedBox(
-            fit: BoxFit.scaleDown,
-            alignment: Alignment.centerLeft,
-            child: Text(
-              CurrencyFormatter.format(amount),
-              style: GoogleFonts.plusJakartaSans(
-                color: color,
-                fontSize: 19,
-                fontWeight: FontWeight.w800,
-              ),
-            ),
-          ),
-          // Alto siempre reservado para esta línea (haya o no dato del mes
-          // anterior) para que las cajas de Ingresos y Gastos, una al lado
-          // de la otra, siempre queden con la misma altura.
-          const SizedBox(height: 8),
-          SizedBox(
-            height: 20,
-            child: hasChange ? Align(
-              alignment: Alignment.centerLeft,
-              child: trendPill,
-            ) : null,
           ),
         ],
       ),
@@ -1326,32 +1350,28 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                 ],
               ),
               const SizedBox(height: 14),
-              Row(
-                children: [
-                  Expanded(
-                    child: _summaryCard(
-                        'Ingresos',
-                        income,
-                        Icons.trending_up_rounded,
-                        AppTheme.secondaryContainer.withOpacity(0.5),
-                        AppTheme.onSecondaryContainer,
-                        changePercent: incomeChange,
-                        compact: true),
-                  ),
-                  const SizedBox(width: 14),
-                  Expanded(
-                    child: _summaryCard(
-                        'Gastos',
-                        expenses,
-                        Icons.trending_down_rounded,
-                        AppTheme.errorContainer.withOpacity(0.3),
-                        AppTheme.errorRed,
-                        changePercent: expensesChange,
-                        higherIsBetter: false,
-                        compact: true),
-                  ),
-                ],
-              ),
+              // Fila dividida sin contenedor propio: ya está dentro de la
+              // tarjeta de "Esta semana", así que un panel bordeado aquí
+              // sería una tarjeta anidada dentro de otra tarjeta.
+              _metricRowInline([
+                _metricSegment(
+                  title: 'Ingresos',
+                  amount: income,
+                  icon: Icons.trending_up_rounded,
+                  color: AppTheme.secondary,
+                  changePercent: incomeChange,
+                  compact: true,
+                ),
+                _metricSegment(
+                  title: 'Gastos',
+                  amount: expenses,
+                  icon: Icons.trending_down_rounded,
+                  color: AppTheme.errorRed,
+                  changePercent: expensesChange,
+                  higherIsBetter: false,
+                  compact: true,
+                ),
+              ]),
               _weekInsightBanner(expenses, prevExpenses),
               const SizedBox(height: 24),
               Text(

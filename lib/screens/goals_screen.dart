@@ -16,6 +16,8 @@ import '../utils/amount_input_formatter.dart';
 import '../widgets/app_toast.dart';
 import '../widgets/branded_loading_screen.dart';
 import '../widgets/blurred_image_frame.dart';
+import '../widgets/fade_slide_in.dart';
+import '../widgets/pressable_scale.dart';
 import 'add_transaction_screen.dart';
 
 class GoalsScreen extends StatelessWidget {
@@ -184,20 +186,23 @@ class GoalsScreen extends StatelessWidget {
           spacing: 24,
           runSpacing: 24,
           children: [
-            ...goals.map((g) => SizedBox(
+            ...goals.asMap().entries.map((e) => SizedBox(
                   width: (constraints.maxWidth - (columns - 1) * 24) / columns,
-                  child: _GoalCard(
-                    goal: g,
-                    goalService: goalService,
-                    userId: userId,
-                    onEdit: () =>
-                        _showGoalSheet(context, userId, goalService, existing: g),
+                  child: FadeSlideIn(
+                    delay: Duration(milliseconds: e.key * 40),
+                    child: _GoalCard(
+                      goal: e.value,
+                      goalService: goalService,
+                      userId: userId,
+                      onEdit: () => _showGoalSheet(context, userId, goalService,
+                          existing: e.value),
+                    ),
                   ),
                 )),
             SizedBox(
               width: (constraints.maxWidth - (columns - 1) * 24) / columns,
               height: 200,
-              child: GestureDetector(
+              child: PressableScale(
                 onTap: () => _showGoalSheet(context, userId, goalService),
                 child: Container(
                   decoration: BoxDecoration(
@@ -248,14 +253,19 @@ class GoalsScreen extends StatelessWidget {
   ) {
     return Column(
       children: goals
-          .map((g) => Padding(
+          .asMap()
+          .entries
+          .map((e) => Padding(
                 padding: const EdgeInsets.only(bottom: 16),
-                child: _GoalCard(
-                  goal: g,
-                  goalService: goalService,
-                  userId: userId,
-                  onEdit: () =>
-                      _showGoalSheet(context, userId, goalService, existing: g),
+                child: FadeSlideIn(
+                  delay: Duration(milliseconds: e.key * 40),
+                  child: _GoalCard(
+                    goal: e.value,
+                    goalService: goalService,
+                    userId: userId,
+                    onEdit: () => _showGoalSheet(context, userId, goalService,
+                        existing: e.value),
+                  ),
                 ),
               ))
           .toList(),
@@ -1397,8 +1407,9 @@ class _GoalSheetState extends State<_GoalSheet> {
         const SizedBox(height: 8),
         MouseRegion(
           cursor: SystemMouseCursors.click,
-          child: GestureDetector(
+          child: PressableScale(
             onTap: _pickImage,
+            behavior: HitTestBehavior.opaque,
             child: Container(
               height: 140,
               width: double.infinity,
@@ -1494,7 +1505,7 @@ class _GoalSheetState extends State<_GoalSheet> {
     required bool selected,
     required VoidCallback onTap,
   }) {
-    return GestureDetector(
+    return PressableScale(
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 160),

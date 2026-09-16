@@ -34,6 +34,10 @@ class AppTheme {
   static const Color errorContainer = Color(0xFFFFDAD6);
   static const Color onErrorContainer = Color(0xFF93000A);
 
+  // Estado "cerca del límite" (presupuestos entre 80% y 100% de uso) — no es
+  // ni éxito (secondary) ni error (errorRed), así que tiene tono propio.
+  static const Color warningAmber = Color(0xFFC98500);
+
   // ── Semantic aliases (backward compat) ───────────────────────
   static const Color income = secondary;
   static const Color expense = errorRed;
@@ -55,6 +59,15 @@ class AppTheme {
     colors: [primary, primaryContainer],
     begin: Alignment.topCenter,
     end: Alignment.bottomCenter,
+  );
+
+  // Gradiente oscuro usado en las tarjetas "hero" (balance del dashboard,
+  // balance total de Mis cuentas): un tono más profundo que primaryContainer
+  // para que el balance destaque como el dato más importante de la pantalla.
+  static const LinearGradient heroGradient = LinearGradient(
+    colors: [Color(0xFF0C3547), Color(0xFF082D3C)],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
   );
 
   // ── Theme ────────────────────────────────────────────────────
