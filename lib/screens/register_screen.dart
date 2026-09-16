@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../services/auth_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/app_toast.dart';
+import '../widgets/app_text_field.dart';
 import '../widgets/google_logo.dart';
 import '../widgets/setup_gate.dart';
 import 'dashboard_screen.dart';
@@ -21,27 +22,42 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
+  final _emailFocus = FocusNode();
+  final _passwordFocus = FocusNode();
+  final _confirmFocus = FocusNode();
   final _authService = AuthService();
   bool _isLoading = false;
-  bool _obscurePassword = true;
-  bool _obscureConfirm = true;
+  String? _usernameError;
+  String? _emailError;
+  String? _passwordError;
+  String? _confirmError;
+
+  bool _validate() {
+    setState(() {
+      _usernameError = _usernameController.text.trim().isEmpty
+          ? 'Ingresa un nombre de usuario'
+          : null;
+      _emailError =
+          _emailController.text.trim().isEmpty ? 'Ingresa tu correo' : null;
+      _passwordError = _passwordController.text.trim().isEmpty
+          ? 'Ingresa una contraseña'
+          : _passwordController.text.length < 6
+              ? 'Debe tener al menos 6 caracteres'
+              : null;
+      _confirmError = _confirmPasswordController.text.trim().isEmpty
+          ? 'Confirma tu contraseña'
+          : _passwordController.text != _confirmPasswordController.text
+              ? 'Las contraseñas no coinciden'
+              : null;
+    });
+    return _usernameError == null &&
+        _emailError == null &&
+        _passwordError == null &&
+        _confirmError == null;
+  }
 
   Future<void> _register() async {
-    if (_usernameController.text.trim().isEmpty ||
-        _emailController.text.trim().isEmpty ||
-        _passwordController.text.trim().isEmpty ||
-        _confirmPasswordController.text.trim().isEmpty) {
-      _showError('Por favor completa todos los campos');
-      return;
-    }
-    if (_passwordController.text != _confirmPasswordController.text) {
-      _showError('Las contraseñas no coinciden');
-      return;
-    }
-    if (_passwordController.text.length < 6) {
-      _showError('La contraseña debe tener al menos 6 caracteres');
-      return;
-    }
+    if (!_validate()) return;
     setState(() => _isLoading = true);
     final error = await _authService.register(
       username: _usernameController.text.trim(),
@@ -92,6 +108,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
     _emailController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
+    _emailFocus.dispose();
+    _passwordFocus.dispose();
+    _confirmFocus.dispose();
     super.dispose();
   }
 
@@ -323,88 +342,71 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
   }
 
-  InputDecoration _fieldDecoration(
-    String label, {
-    IconData? prefixIcon,
-    Widget? suffixIcon,
-  }) {
-    return InputDecoration(
-      labelText: label,
-      labelStyle:
-          GoogleFonts.beVietnamPro(color: AppTheme.onSurfaceVariant, fontSize: 14),
-      filled: true,
-      fillColor: AppTheme.surfaceContainerLow,
-      prefixIcon: prefixIcon == null
-          ? null
-          : Icon(prefixIcon, color: AppTheme.onSurfaceVariant, size: 20),
-      suffixIcon: suffixIcon,
-      contentPadding:
-          const EdgeInsets.symmetric(vertical: 18, horizontal: 20),
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(16),
-        borderSide: BorderSide.none,
-      ),
-      enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(16),
-        borderSide: const BorderSide(color: AppTheme.outlineVariant, width: 1),
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(16),
-        borderSide: const BorderSide(color: AppTheme.secondary, width: 1.6),
-      ),
-    );
-  }
-
   // ── SHARED FORM (desktop) ─────────────────────────────────────
   Widget _buildFormFields() {
-    Widget field(TextEditingController ctrl, String label, IconData icon,
-        {bool obscure = false,
-        bool isConfirm = false,
-        TextInputType? keyboardType,
-        TextCapitalization textCapitalization = TextCapitalization.none}) {
-      return TextField(
-        controller: ctrl,
-        obscureText:
-            obscure ? (isConfirm ? _obscureConfirm : _obscurePassword) : false,
-        keyboardType: keyboardType,
-        textCapitalization: textCapitalization,
-        style: GoogleFonts.beVietnamPro(color: AppTheme.primary, fontSize: 16),
-        decoration: _fieldDecoration(
-          label,
-          prefixIcon: icon,
-          suffixIcon: obscure
-              ? IconButton(
-                  icon: Icon(
-                    (isConfirm ? _obscureConfirm : _obscurePassword)
-                        ? Icons.visibility_outlined
-                        : Icons.visibility_off_outlined,
-                    color: AppTheme.onSurfaceVariant,
-                    size: 20,
-                  ),
-                  onPressed: () => setState(() => isConfirm
-                      ? _obscureConfirm = !_obscureConfirm
-                      : _obscurePassword = !_obscurePassword),
-                )
-              : null,
-        ),
-      );
-    }
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        field(_usernameController, 'Nombre de usuario', Icons.person_outline,
-            textCapitalization: TextCapitalization.words),
+        AppTextField(
+          controller: _usernameController,
+          label: 'Nombre de usuario',
+          icon: Icons.person_outline,
+          textCapitalization: TextCapitalization.words,
+          textInputAction: TextInputAction.next,
+          autofillHints: const [AutofillHints.username],
+          errorText: _usernameError,
+          onChanged: (_) {
+            if (_usernameError != null) setState(() => _usernameError = null);
+          },
+          onSubmitted: (_) => _emailFocus.requestFocus(),
+        ),
         const SizedBox(height: 20),
-        field(_emailController, 'Correo electrónico', Icons.email_outlined,
-            keyboardType: TextInputType.emailAddress),
+        AppTextField(
+          controller: _emailController,
+          focusNode: _emailFocus,
+          label: 'Correo electrónico',
+          icon: Icons.email_outlined,
+          keyboardType: TextInputType.emailAddress,
+          textInputAction: TextInputAction.next,
+          autofillHints: const [AutofillHints.email],
+          errorText: _emailError,
+          onChanged: (_) {
+            if (_emailError != null) setState(() => _emailError = null);
+          },
+          onSubmitted: (_) => _passwordFocus.requestFocus(),
+        ),
         const SizedBox(height: 20),
-        field(_passwordController, 'Contraseña', Icons.lock_outlined,
-            obscure: true),
+        AppTextField(
+          controller: _passwordController,
+          focusNode: _passwordFocus,
+          label: 'Contraseña',
+          icon: Icons.lock_outlined,
+          obscureText: true,
+          showObscureToggle: true,
+          textInputAction: TextInputAction.next,
+          autofillHints: const [AutofillHints.newPassword],
+          errorText: _passwordError,
+          onChanged: (_) {
+            if (_passwordError != null) setState(() => _passwordError = null);
+          },
+          onSubmitted: (_) => _confirmFocus.requestFocus(),
+        ),
         const SizedBox(height: 20),
-        field(_confirmPasswordController, 'Confirmar contraseña',
-            Icons.lock_outlined,
-            obscure: true, isConfirm: true),
+        AppTextField(
+          controller: _confirmPasswordController,
+          focusNode: _confirmFocus,
+          label: 'Confirmar contraseña',
+          icon: Icons.lock_outlined,
+          obscureText: true,
+          showObscureToggle: true,
+          textInputAction: TextInputAction.done,
+          autofillHints: const [AutofillHints.newPassword],
+          errorText: _confirmError,
+          onChanged: (_) {
+            if (_confirmError != null) setState(() => _confirmError = null);
+          },
+          onSubmitted: (_) => _register(),
+        ),
         const SizedBox(height: 36),
         SizedBox(
           width: double.infinity,

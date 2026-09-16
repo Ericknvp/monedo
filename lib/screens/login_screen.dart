@@ -4,6 +4,7 @@ import '../services/auth_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/setup_gate.dart';
 import '../widgets/app_toast.dart';
+import '../widgets/app_text_field.dart';
 import '../widgets/google_logo.dart';
 import '../widgets/forgot_password_dialog.dart';
 import 'register_screen.dart';
@@ -19,16 +20,25 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _passwordFocus = FocusNode();
   final _authService = AuthService();
   bool _isLoading = false;
-  bool _obscurePassword = true;
+  String? _emailError;
+  String? _passwordError;
+
+  bool _validate() {
+    setState(() {
+      _emailError =
+          _emailController.text.trim().isEmpty ? 'Ingresa tu correo' : null;
+      _passwordError = _passwordController.text.trim().isEmpty
+          ? 'Ingresa tu contraseña'
+          : null;
+    });
+    return _emailError == null && _passwordError == null;
+  }
 
   Future<void> _login() async {
-    if (_emailController.text.trim().isEmpty ||
-        _passwordController.text.trim().isEmpty) {
-      _showError('Por favor completa todos los campos');
-      return;
-    }
+    if (!_validate()) return;
     setState(() => _isLoading = true);
     final error = await _authService.login(
       email: _emailController.text.trim(),
@@ -78,6 +88,7 @@ class _LoginScreenState extends State<LoginScreen> {
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
+    _passwordFocus.dispose();
     super.dispose();
   }
 
@@ -353,72 +364,39 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  InputDecoration _fieldDecoration(
-    String label, {
-    IconData? prefixIcon,
-    Widget? suffixIcon,
-  }) {
-    return InputDecoration(
-      labelText: label,
-      labelStyle:
-          GoogleFonts.beVietnamPro(color: AppTheme.onSurfaceVariant, fontSize: 14),
-      filled: true,
-      fillColor: AppTheme.surfaceContainerLow,
-      prefixIcon: prefixIcon == null
-          ? null
-          : Icon(prefixIcon, color: AppTheme.onSurfaceVariant, size: 20),
-      suffixIcon: suffixIcon,
-      contentPadding:
-          const EdgeInsets.symmetric(vertical: 18, horizontal: 20),
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(16),
-        borderSide: BorderSide.none,
-      ),
-      enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(16),
-        borderSide: const BorderSide(color: AppTheme.outlineVariant, width: 1),
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(16),
-        borderSide: const BorderSide(color: AppTheme.secondary, width: 1.6),
-      ),
-    );
-  }
-
   // ── SHARED FORM FIELDS (desktop) ──────────────────────────────
   Widget _buildFormFields() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        TextField(
+        AppTextField(
           controller: _emailController,
+          label: 'Correo electrónico',
+          icon: Icons.email_outlined,
           keyboardType: TextInputType.emailAddress,
-          style: GoogleFonts.beVietnamPro(
-              color: AppTheme.primary, fontSize: 16),
-          decoration: _fieldDecoration('Correo electrónico',
-              prefixIcon: Icons.email_outlined),
+          textInputAction: TextInputAction.next,
+          autofillHints: const [AutofillHints.email],
+          errorText: _emailError,
+          onChanged: (_) {
+            if (_emailError != null) setState(() => _emailError = null);
+          },
+          onSubmitted: (_) => _passwordFocus.requestFocus(),
         ),
         const SizedBox(height: 20),
-        TextField(
+        AppTextField(
           controller: _passwordController,
-          obscureText: _obscurePassword,
-          style: GoogleFonts.beVietnamPro(
-              color: AppTheme.primary, fontSize: 16),
-          decoration: _fieldDecoration(
-            'Contraseña',
-            prefixIcon: Icons.lock_outlined,
-            suffixIcon: IconButton(
-              icon: Icon(
-                _obscurePassword
-                    ? Icons.visibility_outlined
-                    : Icons.visibility_off_outlined,
-                color: AppTheme.onSurfaceVariant,
-                size: 20,
-              ),
-              onPressed: () =>
-                  setState(() => _obscurePassword = !_obscurePassword),
-            ),
-          ),
+          focusNode: _passwordFocus,
+          label: 'Contraseña',
+          icon: Icons.lock_outlined,
+          obscureText: true,
+          showObscureToggle: true,
+          textInputAction: TextInputAction.done,
+          autofillHints: const [AutofillHints.password],
+          errorText: _passwordError,
+          onChanged: (_) {
+            if (_passwordError != null) setState(() => _passwordError = null);
+          },
+          onSubmitted: (_) => _login(),
         ),
         const SizedBox(height: 12),
         Align(
