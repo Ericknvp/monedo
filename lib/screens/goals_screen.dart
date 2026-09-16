@@ -129,11 +129,12 @@ class _GoalsScreenState extends State<GoalsScreen> {
   ) {
     final activeGoals = goals.where((g) => !g.isCompleted).toList();
     final completedGoals = goals.where((g) => g.isCompleted).toList();
-    final showFilter = completedGoals.isNotEmpty;
-    final filter = showFilter ? _filter : _GoalFilter.active;
-    final visibleGoals = !showFilter
-        ? goals
-        : (filter == _GoalFilter.active ? activeGoals : completedGoals);
+    // Las pestañas siempre se muestran (aunque todavía no haya ninguna meta
+    // completada) para que el filtro sea un lugar predecible, no algo que
+    // aparece y desaparece según el estado de las metas.
+    final filter = _filter;
+    final visibleGoals =
+        filter == _GoalFilter.active ? activeGoals : completedGoals;
 
     return SingleChildScrollView(
       padding: EdgeInsets.all(isDesktop ? 40 : 20),
@@ -182,10 +183,8 @@ class _GoalsScreenState extends State<GoalsScreen> {
             ),
             const SizedBox(height: 32),
           ],
-          if (showFilter) ...[
-            _buildFilterTabs(activeGoals.length, completedGoals.length),
-            const SizedBox(height: 20),
-          ],
+          _buildFilterTabs(activeGoals.length, completedGoals.length),
+          const SizedBox(height: 20),
           if (visibleGoals.isEmpty)
             _buildFilterEmptyState(context, userId, goalService, filter)
           else if (isDesktop)
