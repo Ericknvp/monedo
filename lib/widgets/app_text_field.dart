@@ -20,6 +20,8 @@ class AppTextField extends StatefulWidget {
     this.errorText,
     this.onChanged,
     this.autofillHints,
+    this.maxLines = 1,
+    this.dense = false,
   });
 
   final TextEditingController controller;
@@ -35,6 +37,10 @@ class AppTextField extends StatefulWidget {
   final String? errorText;
   final ValueChanged<String>? onChanged;
   final Iterable<String>? autofillHints;
+  final int maxLines;
+  /// Versión más compacta (menos padding vertical) para contextos con poco
+  /// espacio vertical, como el diálogo de escritorio.
+  final bool dense;
 
   @override
   State<AppTextField> createState() => _AppTextFieldState();
@@ -74,6 +80,10 @@ class _AppTextFieldState extends State<AppTextField> {
 
   @override
   Widget build(BuildContext context) {
+    // Radio más chico en escritorio (dense): las píldoras muy redondeadas
+    // leen como un control táctil; un radio más cerrado se siente hecho
+    // para mouse, no una versión encogida de móvil.
+    final radius = widget.dense ? 10.0 : 14.0;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -84,7 +94,7 @@ class _AppTextFieldState extends State<AppTextField> {
             color: _focused
                 ? AppTheme.surfaceContainerLowest
                 : AppTheme.surfaceContainerLow,
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(radius),
             border: Border.all(
               color: (_focused || _hasError)
                   ? _accentColor
@@ -102,9 +112,13 @@ class _AppTextFieldState extends State<AppTextField> {
                 : null,
           ),
           child: Row(
+            crossAxisAlignment: widget.maxLines > 1
+                ? CrossAxisAlignment.start
+                : CrossAxisAlignment.center,
             children: [
               Padding(
-                padding: const EdgeInsets.only(left: 18),
+                padding: EdgeInsets.only(
+                    left: 18, top: widget.maxLines > 1 ? 16 : 0),
                 child: TweenAnimationBuilder<Color?>(
                   tween: ColorTween(end: _accentColor),
                   duration: const Duration(milliseconds: 180),
@@ -118,6 +132,7 @@ class _AppTextFieldState extends State<AppTextField> {
                   controller: widget.controller,
                   focusNode: _focusNode,
                   obscureText: _obscured,
+                  maxLines: widget.obscureText ? 1 : widget.maxLines,
                   keyboardType: widget.keyboardType,
                   textCapitalization: widget.textCapitalization,
                   textInputAction: widget.textInputAction,
@@ -144,8 +159,8 @@ class _AppTextFieldState extends State<AppTextField> {
                     enabledBorder: InputBorder.none,
                     focusedBorder: InputBorder.none,
                     isDense: true,
-                    contentPadding:
-                        const EdgeInsets.symmetric(vertical: 16, horizontal: 14),
+                    contentPadding: EdgeInsets.symmetric(
+                        vertical: widget.dense ? 11 : 16, horizontal: 14),
                   ),
                 ),
               ),
@@ -208,6 +223,85 @@ class _AppTextFieldState extends State<AppTextField> {
               : const SizedBox(width: double.infinity),
         ),
       ],
+    );
+  }
+}
+
+/// Caja plana (mismo radio y fondo que [AppTextField] en reposo) para
+/// campos que no se escriben, sino que abren un selector al tocarlos
+/// (fecha, cuenta): sin estado de foco propio, solo feedback de toque.
+class AppFieldShell extends StatelessWidget {
+  const AppFieldShell({
+    super.key,
+    required this.icon,
+    required this.child,
+    this.trailing,
+    this.onTap,
+    this.dense = false,
+  });
+
+  final IconData icon;
+  final Widget child;
+  final Widget? trailing;
+  final VoidCallback? onTap;
+  /// Versión más compacta (menos padding vertical), para el diálogo de
+  /// escritorio donde hay que aprovechar mejor el alto disponible.
+  final bool dense;
+
+  @override
+  Widget build(BuildContext context) {
+    final radius = dense ? 10.0 : 14.0;
+    final content = Container(
+      decoration: BoxDecoration(
+        color: AppTheme.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(radius),
+      ),
+      padding:
+          EdgeInsets.symmetric(horizontal: 14, vertical: dense ? 9.5 : 13),
+      child: Row(
+        children: [
+          Icon(icon, size: 19, color: AppTheme.onSurfaceVariant),
+          const SizedBox(width: 10),
+          Expanded(child: child),
+          if (trailing != null) ...[const SizedBox(width: 6), trailing!],
+        ],
+      ),
+    );
+    if (onTap == null) return content;
+    return Material(
+      color: Colors.transparent,
+      borderRadius: BorderRadius.circular(radius),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(radius),
+        onTap: onTap,
+        hoverColor: AppTheme.surfaceContainerHigh,
+        child: content,
+      ),
+    );
+  }
+}
+
+/// Detecta hover de mouse (no-op en táctil) para widgets que necesitan un
+/// estado visual propio al pasar el cursor encima, más allá de lo que ya
+/// da `InkWell` — usado por controles compactos de escritorio.
+class HoverBuilder extends StatefulWidget {
+  const HoverBuilder({super.key, required this.builder});
+
+  final Widget Function(BuildContext context, bool hovered) builder;
+
+  @override
+  State<HoverBuilder> createState() => _HoverBuilderState();
+}
+
+class _HoverBuilderState extends State<HoverBuilder> {
+  bool _hovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+      onEnter: (_) => setState(() => _hovered = true),
+      onExit: (_) => setState(() => _hovered = false),
+      child: widget.builder(context, _hovered),
     );
   }
 }
