@@ -5,11 +5,14 @@ import '../theme/app_theme.dart';
 import '../utils/currency_formatter.dart';
 import '../utils/category_icons.dart';
 import '../utils/category_colors.dart';
+import 'transaction_detail_sheet.dart';
 
 class TransactionTile extends StatefulWidget {
   final TransactionModel transaction;
   final VoidCallback onEdit;
-  final VoidCallback onDelete;
+  // Devuelve si realmente se eliminó (false si se canceló la confirmación),
+  // para que la vista de detalle sepa si debe cerrarse o quedarse abierta.
+  final Future<bool> Function() onDelete;
 
   const TransactionTile({
     super.key,
@@ -65,11 +68,16 @@ class _TransactionTileState extends State<TransactionTile> {
         child: Material(
           color: Colors.transparent,
           child: InkWell(
-            // Tocar el movimiento completo abre editarlo, no solo el lápiz.
-            // Las transferencias no se editan (ver nota más abajo), pero se
-            // pueden abrir para ver el detalle completo (el título se trunca
-            // en la lista porque "Transferencia: origen → destino" no cabe).
-            onTap: t.isTransfer ? () => _showTransferDetails(context, t) : widget.onEdit,
+            // Tocar el movimiento completo abre VER el detalle (ícono de
+            // categoría, monto, cuenta, nota...), no editar directamente —
+            // "Editar"/"Eliminar" son acciones aparte dentro de esa hoja (o
+            // los botones que aparecen al pasar el mouse/mantener presionado).
+            onTap: () => showTransactionDetail(
+              context,
+              transaction: t,
+              onEdit: widget.onEdit,
+              onDelete: widget.onDelete,
+            ),
             borderRadius: BorderRadius.circular(16),
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
@@ -210,81 +218,6 @@ class _TransactionTileState extends State<TransactionTile> {
             ),
           ),
         ),
-      ),
-    );
-  }
-
-  void _showTransferDetails(BuildContext context, TransactionModel t) {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: AppTheme.surfaceContainerLowest,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text(
-          'Detalle de la transferencia',
-          style: GoogleFonts.plusJakartaSans(
-            color: AppTheme.primary,
-            fontWeight: FontWeight.w700,
-            fontSize: 17,
-          ),
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              t.title,
-              style: GoogleFonts.beVietnamPro(
-                color: AppTheme.primary,
-                fontSize: 15,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            const SizedBox(height: 12),
-            _detailRow('Monto', CurrencyFormatter.format(t.amount)),
-            _detailRow('Fecha', '${t.date.day}/${t.date.month}/${t.date.year}'),
-            if (t.note != null && t.note!.isNotEmpty)
-              _detailRow('Nota', t.note!),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text('Cerrar',
-                style: GoogleFonts.beVietnamPro(color: AppTheme.secondary)),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _detailRow(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.only(top: 6),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(
-            width: 56,
-            child: Text(
-              label,
-              style: GoogleFonts.beVietnamPro(
-                color: AppTheme.onSurfaceVariant,
-                fontSize: 12.5,
-              ),
-            ),
-          ),
-          Expanded(
-            child: Text(
-              value,
-              style: GoogleFonts.beVietnamPro(
-                color: AppTheme.primary,
-                fontSize: 13,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ),
-        ],
       ),
     );
   }

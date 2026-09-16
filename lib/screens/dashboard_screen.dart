@@ -1022,7 +1022,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Future<void> _deleteTransaction(TransactionModel t) async {
+  /// Devuelve si realmente se eliminó (no si solo se abrió y canceló la
+  /// confirmación) — la vista de detalle del movimiento usa esto para saber
+  /// si debe cerrarse ella misma o quedarse abierta.
+  Future<bool> _deleteTransaction(TransactionModel t) async {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -1050,7 +1053,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
         ],
       ),
     );
-    if (confirm == true) await _txService.deleteTransaction(t);
+    if (confirm != true) return false;
+    await _txService.deleteTransaction(t);
+    return true;
   }
 
   // ── MOBILE ───────────────────────────────────────────────────
