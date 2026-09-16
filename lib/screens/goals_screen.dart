@@ -20,8 +20,17 @@ import '../widgets/fade_slide_in.dart';
 import '../widgets/pressable_scale.dart';
 import 'add_transaction_screen.dart';
 
-class GoalsScreen extends StatelessWidget {
+enum _GoalFilter { active, completed }
+
+class GoalsScreen extends StatefulWidget {
   const GoalsScreen({super.key});
+
+  @override
+  State<GoalsScreen> createState() => _GoalsScreenState();
+}
+
+class _GoalsScreenState extends State<GoalsScreen> {
+  _GoalFilter _filter = _GoalFilter.active;
 
   @override
   Widget build(BuildContext context) {
@@ -118,6 +127,14 @@ class GoalsScreen extends StatelessWidget {
     GoalService goalService,
     bool isDesktop,
   ) {
+    final activeGoals = goals.where((g) => !g.isCompleted).toList();
+    final completedGoals = goals.where((g) => g.isCompleted).toList();
+    final showFilter = completedGoals.isNotEmpty;
+    final filter = showFilter ? _filter : _GoalFilter.active;
+    final visibleGoals = !showFilter
+        ? goals
+        : (filter == _GoalFilter.active ? activeGoals : completedGoals);
+
     return SingleChildScrollView(
       padding: EdgeInsets.all(isDesktop ? 40 : 20),
       child: Column(
@@ -165,10 +182,97 @@ class GoalsScreen extends StatelessWidget {
             ),
             const SizedBox(height: 32),
           ],
-          isDesktop
-              ? _buildDesktopGrid(context, goals, userId, goalService)
-              : _buildMobileList(context, goals, userId, goalService),
+          if (showFilter) ...[
+            _buildFilterTabs(activeGoals.length, completedGoals.length),
+            const SizedBox(height: 20),
+          ],
+          if (visibleGoals.isEmpty)
+            _buildFilterEmptyState(context, userId, goalService, filter)
+          else if (isDesktop)
+            _buildDesktopGrid(context, visibleGoals, userId, goalService,
+                showAddTile: filter == _GoalFilter.active)
+          else
+            _buildMobileList(context, visibleGoals, userId, goalService),
         ],
+      ),
+    );
+  }
+
+  Widget _buildFilterTabs(int activeCount, int completedCount) {
+    Widget tab(String label, _GoalFilter value, int count) {
+      final selected = _filter == value;
+      return Expanded(
+        child: PressableScale(
+          onTap: () => setState(() => _filter = value),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 160),
+            curve: Curves.easeOutCubic,
+            padding: const EdgeInsets.symmetric(vertical: 10),
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color:
+                  selected ? AppTheme.secondary : AppTheme.surfaceContainerLow,
+              borderRadius: BorderRadius.circular(100),
+            ),
+            child: Text(
+              '$label ($count)',
+              style: GoogleFonts.beVietnamPro(
+                color: selected ? Colors.white : AppTheme.onSurfaceVariant,
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    return Row(
+      children: [
+        tab('En progreso', _GoalFilter.active, activeCount),
+        const SizedBox(width: 10),
+        tab('Completadas', _GoalFilter.completed, completedCount),
+      ],
+    );
+  }
+
+  Widget _buildFilterEmptyState(BuildContext context, String userId,
+      GoalService goalService, _GoalFilter filter) {
+    final isCompletedTab = filter == _GoalFilter.completed;
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 40),
+      child: Center(
+        child: Column(
+          children: [
+            Icon(
+              isCompletedTab
+                  ? Icons.emoji_events_outlined
+                  : Icons.check_circle_outline_rounded,
+              size: 36,
+              color: AppTheme.outlineVariant,
+            ),
+            const SizedBox(height: 14),
+            Text(
+              isCompletedTab
+                  ? 'Aún no completas ninguna meta'
+                  : '¡Completaste todas tus metas activas!',
+              style: GoogleFonts.plusJakartaSans(
+                color: AppTheme.primary,
+                fontSize: 15,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              isCompletedTab
+                  ? 'Cuando termines de ahorrar una meta, aparecerá aquí.'
+                  : 'Crea una nueva meta para seguir ahorrando.',
+              textAlign: TextAlign.center,
+              style: GoogleFonts.beVietnamPro(
+                  color: AppTheme.onSurfaceVariant, fontSize: 13),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -177,8 +281,9 @@ class GoalsScreen extends StatelessWidget {
     BuildContext context,
     List<GoalModel> goals,
     String userId,
-    GoalService goalService,
-  ) {
+    GoalService goalService, {
+    bool showAddTile = true,
+  }) {
     return LayoutBuilder(
       builder: (context, constraints) {
         final columns = constraints.maxWidth >= 1200 ? 3 : 2;
@@ -199,46 +304,47 @@ class GoalsScreen extends StatelessWidget {
                     ),
                   ),
                 )),
-            SizedBox(
-              width: (constraints.maxWidth - (columns - 1) * 24) / columns,
-              height: 200,
-              child: PressableScale(
-                onTap: () => _showGoalSheet(context, userId, goalService),
-                child: Container(
-                  decoration: BoxDecoration(
-                    border: Border.all(
-                        color: AppTheme.outlineVariant,
-                        width: 2,
-                        style: BorderStyle.solid),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Container(
-                        width: 56,
-                        height: 56,
-                        decoration: BoxDecoration(
-                          color: AppTheme.surfaceContainerHigh,
-                          borderRadius: BorderRadius.circular(100),
+            if (showAddTile)
+              SizedBox(
+                width: (constraints.maxWidth - (columns - 1) * 24) / columns,
+                height: 200,
+                child: PressableScale(
+                  onTap: () => _showGoalSheet(context, userId, goalService),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                          color: AppTheme.outlineVariant,
+                          width: 2,
+                          style: BorderStyle.solid),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Container(
+                          width: 56,
+                          height: 56,
+                          decoration: BoxDecoration(
+                            color: AppTheme.surfaceContainerHigh,
+                            borderRadius: BorderRadius.circular(100),
+                          ),
+                          child: const Icon(Icons.add_circle_outline_rounded,
+                              size: 28, color: AppTheme.outlineVariant),
                         ),
-                        child: const Icon(Icons.add_circle_outline_rounded,
-                            size: 28, color: AppTheme.outlineVariant),
-                      ),
-                      const SizedBox(height: 12),
-                      Text(
-                        'Agregar meta',
-                        style: GoogleFonts.plusJakartaSans(
-                          color: AppTheme.onSurfaceVariant,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
+                        const SizedBox(height: 12),
+                        Text(
+                          'Agregar meta',
+                          style: GoogleFonts.plusJakartaSans(
+                            color: AppTheme.onSurfaceVariant,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               ),
-            ),
           ],
         );
       },
