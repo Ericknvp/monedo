@@ -2,8 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../services/transaction_service.dart';
+import '../services/account_service.dart';
 import '../models/transaction.dart';
+import '../models/account.dart';
 import '../theme/app_theme.dart';
+import '../utils/account_colors.dart';
+import '../utils/category_colors.dart';
+import '../utils/category_icons.dart';
 import '../utils/currency_formatter.dart';
 import '../widgets/transaction_tile.dart';
 import '../widgets/branded_loading_screen.dart';
@@ -25,7 +30,9 @@ class TransactionsScreen extends StatefulWidget {
 
 class _TransactionsScreenState extends State<TransactionsScreen> {
   final _txService = TransactionService();
+  final _searchCtrl = TextEditingController();
   String _filter = 'Todos';
+  String _searchQuery = '';
   int _currentPage = 0;
   static const _pageSize = 10;
 
@@ -36,6 +43,38 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
   int _filterYear = DateTime.now().year;
   DateTime? _rangeStart;
   DateTime? _rangeEnd;
+
+  Set<String> _selectedCategories = {};
+  Set<String> _selectedAccountIds = {};
+
+  // Se crea una sola vez: TransactionService.getTransactions() abre un
+  // listener nuevo de Firestore cada vez que se llama, así que si se
+  // recreara en cada build() (p.ej. al escribir en el buscador, que hace
+  // setState en cada letra), el StreamBuilder vería un stream distinto,
+  // volvería a "cargando" y perdería el foco del campo de texto.
+  late final Stream<List<TransactionModel>> _txStream;
+  late final Stream<List<AccountModel>> _accountsStream;
+
+  @override
+  void initState() {
+    super.initState();
+    final userId = FirebaseAuth.instance.currentUser?.uid ?? '';
+    _txStream = _txService.getTransactions(userId);
+    _accountsStream = AccountService().getAccounts(userId);
+  }
+
+  @override
+  void dispose() {
+    _searchCtrl.dispose();
+    super.dispose();
+  }
+
+  bool get _hasActiveFilters =>
+      _filter != 'Todos' ||
+      _searchQuery.isNotEmpty ||
+      _dateFilterActive ||
+      _selectedCategories.isNotEmpty ||
+      _selectedAccountIds.isNotEmpty;
 
   static const _months = [
     'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
@@ -72,6 +111,23 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
             _rangeEnd!.year, _rangeEnd!.month, _rangeEnd!.day, 23, 59, 59);
         return !t.date.isBefore(start) && !t.date.isAfter(end);
     }
+  }
+
+  bool _matchesSearch(TransactionModel t) {
+    if (_searchQuery.isEmpty) return true;
+    final q = _searchQuery.toLowerCase();
+    return t.title.toLowerCase().contains(q) ||
+        (t.note?.toLowerCase().contains(q) ?? false);
+  }
+
+  bool _matchesCategoryFilter(TransactionModel t) {
+    if (_selectedCategories.isEmpty) return true;
+    return _selectedCategories.contains(t.category);
+  }
+
+  bool _matchesAccountFilter(TransactionModel t) {
+    if (_selectedAccountIds.isEmpty) return true;
+    return _selectedAccountIds.contains(t.accountId);
   }
 
   /// Devuelve si realmente se eliminó (no si solo se abrió y canceló la
@@ -280,12 +336,227 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
     );
   }
 
-  Widget _sheetChoiceChip(String label, bool selected, VoidCallback onTap) {
+  /// Hoja de selección múltiple de categorías: solo ofrece las categorías
+  /// que realmente tienen movimientos (no todo el catálogo de la app), para
+  /// no mostrar opciones que de todos modos no filtrarían nada.
+  Future<void> _showCategoryFilterSheet(List<String> availableCategories) async {
+    var selected = {..._selectedCategories};
+
+    await showModalBottomSheet(
+      context: context,
+      backgroundColor: AppTheme.surfaceContainerLowest,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setSheetState) => Padding(
+          padding: EdgeInsets.only(
+            left: 24,
+            right: 24,
+            top: 24,
+            bottom: MediaQuery.of(ctx).viewInsets.bottom + 28,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: AppTheme.outlineVariant,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      'Filtrar por categoría',
+                      style: GoogleFonts.plusJakartaSans(
+                        color: AppTheme.primary,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                  if (selected.isNotEmpty)
+                    TextButton(
+                      onPressed: () => setSheetState(() => selected.clear()),
+                      child: Text('Limpiar',
+                          style: GoogleFonts.beVietnamPro(
+                              color: AppTheme.onSurfaceVariant,
+                              fontWeight: FontWeight.w600)),
+                    ),
+                ],
+              ),
+              const SizedBox(height: 18),
+              Wrap(
+                spacing: 10,
+                runSpacing: 10,
+                children: availableCategories.map((c) {
+                  final isSelected = selected.contains(c);
+                  return _sheetChoiceChip(
+                    c,
+                    isSelected,
+                    () => setSheetState(() {
+                      if (isSelected) {
+                        selected.remove(c);
+                      } else {
+                        selected.add(c);
+                      }
+                    }),
+                    leadingColor: CategoryColors.forCategory(c),
+                    leadingIcon: CategoryIconRegistry.iconFor(c),
+                  );
+                }).toList(),
+              ),
+              const SizedBox(height: 24),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () {
+                    setState(() {
+                      _selectedCategories = selected;
+                      _currentPage = 0;
+                    });
+                    Navigator.pop(ctx);
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppTheme.successFixed,
+                    foregroundColor: Colors.white,
+                    shape: const StadiumBorder(),
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    elevation: 0,
+                  ),
+                  child: const Text('Aplicar filtro'),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Hoja de selección múltiple de cuentas — mismo patrón que la de
+  /// categorías, pero solo tiene sentido mostrarla cuando hay más de una
+  /// cuenta (con una sola, filtrar por cuenta no distingue nada).
+  Future<void> _showAccountFilterSheet(List<AccountModel> accounts) async {
+    var selected = {..._selectedAccountIds};
+
+    await showModalBottomSheet(
+      context: context,
+      backgroundColor: AppTheme.surfaceContainerLowest,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setSheetState) => Padding(
+          padding: EdgeInsets.only(
+            left: 24,
+            right: 24,
+            top: 24,
+            bottom: MediaQuery.of(ctx).viewInsets.bottom + 28,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: AppTheme.outlineVariant,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      'Filtrar por cuenta',
+                      style: GoogleFonts.plusJakartaSans(
+                        color: AppTheme.primary,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                  if (selected.isNotEmpty)
+                    TextButton(
+                      onPressed: () => setSheetState(() => selected.clear()),
+                      child: Text('Limpiar',
+                          style: GoogleFonts.beVietnamPro(
+                              color: AppTheme.onSurfaceVariant,
+                              fontWeight: FontWeight.w600)),
+                    ),
+                ],
+              ),
+              const SizedBox(height: 18),
+              Wrap(
+                spacing: 10,
+                runSpacing: 10,
+                children: accounts.map((a) {
+                  final isSelected = selected.contains(a.id);
+                  return _sheetChoiceChip(
+                    a.name,
+                    isSelected,
+                    () => setSheetState(() {
+                      if (isSelected) {
+                        selected.remove(a.id);
+                      } else {
+                        selected.add(a.id);
+                      }
+                    }),
+                    leadingColor: AccountColors.forAccount(a),
+                    leadingIcon: Icons.account_balance_wallet_rounded,
+                  );
+                }).toList(),
+              ),
+              const SizedBox(height: 24),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () {
+                    setState(() {
+                      _selectedAccountIds = selected;
+                      _currentPage = 0;
+                    });
+                    Navigator.pop(ctx);
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppTheme.successFixed,
+                    foregroundColor: Colors.white,
+                    shape: const StadiumBorder(),
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    elevation: 0,
+                  ),
+                  child: const Text('Aplicar filtro'),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _sheetChoiceChip(String label, bool selected, VoidCallback onTap,
+      {Color? leadingColor, IconData? leadingIcon}) {
     return PressableScale(
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 160),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
         decoration: BoxDecoration(
           color: selected ? AppTheme.successFixed : AppTheme.surfaceContainerLow,
           borderRadius: BorderRadius.circular(100),
@@ -293,13 +564,38 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
             color: selected ? AppTheme.successFixed : AppTheme.outlineVariant,
           ),
         ),
-        child: Text(
-          label,
-          style: GoogleFonts.beVietnamPro(
-            color: selected ? Colors.white : AppTheme.onSurfaceVariant,
-            fontSize: 13,
-            fontWeight: FontWeight.w600,
-          ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (leadingIcon != null) ...[
+              Container(
+                width: 20,
+                height: 20,
+                decoration: BoxDecoration(
+                  color: selected
+                      ? Colors.white.withOpacity(0.25)
+                      : (leadingColor ?? AppTheme.outline).withOpacity(0.14),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Icon(leadingIcon,
+                    size: 12,
+                    color: selected ? Colors.white : leadingColor),
+              ),
+              const SizedBox(width: 7),
+            ],
+            Text(
+              label,
+              style: GoogleFonts.beVietnamPro(
+                color: selected ? Colors.white : AppTheme.onSurfaceVariant,
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            if (selected) ...[
+              const SizedBox(width: 6),
+              const Icon(Icons.check_rounded, size: 14, color: Colors.white),
+            ],
+          ],
         ),
       ),
     );
@@ -375,19 +671,143 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
     );
   }
 
+  /// En escritorio los chips se envuelven en varias líneas (hay ancho de
+  /// sobra); en móvil eso se come mucho alto antes de llegar a la lista de
+  /// movimientos, así que ahí van en una sola fila desplazable horizontal.
+  Widget _filterChipsContainer(bool isDesktop, List<Widget> chips) {
+    if (isDesktop) {
+      return Wrap(spacing: 8, runSpacing: 8, children: chips);
+    }
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        children: [
+          for (var i = 0; i < chips.length; i++) ...[
+            if (i > 0) const SizedBox(width: 8),
+            chips[i],
+          ],
+        ],
+      ),
+    );
+  }
+
+  /// Píldora de filtro genérica (Categoría, Cuenta): mismo look que la de
+  /// Fecha (icono + etiqueta, fondo oscuro cuando está activa, "x" para
+  /// limpiar), para que todos los filtros se sientan como el mismo control.
+  Widget _filterPill({
+    required IconData icon,
+    required String label,
+    required bool active,
+    required VoidCallback onTap,
+    required VoidCallback onClear,
+  }) {
+    return PressableScale(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 9),
+        decoration: BoxDecoration(
+          color: active ? AppTheme.navyFixed : AppTheme.surfaceContainer,
+          borderRadius: BorderRadius.circular(100),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon,
+                size: 15,
+                color: active ? Colors.white : AppTheme.onSurfaceVariant),
+            const SizedBox(width: 6),
+            Text(
+              label,
+              style: GoogleFonts.beVietnamPro(
+                color: active ? Colors.white : AppTheme.onSurfaceVariant,
+                fontSize: 13,
+                fontWeight: active ? FontWeight.w700 : FontWeight.w500,
+              ),
+            ),
+            if (active) ...[
+              const SizedBox(width: 6),
+              PressableScale(
+                onTap: onClear,
+                child: const Icon(Icons.close_rounded,
+                    size: 15, color: Colors.white),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Barra de búsqueda por título o nota — píldora persistente arriba de
+  /// los chips de filtro, siempre visible (no una hoja aparte) porque es la
+  /// acción que más se usa y más rápido debe sentirse.
+  Widget _buildSearchBar() {
+    return Container(
+      height: 44,
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      decoration: BoxDecoration(
+        color: AppTheme.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(100),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.search_rounded, size: 19, color: AppTheme.onSurfaceVariant),
+          const SizedBox(width: 10),
+          Expanded(
+            child: TextField(
+              controller: _searchCtrl,
+              style: GoogleFonts.beVietnamPro(
+                  color: AppTheme.primary, fontSize: 14),
+              decoration: InputDecoration(
+                isDense: true,
+                isCollapsed: true,
+                border: InputBorder.none,
+                hintText: 'Buscar por descripción o nota…',
+                hintStyle: GoogleFonts.beVietnamPro(
+                    color: AppTheme.outline, fontSize: 14),
+              ),
+              onChanged: (v) => setState(() {
+                _searchQuery = v.trim();
+                _currentPage = 0;
+              }),
+            ),
+          ),
+          if (_searchCtrl.text.isNotEmpty)
+            GestureDetector(
+              onTap: () => setState(() {
+                _searchCtrl.clear();
+                _searchQuery = '';
+                _currentPage = 0;
+              }),
+              child: Icon(Icons.close_rounded,
+                  size: 18, color: AppTheme.onSurfaceVariant),
+            ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    final userId = FirebaseAuth.instance.currentUser?.uid ?? '';
     final isDesktop = MediaQuery.of(context).size.width >= 900;
 
     return StreamBuilder<List<TransactionModel>>(
-      stream: _txService.getTransactions(userId),
+      stream: _txStream,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: BrandedInlineLoader());
         }
 
-        var all = snapshot.data ?? [];
+        final rawAll = snapshot.data ?? [];
+        // Catálogo de categorías para la hoja de filtro: se calcula sobre
+        // TODOS los movimientos (sin filtrar), para que la lista de opciones
+        // no se vaya encogiendo a medida que el usuario combina filtros.
+        final availableCategories = <String>{for (final t in rawAll) t.category}
+            .toList()
+          ..sort();
+
+        var all = rawAll;
         if (_filter == 'Ingresos') {
           all = all.where((t) => t.isIncome).toList();
         } else if (_filter == 'Gastos') {
@@ -395,6 +815,15 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
         }
         if (_dateFilterActive) {
           all = all.where(_matchesDateFilter).toList();
+        }
+        if (_searchQuery.isNotEmpty) {
+          all = all.where(_matchesSearch).toList();
+        }
+        if (_selectedCategories.isNotEmpty) {
+          all = all.where(_matchesCategoryFilter).toList();
+        }
+        if (_selectedAccountIds.isNotEmpty) {
+          all = all.where(_matchesAccountFilter).toList();
         }
 
         final totalPages = (all.length / _pageSize).ceil().clamp(1, 9999);
@@ -404,18 +833,21 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Search bar
+            Container(
+              color: AppTheme.background,
+              padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
+              child: _buildSearchBar(),
+            ),
             // Filter pills
             Container(
               color: AppTheme.background,
-              padding: const EdgeInsets.fromLTRB(24, 16, 24, 16),
+              padding: const EdgeInsets.fromLTRB(24, 14, 24, 16),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Expanded(
-                    child: Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: [
+                    child: _filterChipsContainer(isDesktop, [
                         ..._filters.map((f) {
                           final isSelected = _filter == f;
                           return PressableScale(
@@ -492,6 +924,52 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                               ],
                             ),
                           ),
+                        ),
+                        if (availableCategories.isNotEmpty)
+                          _filterPill(
+                            icon: Icons.category_outlined,
+                            label: _selectedCategories.isEmpty
+                                ? 'Categoría'
+                                : _selectedCategories.length == 1
+                                    ? _selectedCategories.first
+                                    : 'Categoría (${_selectedCategories.length})',
+                            active: _selectedCategories.isNotEmpty,
+                            onTap: () =>
+                                _showCategoryFilterSheet(availableCategories),
+                            onClear: () => setState(() {
+                              _selectedCategories = {};
+                              _currentPage = 0;
+                            }),
+                          ),
+                        StreamBuilder<List<AccountModel>>(
+                          stream: _accountsStream,
+                          builder: (context, accSnap) {
+                            final accounts = accSnap.data ?? [];
+                            if (accounts.length < 2) {
+                              return const SizedBox.shrink();
+                            }
+                            String accountLabel;
+                            if (_selectedAccountIds.isEmpty) {
+                              accountLabel = 'Cuenta';
+                            } else if (_selectedAccountIds.length == 1) {
+                              final match = accounts
+                                  .where((a) => a.id == _selectedAccountIds.first);
+                              accountLabel =
+                                  match.isEmpty ? 'Cuenta' : match.first.name;
+                            } else {
+                              accountLabel = 'Cuenta (${_selectedAccountIds.length})';
+                            }
+                            return _filterPill(
+                              icon: Icons.account_balance_wallet_outlined,
+                              label: accountLabel,
+                              active: _selectedAccountIds.isNotEmpty,
+                              onTap: () => _showAccountFilterSheet(accounts),
+                              onClear: () => setState(() {
+                                _selectedAccountIds = {};
+                                _currentPage = 0;
+                              }),
+                            );
+                          },
                         ),
                       ],
                     ),
@@ -619,9 +1097,9 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                           ),
                           const SizedBox(height: 20),
                           Text(
-                            _filter == 'Todos' && !_dateFilterActive
+                            !_hasActiveFilters
                                 ? 'Aún no hay movimientos'
-                                : 'Nada que coincida con este filtro',
+                                : 'Nada que coincida con estos filtros',
                             style: GoogleFonts.plusJakartaSans(
                               color: AppTheme.primary,
                               fontSize: 16,
@@ -630,13 +1108,13 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                           ),
                           const SizedBox(height: 6),
                           Text(
-                            _filter == 'Todos' && !_dateFilterActive
+                            !_hasActiveFilters
                                 ? 'Tus ingresos y gastos aparecerán aquí'
-                                : 'Prueba con otro filtro o rango de fechas',
+                                : 'Prueba con otra búsqueda o quita algún filtro',
                             style: GoogleFonts.beVietnamPro(
                                 color: AppTheme.onSurfaceVariant, fontSize: 13),
                           ),
-                          if (_filter == 'Todos' && !_dateFilterActive) ...[
+                          if (!_hasActiveFilters) ...[
                             const SizedBox(height: 20),
                             PressableScale(
                               onTap: () => openAddTransaction(context),
