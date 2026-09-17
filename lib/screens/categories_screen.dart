@@ -282,34 +282,40 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                          child: Text(
-                            'Crea tus propias categorías con el ícono que quieras, para clasificar tus movimientos a tu manera.',
-                            style: GoogleFonts.beVietnamPro(
-                              color: AppTheme.onSurfaceVariant,
-                              fontSize: 14,
-                              height: 1.5,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 20),
                     SizedBox(
                       width: double.infinity,
-                      child: ElevatedButton.icon(
-                        onPressed: () => _openAddCategory(custom),
-                        icon: const Icon(Icons.add_rounded, size: 20),
-                        label: const Text('Nueva categoría'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppTheme.successFixed,
-                          foregroundColor: Colors.white,
-                          shape: const StadiumBorder(),
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          elevation: 0,
+                      child: Material(
+                        color: AppTheme.successFixed,
+                        borderRadius: BorderRadius.circular(100),
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(100),
+                          onTap: () => _openAddCategory(custom),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(4),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withOpacity(0.18),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: const Icon(Icons.add_rounded,
+                                      color: Colors.white, size: 18),
+                                ),
+                                const SizedBox(width: 10),
+                                Text(
+                                  'Nueva categoría',
+                                  style: GoogleFonts.beVietnamPro(
+                                    color: Colors.white,
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
                       ),
                     ),
