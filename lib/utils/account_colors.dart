@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../models/account.dart';
 import 'category_colors.dart';
 
-/// Color de una cuenta: el que el usuario eligió, o uno estable por hash de
+/// Color de un bolsillo: el que el usuario eligió, o uno estable por hash de
 /// su id si no ha elegido ninguno (misma paleta validada que las categorías).
 class AccountColors {
   AccountColors._();

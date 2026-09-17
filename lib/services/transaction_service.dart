@@ -23,7 +23,7 @@ class TransactionService {
 
   double _signedAmount(TransactionModel t) => t.isIncome ? t.amount : -t.amount;
 
-  // ---- Agrega una nueva transacción y ajusta el saldo de la cuenta ----
+  // ---- Agrega una nueva transacción y ajusta el saldo del bolsillo ----
   Future<void> addTransaction(TransactionModel transaction) async {
     await _transactions.add(transaction.toMap());
     if (transaction.accountId != null) {
@@ -98,7 +98,7 @@ class TransactionService {
     return result;
   }
 
-  // ---- Edita una transacción existente y corrige el saldo de la(s) cuenta(s) ----
+  // ---- Edita una transacción existente y corrige el saldo del/los bolsillo(s) ----
   Future<void> updateTransaction(
       TransactionModel oldTransaction, TransactionModel newTransaction) async {
     await _transactions.doc(newTransaction.id).update(newTransaction.toMap());
@@ -137,11 +137,11 @@ class TransactionService {
     }
   }
 
-  // ---- Elimina una transacción y revierte su efecto en la cuenta y la meta ----
+  // ---- Elimina una transacción y revierte su efecto en el bolsillo y la meta ----
   //
   // La UI no ofrece eliminar transferencias (se revierten haciendo otra en
   // sentido contrario), pero si algo llega a invocarlo igual se revierte el
-  // saldo de ambas cuentas involucradas para no dejar la transferencia a medias.
+  // saldo de ambos bolsillos involucrados para no dejar la transferencia a medias.
   Future<void> deleteTransaction(TransactionModel transaction) async {
     await _transactions.doc(transaction.id).delete();
     if (transaction.accountId != null) {
@@ -158,7 +158,7 @@ class TransactionService {
     }
   }
 
-  // ---- Calcula el balance total (excluye transferencias entre cuentas propias) ----
+  // ---- Calcula el balance total (excluye transferencias entre bolsillos propios) ----
   double calculateBalance(List<TransactionModel> transactions) {
     double balance = 0;
     for (var t in transactions) {
@@ -172,7 +172,7 @@ class TransactionService {
     return balance;
   }
 
-  // ---- Calcula el total de ingresos (excluye transferencias entre cuentas propias) ----
+  // ---- Calcula el total de ingresos (excluye transferencias entre bolsillos propios) ----
   double calculateIncome(List<TransactionModel> transactions) {
     return transactions
         .where((t) => t.isIncome && !t.isTransfer)

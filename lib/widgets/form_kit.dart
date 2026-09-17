@@ -14,9 +14,9 @@ import 'app_text_field.dart';
 
 /// Piezas compartidas del formulario "nuevo estilo" introducido en
 /// add_transaction_screen.dart (campo con halo de foco, selector de
-/// categoría en grilla, selector de cuenta, botón píldora flotante), para
+/// categoría en grilla, selector de bolsillo, botón píldora flotante), para
 /// que el resto de formularios de la app (recurrentes, presupuestos, metas,
-/// cuentas...) usen exactamente los mismos componentes en vez de reinventar
+/// bolsillos...) usen exactamente los mismos componentes en vez de reinventar
 /// cada campo con su propio `TextField`/`DropdownButtonFormField`.
 
 /// Etiqueta pequeña sobre un campo (Be Vietnam Pro, w600, onSurfaceVariant).
@@ -212,7 +212,7 @@ Future<bool> confirmDestructiveAction(
   return confirm == true;
 }
 
-/// Chip compacto usado dentro del selector de cuenta (ícono coloreado +
+/// Chip compacto usado dentro del selector de bolsillo (ícono coloreado +
 /// nombre), tanto colapsado como dentro de la lista desplegable.
 Widget _accountChip(AccountModel account) {
   final color = AccountColors.forAccount(account);
@@ -239,16 +239,16 @@ Widget _accountChip(AccountModel account) {
   );
 }
 
-/// Selector de cuenta: `AppFieldShell` + `DropdownButton` nativo, con un
-/// link "Agregar cuenta" debajo — mismo componente que usa el formulario de
-/// movimientos, para que cualquier form que necesite elegir cuenta se vea
+/// Selector de bolsillo: `AppFieldShell` + `DropdownButton` nativo, con un
+/// link "Agregar bolsillo" debajo — mismo componente que usa el formulario de
+/// movimientos, para que cualquier form que necesite elegir bolsillo se vea
 /// igual.
 class AccountPickerField extends StatelessWidget {
   const AccountPickerField({
     super.key,
     required this.selectedAccountId,
     required this.onChanged,
-    this.label = 'Cuenta',
+    this.label = 'Bolsillo',
     this.dense = false,
     this.showAddAccount = true,
   });
@@ -286,7 +286,7 @@ class AccountPickerField extends StatelessWidget {
                   icon: const SizedBox.shrink(),
                   dropdownColor: AppTheme.surfaceContainerLowest,
                   borderRadius: BorderRadius.circular(14),
-                  hint: Text('Selecciona una cuenta',
+                  hint: Text('Selecciona un bolsillo',
                       style: GoogleFonts.beVietnamPro(
                           color: AppTheme.outline, fontSize: 14)),
                   selectedItemBuilder: (context) => accounts
@@ -322,7 +322,7 @@ class AccountPickerField extends StatelessWidget {
                           size: 15, color: AppTheme.secondary),
                       const SizedBox(width: 6),
                       Text(
-                        'Agregar cuenta',
+                        'Agregar bolsillo',
                         style: GoogleFonts.beVietnamPro(
                           color: AppTheme.secondary,
                           fontSize: 12.5,
@@ -382,7 +382,7 @@ class _CategoryPickerFieldState extends State<CategoryPickerField> {
                 .toList()
               ..sort();
             // "Transferencia" es una categoría de sistema (la asigna la app
-            // al mover dinero entre cuentas propias), nunca elegible a mano.
+            // al mover dinero entre bolsillos propios), nunca elegible a mano.
             final visibleDefaults = kDefaultCategoryIcons.keys.where((n) =>
                 n != 'Transferencia' && !disabledDefaults.contains(n));
             final allNames = <String>{

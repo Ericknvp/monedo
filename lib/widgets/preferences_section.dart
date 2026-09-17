@@ -16,7 +16,7 @@ import 'change_password_dialog.dart';
 /// categorías personalizadas. Se reutiliza tanto dentro de "Ajustes"
 /// (móvil) como en su propia sección del menú (escritorio).
 class PreferencesSection extends StatefulWidget {
-  /// En escritorio, "Mis cuentas", "Mis categorías" y "Presupuestos" ya
+  /// En escritorio, "Mis bolsillos", "Mis categorías" y "Presupuestos" ya
   /// tienen su propio ítem en el menú lateral, así que aquí no se repiten.
   /// En móvil (sin esos ítems en la barra inferior) siguen apareciendo.
   final bool showQuickLinks;
@@ -250,7 +250,7 @@ class _PreferencesSectionState extends State<PreferencesSection> {
           _navRow(
             context,
             icon: Icons.account_balance_wallet_outlined,
-            label: 'Mis cuentas',
+            label: 'Mis bolsillos',
             builder: (_) => const AccountsScreen(),
             onTap: () => openAccountsScreen(context),
           ),

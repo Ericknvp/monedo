@@ -42,8 +42,8 @@ const _explanatorySlides = [
     description: 'Cada movimiento queda registrado en segundos.',
     steps: [
       'Toca el botón + para agregar un movimiento',
-      'Elige la cuenta, la categoría y el monto',
-      'El saldo de tu cuenta se actualiza al instante',
+      'Elige el bolsillo, la categoría y el monto',
+      'El saldo de tu bolsillo se actualiza al instante',
     ],
   ),
   _OnboardingSlide(
@@ -78,7 +78,7 @@ class _Step {
 
 /// Asistente de configuración inicial. Según los flags, muestra un
 /// recorrido completo (cuenta nueva) o solo los pasos que falten
-/// (cuenta existente sin moneda y/o sin cuentas configuradas).
+/// (cuenta existente sin moneda y/o sin bolsillos configurados).
 class OnboardingScreen extends StatefulWidget {
   final VoidCallback onFinish;
   final bool showWelcome;
@@ -402,7 +402,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         ),
         const SizedBox(height: 12),
         Text(
-          'Agrega tu efectivo y tus cuentas bancarias o billeteras digitales para separar tus saldos.',
+          'Agrega tu efectivo y crea bolsillos para tus cuentas bancarias o billeteras digitales, así separas tus saldos.',
           textAlign: TextAlign.center,
           style: GoogleFonts.beVietnamPro(
             fontSize: 14.5,
@@ -460,7 +460,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         OutlinedButton.icon(
           onPressed: () => showAddAccountSheet(context, userId: userId),
           icon: const Icon(Icons.add_rounded, size: 18),
-          label: Text(_accounts.isEmpty ? 'Agregar cuenta' : 'Agregar otra cuenta'),
+          label: Text(_accounts.isEmpty ? 'Agregar bolsillo' : 'Agregar otro bolsillo'),
           style: OutlinedButton.styleFrom(
             foregroundColor: Colors.white,
             side: BorderSide(color: Colors.white.withOpacity(0.4)),

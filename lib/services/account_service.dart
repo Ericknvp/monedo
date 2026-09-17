@@ -8,7 +8,7 @@ class AccountService {
   CollectionReference get _accounts => _firestore.collection('accounts');
   CollectionReference get _transactions => _firestore.collection('transactions');
 
-  // ---- Obtiene las cuentas del usuario en tiempo real ----
+  // ---- Obtiene los bolsillos del usuario en tiempo real ----
   Stream<List<AccountModel>> getAccounts(String userId) {
     return _accounts
         .where('userId', isEqualTo: userId)
@@ -23,7 +23,7 @@ class AccountService {
     });
   }
 
-  // ---- Indica si el usuario ya tiene una cuenta con ese nombre (sin distinguir
+  // ---- Indica si el usuario ya tiene un bolsillo con ese nombre (sin distinguir
   // mayúsculas/espacios); `excludeId` se usa al renombrar para no chocar consigo misma ----
   Future<bool> nameExists(String userId, String name, {String? excludeId}) async {
     final target = name.trim().toLowerCase();
@@ -36,11 +36,11 @@ class AccountService {
     });
   }
 
-  // ---- Crea una nueva cuenta con su saldo inicial; devuelve su id ----
+  // ---- Crea un nuevo bolsillo con su saldo inicial; devuelve su id ----
   //
-  // Si es la PRIMERA cuenta del usuario, migra automáticamente el saldo de
-  // los movimientos que ya existían antes de esta función (sin cuenta
-  // asignada) para que no "desaparezca" dinero, y les asigna esta cuenta.
+  // Si es el PRIMER bolsillo del usuario, migra automáticamente el saldo de
+  // los movimientos que ya existían antes de esta función (sin bolsillo
+  // asignado) para que no "desaparezca" dinero, y les asigna este bolsillo.
   Future<String> addAccount({
     required String userId,
     required String name,
@@ -87,12 +87,12 @@ class AccountService {
     return doc.id;
   }
 
-  // ---- Renombra una cuenta (no toca el saldo) ----
+  // ---- Renombra un bolsillo (no toca el saldo) ----
   Future<void> renameAccount(String id, String name) async {
     await _accounts.doc(id).update({'name': name});
   }
 
-  // ---- Cambia el color elegido para una cuenta ----
+  // ---- Cambia el color elegido para un bolsillo ----
   Future<void> setColor(String id, int colorValue) async {
     await _accounts.doc(id).update({'color': colorValue});
   }
@@ -105,20 +105,20 @@ class AccountService {
     });
   }
 
-  // ---- Fija el saldo de la cuenta a un valor absoluto ----
+  // ---- Fija el saldo del bolsillo a un valor absoluto ----
   Future<void> setBalance(String accountId, double balance) async {
     await _accounts.doc(accountId).update({'balance': balance});
   }
 
-  // ---- Elimina una cuenta ----
+  // ---- Elimina un bolsillo ----
   Future<void> deleteAccount(String id) async {
     await _accounts.doc(id).delete();
   }
 
-  // ---- Transfiere dinero entre dos cuentas propias, de forma atómica ----
+  // ---- Transfiere dinero entre dos bolsillos propios, de forma atómica ----
   //
   // Además de ajustar ambos saldos, deja registrado un único movimiento de
-  // tipo transferencia (con la cuenta origen en `accountId` y la destino en
+  // tipo transferencia (con el bolsillo origen en `accountId` y el destino en
   // `transferAccountId`) para que quede visible en el historial, las
   // estadísticas y las exportaciones, en vez de desaparecer silenciosamente.
   Future<void> transferBetweenAccounts({

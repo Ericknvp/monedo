@@ -465,7 +465,7 @@ class _GoalCardState extends State<_GoalCard> {
             style: GoogleFonts.plusJakartaSans(
                 color: AppTheme.primary, fontWeight: FontWeight.w700)),
         content: Text(
-          '"$accountName" tiene ${CurrencyFormatter.format(balance)}. Este ahorro dejaría la cuenta en negativo. ¿Quieres continuar de todas formas?',
+          '"$accountName" tiene ${CurrencyFormatter.format(balance)}. Este ahorro dejaría el bolsillo en negativo. ¿Quieres continuar de todas formas?',
           style: GoogleFonts.beVietnamPro(color: AppTheme.onSurfaceVariant),
         ),
         actions: [
@@ -1279,7 +1279,7 @@ class _GoalSheetState extends State<_GoalSheet> {
   bool _isLoading = false;
   // Solo aplica al crear una meta nueva: si ya tenía ahorros previos (fuera
   // de la app) para esto, ese monto inicial se guarda tal cual en la meta
-  // SIN descontarlo de ninguna cuenta ni registrar un movimiento, porque no
+  // SIN descontarlo de ningún bolsillo ni registrar un movimiento, porque no
   // es dinero que esté saliendo ahora del balance.
   bool _hasExistingSavings = false;
 
@@ -1467,7 +1467,7 @@ class _GoalSheetState extends State<_GoalSheet> {
           ),
           const SizedBox(height: 8),
           Text(
-            'Este monto se suma a la meta directamente, sin descontarse de ninguna cuenta.',
+            'Este monto se suma a la meta directamente, sin descontarse de ningún bolsillo.',
             style: GoogleFonts.beVietnamPro(
               color: AppTheme.onSurfaceVariant,
               fontSize: 12,

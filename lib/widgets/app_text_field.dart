@@ -237,7 +237,7 @@ class _AppTextFieldState extends State<AppTextField> {
 
 /// Caja plana (mismo radio y fondo que [AppTextField] en reposo) para
 /// campos que no se escriben, sino que abren un selector al tocarlos
-/// (fecha, cuenta): sin estado de foco propio, solo feedback de toque.
+/// (fecha, bolsillo): sin estado de foco propio, solo feedback de toque.
 class AppFieldShell extends StatelessWidget {
   const AppFieldShell({
     super.key,

@@ -525,7 +525,7 @@ class _PostAuthOnboardingState extends State<PostAuthOnboarding> {
     if (_done) return const DashboardScreen();
     // La bienvenida y los slides explicativos ya se muestran antes de
     // registrarse (OnboardingGate delante de RegisterScreen). Aquí, con la
-    // cuenta recién creada, solo falta moneda y cuentas.
+    // cuenta recién creada, solo falta moneda y bolsillos.
     return OnboardingScreen(
       showWelcome: false,
       showCurrency: true,

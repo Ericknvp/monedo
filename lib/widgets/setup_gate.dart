@@ -7,7 +7,7 @@ import '../screens/onboarding_screen.dart';
 import '../utils/currency_formatter.dart';
 import 'branded_loading_screen.dart';
 
-/// Verifica que el usuario tenga moneda y al menos una cuenta configuradas.
+/// Verifica que el usuario tenga moneda y al menos un bolsillo configurados.
 /// Cuentas creadas (o que iniciaron sesión) antes de estas funciones
 /// completan solo lo que les falte, una única vez, antes de ver [child].
 class SetupGate extends StatefulWidget {
@@ -43,7 +43,7 @@ class _SetupGateState extends State<SetupGate> {
       // Movimientos recurrentes vencidos (salario, renta, etc.): se generan
       // una vez por apertura de la app, antes de mostrar el dashboard, para
       // que los saldos ya estén al día. Se evita mientras el usuario sigue
-      // en onboarding sin cuentas configuradas. Si falla (sin conexión,
+      // en onboarding sin bolsillos configurados. Si falla (sin conexión,
       // reglas de Firestore aún no actualizadas, etc.) no debe bloquear el
       // resto de la app: se reintenta en la próxima apertura.
       try {

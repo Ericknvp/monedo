@@ -6,8 +6,8 @@ import '../theme/app_theme.dart';
 import '../utils/account_colors.dart';
 import '../utils/currency_formatter.dart';
 
-/// Tarjeta que muestra en qué cuentas está el dinero del usuario, con
-/// acceso directo a agregarlas o administrarlas (Mis cuentas).
+/// Tarjeta que muestra en qué bolsillos está el dinero del usuario, con
+/// acceso directo a agregarlos o administrarlos (Mis bolsillos).
 class AccountsSummaryCard extends StatelessWidget {
   final List<AccountModel> accounts;
 
@@ -83,7 +83,7 @@ class AccountsSummaryCard extends StatelessWidget {
                         color: AppTheme.onSurfaceVariant, size: 22),
                     const SizedBox(height: 6),
                     Text(
-                      'Agrega tu primera cuenta',
+                      'Agrega tu primer bolsillo',
                       style: GoogleFonts.beVietnamPro(
                         color: AppTheme.onSurfaceVariant,
                         fontSize: 12.5,

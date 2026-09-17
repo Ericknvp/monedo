@@ -224,7 +224,7 @@ class AppTheme {
   );
 
   // Gradiente oscuro usado en las tarjetas "hero" (balance del dashboard,
-  // balance total de Mis cuentas): un tono más profundo que primaryContainer
+  // balance total de Mis bolsillos): un tono más profundo que primaryContainer
   // para que el balance destaque como el dato más importante de la pantalla.
   // Fijo en ambos modos (misma lógica que primaryGradient/backgroundGradient).
   static const LinearGradient heroGradient = LinearGradient(

@@ -13,10 +13,10 @@ class TransactionModel {
   final bool isIncome;       // true = ingreso, false = gasto
   final DateTime date;       // Fecha del movimiento
   final String? note;        // Nota opcional
-  final String? accountId;   // Cuenta de la que sale/entra el dinero
+  final String? accountId;   // Bolsillo del que sale/entra el dinero
   final String? goalId;      // Meta de ahorro a la que pertenece (si aplica)
-  final bool isTransfer;         // true si es una transferencia entre cuentas propias
-  final String? transferAccountId; // Cuenta destino de la transferencia (accountId es la de origen)
+  final bool isTransfer;         // true si es una transferencia entre bolsillos propios
+  final String? transferAccountId; // Bolsillo destino de la transferencia (accountId es el de origen)
   final String? recurringId; // ID de la regla recurrente que generó este movimiento (si aplica)
 
   TransactionModel({

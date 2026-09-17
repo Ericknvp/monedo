@@ -153,7 +153,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
             style: GoogleFonts.plusJakartaSans(
                 color: AppTheme.primary, fontWeight: FontWeight.w700)),
         content: Text(
-          '"$accountName" tiene ${CurrencyFormatter.format(balance)}. Este gasto dejaría la cuenta en negativo. ¿Quieres continuar de todas formas?',
+          '"$accountName" tiene ${CurrencyFormatter.format(balance)}. Este gasto dejaría el bolsillo en negativo. ¿Quieres continuar de todas formas?',
           style: GoogleFonts.beVietnamPro(color: AppTheme.onSurfaceVariant),
         ),
         actions: [
@@ -187,7 +187,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
       return;
     }
     if (_selectedAccountId == null) {
-      _showError('Selecciona de qué cuenta sale o entra el dinero');
+      _showError('Selecciona de qué bolsillo sale o entra el dinero');
       return;
     }
 
@@ -202,7 +202,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
         }
       }
       if (account != null) {
-        // Si se está editando el mismo movimiento sin cambiar de cuenta,
+        // Si se está editando el mismo movimiento sin cambiar de bolsillo,
         // el monto anterior ya estaba descontado: se repone antes de comparar.
         final alreadyDeducted = (widget.transaction != null &&
                 !widget.transaction!.isIncome &&

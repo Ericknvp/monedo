@@ -84,7 +84,7 @@ class _TypePill extends StatelessWidget {
   }
 }
 
-/// Cuenta de un movimiento buscada en vivo entre las cuentas del usuario
+/// Bolsillo de un movimiento buscado en vivo entre los bolsillos del usuario
 /// (el modelo solo guarda el id); si no se encuentra o es null, "—".
 class _AccountValue extends StatelessWidget {
   const _AccountValue({required this.accountId, this.dense = false});
@@ -218,7 +218,7 @@ class _MobileDetailSheet extends StatelessWidget {
                     style: GoogleFonts.beVietnamPro(
                         color: AppTheme.primary, fontSize: 14, fontWeight: FontWeight.w600))),
             const SizedBox(height: 14),
-            _row('Cuenta', child: _AccountValue(accountId: t.accountId)),
+            _row('Bolsillo', child: _AccountValue(accountId: t.accountId)),
             if (t.note != null && t.note!.isNotEmpty) ...[
               const SizedBox(height: 14),
               _row('Nota',
@@ -395,7 +395,7 @@ class _DesktopDetailDialog extends StatelessWidget {
                           style: GoogleFonts.beVietnamPro(
                               color: AppTheme.primary, fontSize: 13, fontWeight: FontWeight.w600))),
                   const SizedBox(height: 10),
-                  _row('Cuenta', child: _AccountValue(accountId: t.accountId, dense: true)),
+                  _row('Bolsillo', child: _AccountValue(accountId: t.accountId, dense: true)),
                   if (t.note != null && t.note!.isNotEmpty) ...[
                     const SizedBox(height: 10),
                     _row('Nota',

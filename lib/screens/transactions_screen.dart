@@ -443,9 +443,9 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
     );
   }
 
-  /// Hoja de selección múltiple de cuentas — mismo patrón que la de
-  /// categorías, pero solo tiene sentido mostrarla cuando hay más de una
-  /// cuenta (con una sola, filtrar por cuenta no distingue nada).
+  /// Hoja de selección múltiple de bolsillos — mismo patrón que la de
+  /// categorías, pero solo tiene sentido mostrarla cuando hay más de un
+  /// bolsillo (con uno solo, filtrar por bolsillo no distingue nada).
   Future<void> _showAccountFilterSheet(List<AccountModel> accounts) async {
     var selected = {..._selectedAccountIds};
 
@@ -483,7 +483,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                 children: [
                   Expanded(
                     child: Text(
-                      'Filtrar por cuenta',
+                      'Filtrar por bolsillo',
                       style: GoogleFonts.plusJakartaSans(
                         color: AppTheme.primary,
                         fontSize: 18,
@@ -784,7 +784,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
     );
   }
 
-  /// Píldora de filtro genérica (Categoría, Cuenta): mismo look que la de
+  /// Píldora de filtro genérica (Categoría, Bolsillo): mismo look que la de
   /// Fecha (icono + etiqueta, fondo oscuro cuando está activa, "x" para
   /// limpiar), para que todos los filtros se sientan como el mismo control.
   Widget _filterPill({
@@ -1043,14 +1043,14 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                             }
                             String accountLabel;
                             if (_selectedAccountIds.isEmpty) {
-                              accountLabel = 'Cuenta';
+                              accountLabel = 'Bolsillo';
                             } else if (_selectedAccountIds.length == 1) {
                               final match = accounts
                                   .where((a) => a.id == _selectedAccountIds.first);
                               accountLabel =
-                                  match.isEmpty ? 'Cuenta' : match.first.name;
+                                  match.isEmpty ? 'Bolsillo' : match.first.name;
                             } else {
-                              accountLabel = 'Cuenta (${_selectedAccountIds.length})';
+                              accountLabel = 'Bolsillo (${_selectedAccountIds.length})';
                             }
                             return _filterPill(
                               icon: Icons.account_balance_wallet_outlined,
@@ -1172,7 +1172,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
             ),
 
             // Summary bar — acumulado de lo que queda visible tras aplicar
-            // todos los filtros activos (tipo, fecha, categoría, cuenta,
+            // todos los filtros activos (tipo, fecha, categoría, bolsillo,
             // búsqueda), no solo el total general.
             if (all.isNotEmpty)
               Container(

@@ -14,10 +14,10 @@ import '../widgets/app_toast.dart';
 import '../widgets/fade_slide_in.dart';
 import '../widgets/form_kit.dart';
 
-/// Abre el formulario para crear una cuenta nueva (ej. Efectivo, Nu, Nequi):
+/// Abre el formulario para crear un bolsillo nuevo (ej. Efectivo, Nu, Nequi):
 /// ventana modal centrada en escritorio (mismo patrón que
-/// [openAddTransaction]), hoja inferior en móvil. Devuelve el id de la
-/// cuenta creada, o null si se canceló.
+/// [openAddTransaction]), hoja inferior en móvil. Devuelve el id del
+/// bolsillo creado, o null si se canceló.
 Future<String?> showAddAccountSheet(
   BuildContext context, {
   required String userId,
@@ -58,7 +58,7 @@ Future<String?> showAddAccountSheet(
   );
 }
 
-/// Abre el diálogo para editar el nombre y el saldo de una cuenta a la vez.
+/// Abre el diálogo para editar el nombre y el saldo de un bolsillo a la vez.
 Future<void> showEditAccountDialog(
   BuildContext context,
   AccountModel account,
@@ -74,7 +74,7 @@ Future<void> showEditAccountDialog(
       builder: (ctx, setState) => AlertDialog(
         backgroundColor: AppTheme.surfaceContainerLowest,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text('Editar cuenta',
+        title: Text('Editar bolsillo',
             style: GoogleFonts.plusJakartaSans(
                 color: AppTheme.primary, fontWeight: FontWeight.w700)),
         content: Column(
@@ -108,7 +108,7 @@ Future<void> showEditAccountDialog(
             onPressed: () async {
               final name = nameCtrl.text.trim();
               if (name.isEmpty) {
-                setState(() => error = 'Ponle un nombre a la cuenta');
+                setState(() => error = 'Ponle un nombre al bolsillo');
                 return;
               }
               final parsed = CurrencyFormatter.parse(balanceCtrl.text.trim());
@@ -119,7 +119,7 @@ Future<void> showEditAccountDialog(
               if (name != account.name &&
                   await accountService.nameExists(account.userId, name,
                       excludeId: account.id)) {
-                setState(() => error = 'Ya existe una cuenta "$name"');
+                setState(() => error = 'Ya existe un bolsillo "$name"');
                 return;
               }
               if (parsed != account.balance) {
@@ -182,7 +182,7 @@ Future<void> showEditAccountDialog(
   }
 }
 
-/// Abre la hoja para transferir dinero entre dos cuentas propias.
+/// Abre la hoja para transferir dinero entre dos bolsillos propios.
 Future<void> showTransferSheet(
   BuildContext context, {
   required List<AccountModel> accounts,
@@ -223,7 +223,7 @@ Future<void> showTransferSheet(
   );
 }
 
-/// Abre "Mis cuentas": como una ventana modal centrada (con fondo
+/// Abre "Mis bolsillos": como una ventana modal centrada (con fondo
 /// oscurecido) en escritorio, o a pantalla completa en móvil.
 Future<void> openAccountsScreen(BuildContext context) {
   final isDesktop = MediaQuery.of(context).size.width >= 900;
@@ -283,11 +283,11 @@ class _AccountsScreenState extends State<AccountsScreen> {
       builder: (ctx) => AlertDialog(
         backgroundColor: AppTheme.surfaceContainerLowest,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text('¿Eliminar cuenta?',
+        title: Text('¿Eliminar bolsillo?',
             style: GoogleFonts.plusJakartaSans(
                 color: AppTheme.primary, fontWeight: FontWeight.w700)),
         content: Text(
-          'Se eliminará "${account.name}". Los movimientos que ya la usan conservarán su historial, pero no se podrá volver a elegir esta cuenta.',
+          'Se eliminará "${account.name}". Los movimientos que ya lo usan conservarán su historial, pero no se podrá volver a elegir este bolsillo.',
           style: GoogleFonts.beVietnamPro(color: AppTheme.onSurfaceVariant),
         ),
         actions: [
@@ -330,7 +330,7 @@ class _AccountsScreenState extends State<AccountsScreen> {
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
-          'Mis cuentas',
+          'Mis bolsillos',
           style: GoogleFonts.plusJakartaSans(
             color: AppTheme.primary,
             fontSize: 18,
@@ -375,7 +375,7 @@ class _AccountsScreenState extends State<AccountsScreen> {
                       const SizedBox(width: 16),
                       Expanded(
                         child: Text(
-                          'Mis cuentas',
+                          'Mis bolsillos',
                           style: GoogleFonts.plusJakartaSans(
                             color: AppTheme.primary,
                             fontSize: 19,
@@ -455,7 +455,7 @@ class _AccountsScreenState extends State<AccountsScreen> {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            '${accounts.length} ${accounts.length == 1 ? 'cuenta' : 'cuentas'}',
+                            '${accounts.length} ${accounts.length == 1 ? 'bolsillo' : 'bolsillos'}',
                             style: GoogleFonts.beVietnamPro(
                               color: Colors.white70,
                               fontSize: 12,
@@ -472,7 +472,7 @@ class _AccountsScreenState extends State<AccountsScreen> {
                             onPressed: () => showAddAccountSheet(context,
                                 userId: _userId),
                             icon: const Icon(Icons.add_rounded, size: 20),
-                            label: const Text('Nueva cuenta'),
+                            label: const Text('Nuevo bolsillo'),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: AppTheme.successFixed,
                               foregroundColor: Colors.white,
@@ -521,7 +521,7 @@ class _AccountsScreenState extends State<AccountsScreen> {
                                 size: 40, color: AppTheme.outlineVariant),
                             const SizedBox(height: 10),
                             Text(
-                              'Todavía no tienes cuentas registradas',
+                              'Todavía no tienes bolsillos registrados',
                               style: GoogleFonts.beVietnamPro(
                                   color: AppTheme.onSurfaceVariant,
                                   fontSize: 13),
@@ -702,7 +702,7 @@ class _AddAccountSheetState extends State<_AddAccountSheet> {
     final name = _nameCtrl.text.trim();
     if (name.isEmpty) {
       setState(() => _error = _kind == _AccountKind.cash
-          ? 'Ponle un nombre a la cuenta'
+          ? 'Ponle un nombre al bolsillo'
           : 'Escribe el nombre de tu banco o billetera');
       return;
     }
@@ -720,7 +720,7 @@ class _AddAccountSheetState extends State<_AddAccountSheet> {
     if (await _accountService.nameExists(widget.userId, name)) {
       setState(() {
         _saving = false;
-        _error = 'Ya existe una cuenta "$name"';
+        _error = 'Ya existe un bolsillo "$name"';
       });
       return;
     }
@@ -749,7 +749,7 @@ class _AddAccountSheetState extends State<_AddAccountSheet> {
           ),
           const SizedBox(height: 20),
           Text(
-            'Nueva cuenta',
+            'Nuevo bolsillo',
             style: GoogleFonts.plusJakartaSans(
               color: AppTheme.primary,
               fontSize: 20,
@@ -787,7 +787,7 @@ class _AddAccountSheetState extends State<_AddAccountSheet> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Nueva cuenta',
+                  'Nuevo bolsillo',
                   style: GoogleFonts.plusJakartaSans(
                     color: AppTheme.primary,
                     fontSize: 18,
@@ -878,7 +878,7 @@ class _AddAccountSheetState extends State<_AddAccountSheet> {
           ],
           const SizedBox(height: 28),
           FullWidthPrimaryButton(
-            label: 'Crear cuenta',
+            label: 'Crear bolsillo',
             isLoading: _saving,
             onTap: _save,
           ),
@@ -978,7 +978,7 @@ class _TransferSheetState extends State<_TransferSheet> {
       return;
     }
     if (_fromId == null || _toId == null || _fromId == _toId) {
-      setState(() => _error = 'Elige dos cuentas distintas');
+      setState(() => _error = 'Elige dos bolsillos distintos');
       return;
     }
     final from = widget.accounts.firstWhere((a) => a.id == _fromId);
@@ -1024,7 +1024,7 @@ class _TransferSheetState extends State<_TransferSheet> {
           ),
           const SizedBox(height: 20),
           Text(
-            'Transferir entre cuentas',
+            'Transferir entre bolsillos',
             style: GoogleFonts.plusJakartaSans(
               color: AppTheme.primary,
               fontSize: 20,
@@ -1053,7 +1053,7 @@ class _TransferSheetState extends State<_TransferSheet> {
           const SizedBox(width: 14),
           Expanded(
             child: Text(
-              'Transferir entre cuentas',
+              'Transferir entre bolsillos',
               style: GoogleFonts.plusJakartaSans(
                 color: AppTheme.primary,
                 fontSize: 18,

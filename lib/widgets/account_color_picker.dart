@@ -6,7 +6,7 @@ import '../theme/app_theme.dart';
 import '../utils/account_colors.dart';
 import '../utils/category_colors.dart';
 
-/// Hoja para elegir el color de una cuenta, de la misma paleta curada que
+/// Hoja para elegir el color de un bolsillo, de la misma paleta curada que
 /// las categorías.
 Future<void> showAccountColorPicker(
   BuildContext context, {
