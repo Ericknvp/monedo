@@ -11,6 +11,7 @@ import '../theme/app_theme.dart';
 import '../utils/amount_input_formatter.dart';
 import '../utils/currency_formatter.dart';
 import '../widgets/app_toast.dart';
+import '../widgets/undo_toast.dart';
 import '../widgets/app_date_picker.dart';
 import '../widgets/app_text_field.dart';
 import '../widgets/form_kit.dart';
@@ -301,7 +302,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
             style: GoogleFonts.plusJakartaSans(
                 color: AppTheme.primary, fontWeight: FontWeight.w600)),
         content: Text(
-          'Se eliminará "${t.title}" (${CurrencyFormatter.format(t.amount)}). Esta acción no se puede deshacer.',
+          'Se eliminará "${t.title}" (${CurrencyFormatter.format(t.amount)}).',
           style: GoogleFonts.beVietnamPro(color: AppTheme.onSurfaceVariant),
         ),
         actions: [
@@ -320,9 +321,15 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
       ),
     );
     if (confirm != true || !mounted) return;
-    setState(() => _isLoading = true);
-    await _txService.deleteTransaction(t);
-    if (mounted) Navigator.pop(context);
+    // El toast se inserta en el overlay raíz antes de cerrar esta pantalla,
+    // así que sigue visible (y el borrado real sigue pendiente) aunque la
+    // pantalla de edición ya se haya cerrado.
+    showUndoToast(
+      context,
+      message: 'Eliminando "${t.title}"',
+      onConfirmed: () => _txService.deleteTransaction(t),
+    );
+    Navigator.pop(context);
   }
 
   @override

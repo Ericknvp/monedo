@@ -11,6 +11,7 @@ import '../utils/currency_formatter.dart';
 import '../widgets/account_color_picker.dart';
 import '../widgets/app_text_field.dart';
 import '../widgets/app_toast.dart';
+import '../widgets/undo_toast.dart';
 import '../widgets/fade_slide_in.dart';
 import '../widgets/form_kit.dart';
 
@@ -307,8 +308,12 @@ class _AccountsScreenState extends State<AccountsScreen> {
         ],
       ),
     );
-    if (confirm == true) {
-      await _accountService.deleteAccount(account.id);
+    if (confirm == true && mounted) {
+      showUndoToast(
+        context,
+        message: 'Eliminando "${account.name}"',
+        onConfirmed: () => _accountService.deleteAccount(account.id),
+      );
     }
   }
 

@@ -9,6 +9,7 @@ import '../theme/app_theme.dart';
 import '../utils/category_icons.dart';
 import '../utils/category_colors.dart';
 import '../utils/category_visibility.dart';
+import '../widgets/undo_toast.dart';
 import '../widgets/icon_picker.dart';
 import '../widgets/category_color_picker.dart';
 import '../widgets/fade_slide_in.dart';
@@ -157,8 +158,12 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
         ],
       ),
     );
-    if (confirm == true) {
-      await _categoryService.deleteCategory(category.id);
+    if (confirm == true && mounted) {
+      showUndoToast(
+        context,
+        message: 'Eliminando "${category.name}"',
+        onConfirmed: () => _categoryService.deleteCategory(category.id),
+      );
     }
   }
 

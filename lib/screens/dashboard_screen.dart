@@ -26,6 +26,7 @@ import '../widgets/transaction_tile.dart';
 import '../widgets/update_dialog.dart';
 import '../widgets/branded_loading_screen.dart';
 import '../widgets/fade_slide_in.dart';
+import '../widgets/undo_toast.dart';
 import 'add_transaction_screen.dart';
 import 'transactions_screen.dart';
 import 'statistics_screen.dart';
@@ -1035,7 +1036,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             style: GoogleFonts.plusJakartaSans(
                 color: AppTheme.primary, fontWeight: FontWeight.w600)),
         content: Text(
-          'Se eliminará "${t.title}". Esta acción no se puede deshacer.',
+          'Se eliminará "${t.title}".',
           style: GoogleFonts.beVietnamPro(color: AppTheme.onSurfaceVariant),
         ),
         actions: [
@@ -1054,7 +1055,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
       ),
     );
     if (confirm != true) return false;
-    await _txService.deleteTransaction(t);
+    if (mounted) {
+      showUndoToast(
+        context,
+        message: 'Eliminando "${t.title}"',
+        onConfirmed: () => _txService.deleteTransaction(t),
+      );
+    } else {
+      await _txService.deleteTransaction(t);
+    }
     return true;
   }
 

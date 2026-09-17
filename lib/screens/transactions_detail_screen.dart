@@ -7,6 +7,7 @@ import '../utils/category_colors.dart';
 import '../utils/category_icons.dart';
 import '../utils/currency_formatter.dart';
 import '../widgets/transaction_tile.dart';
+import '../widgets/undo_toast.dart';
 import 'add_transaction_screen.dart';
 
 /// Hoja de detalle genérica: una lista de movimientos ya filtrados (por
@@ -179,7 +180,7 @@ class _TransactionsDetailScreenState extends State<TransactionsDetailScreen> {
             style: GoogleFonts.plusJakartaSans(
                 color: AppTheme.primary, fontWeight: FontWeight.w600)),
         content: Text(
-          'Se eliminará "${t.title}" (${CurrencyFormatter.format(t.amount)}). Esta acción no se puede deshacer.',
+          'Se eliminará "${t.title}" (${CurrencyFormatter.format(t.amount)}).',
           style: GoogleFonts.beVietnamPro(color: AppTheme.onSurfaceVariant),
         ),
         actions: [
@@ -198,8 +199,24 @@ class _TransactionsDetailScreenState extends State<TransactionsDetailScreen> {
       ),
     );
     if (confirm != true) return false;
-    await _txService.deleteTransaction(t);
+    // Se quita de la lista al instante (optimista) y se repone si se
+    // deshace, ya que esta pantalla no escucha un stream que la reponga sola.
+    final index = _items.indexOf(t);
     if (mounted) setState(() => _items.remove(t));
+    if (mounted) {
+      showUndoToast(
+        context,
+        message: 'Eliminando "${t.title}"',
+        onConfirmed: () => _txService.deleteTransaction(t),
+        onUndo: () {
+          if (mounted) {
+            setState(() => _items.insert(index.clamp(0, _items.length), t));
+          }
+        },
+      );
+    } else {
+      await _txService.deleteTransaction(t);
+    }
     return true;
   }
 

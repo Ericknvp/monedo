@@ -15,6 +15,7 @@ import '../utils/currency_formatter.dart';
 import '../utils/amount_input_formatter.dart';
 import '../widgets/app_text_field.dart';
 import '../widgets/app_toast.dart';
+import '../widgets/undo_toast.dart';
 import '../widgets/branded_loading_screen.dart';
 import '../widgets/blurred_image_frame.dart';
 import '../widgets/fade_slide_in.dart';
@@ -1247,8 +1248,12 @@ class _GoalCardState extends State<_GoalCard> {
         ],
       ),
     );
-    if (confirm == true) {
-      await widget.goalService.deleteGoal(widget.goal.id);
+    if (confirm == true && context.mounted) {
+      showUndoToast(
+        context,
+        message: 'Eliminando "${widget.goal.title}"',
+        onConfirmed: () => widget.goalService.deleteGoal(widget.goal.id),
+      );
     }
   }
 }
