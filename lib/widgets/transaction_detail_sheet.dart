@@ -227,10 +227,10 @@ class _MobileDetailSheet extends StatelessWidget {
                       style: GoogleFonts.beVietnamPro(
                           color: AppTheme.onSurfaceVariant, fontSize: 13, fontStyle: FontStyle.italic))),
             ],
-            if (!t.isTransfer) ...[
-              const SizedBox(height: 28),
-              Row(
-                children: [
+            const SizedBox(height: 28),
+            Row(
+              children: [
+                if (!t.isTransfer) ...[
                   Expanded(
                     child: OutlinedButton.icon(
                       onPressed: () {
@@ -248,27 +248,28 @@ class _MobileDetailSheet extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 12),
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      // La confirmación aparece encima de esta hoja (que se
-                      // queda abierta detrás); solo se cierra si de verdad
-                      // se elimina, no si se cancela.
-                      onPressed: () async {
-                        final deleted = await onDelete();
-                        if (deleted && context.mounted) Navigator.pop(context);
-                      },
-                      icon: Icon(Icons.delete_outline_rounded, color: AppTheme.errorRed, size: 17),
-                      label: Text('Eliminar', style: TextStyle(color: AppTheme.errorRed)),
-                      style: OutlinedButton.styleFrom(
-                        side: BorderSide(color: AppTheme.errorRed.withOpacity(0.4)),
-                        shape: const StadiumBorder(),
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                      ),
+                ],
+                Expanded(
+                  child: OutlinedButton.icon(
+                    // La confirmación aparece encima de esta hoja (que se
+                    // queda abierta detrás); solo se cierra si de verdad
+                    // se elimina, no si se cancela.
+                    onPressed: () async {
+                      final deleted = await onDelete();
+                      if (deleted && context.mounted) Navigator.pop(context);
+                    },
+                    icon: Icon(Icons.delete_outline_rounded, color: AppTheme.errorRed, size: 17),
+                    label: Text(t.isTransfer ? 'Deshacer transferencia' : 'Eliminar',
+                        style: TextStyle(color: AppTheme.errorRed)),
+                    style: OutlinedButton.styleFrom(
+                      side: BorderSide(color: AppTheme.errorRed.withOpacity(0.4)),
+                      shape: const StadiumBorder(),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
                     ),
                   ),
-                ],
-              ),
-            ],
+                ),
+              ],
+            ),
           ],
         ),
       ),
@@ -404,24 +405,24 @@ class _DesktopDetailDialog extends StatelessWidget {
                             style: GoogleFonts.beVietnamPro(
                                 color: AppTheme.onSurfaceVariant, fontSize: 12.5, fontStyle: FontStyle.italic))),
                   ],
-                  if (!t.isTransfer) ...[
-                    const SizedBox(height: 20),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        TextButton.icon(
-                          // La confirmación aparece encima de este diálogo
-                          // (que se queda abierto detrás); solo se cierra si
-                          // de verdad se elimina, no si se cancela.
-                          onPressed: () async {
-                            final deleted = await onDelete();
-                            if (deleted && context.mounted) Navigator.pop(context);
-                          },
-                          icon: Icon(Icons.delete_outline_rounded, color: AppTheme.errorRed, size: 16),
-                          label: Text('Eliminar',
-                              style: GoogleFonts.beVietnamPro(
-                                  color: AppTheme.errorRed, fontWeight: FontWeight.w700, fontSize: 12.5)),
-                        ),
+                  const SizedBox(height: 20),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      TextButton.icon(
+                        // La confirmación aparece encima de este diálogo
+                        // (que se queda abierto detrás); solo se cierra si
+                        // de verdad se elimina, no si se cancela.
+                        onPressed: () async {
+                          final deleted = await onDelete();
+                          if (deleted && context.mounted) Navigator.pop(context);
+                        },
+                        icon: Icon(Icons.delete_outline_rounded, color: AppTheme.errorRed, size: 16),
+                        label: Text(t.isTransfer ? 'Deshacer transferencia' : 'Eliminar',
+                            style: GoogleFonts.beVietnamPro(
+                                color: AppTheme.errorRed, fontWeight: FontWeight.w700, fontSize: 12.5)),
+                      ),
+                      if (!t.isTransfer) ...[
                         const SizedBox(width: 4),
                         FilledButton.icon(
                           onPressed: () {
@@ -439,8 +440,8 @@ class _DesktopDetailDialog extends StatelessWidget {
                           ),
                         ),
                       ],
-                    ),
-                  ],
+                    ],
+                  ),
                 ],
               ),
             ),

@@ -139,9 +139,8 @@ class TransactionService {
 
   // ---- Elimina una transacción y revierte su efecto en el bolsillo y la meta ----
   //
-  // La UI no ofrece eliminar transferencias (se revierten haciendo otra en
-  // sentido contrario), pero si algo llega a invocarlo igual se revierte el
-  // saldo de ambos bolsillos involucrados para no dejar la transferencia a medias.
+  // Si es una transferencia, revierte el saldo de ambos bolsillos
+  // involucrados (origen y destino) para no dejarla a medias.
   Future<void> deleteTransaction(TransactionModel transaction) async {
     await _transactions.doc(transaction.id).delete();
     if (transaction.accountId != null) {
