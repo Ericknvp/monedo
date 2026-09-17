@@ -691,6 +691,99 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
     );
   }
 
+  /// Acumulado de ingresos/gastos de lo que queda visible tras los filtros
+  /// activos. Solo muestra el total que tiene sentido según el filtro de
+  /// tipo elegido — ver "Gastos: $0" cuando ya filtraste por Ingresos sería
+  /// ruido, no información.
+  Widget _buildSummaryBar(List<TransactionModel> filtered) {
+    final showIncome = _filter != 'Gastos';
+    final showExpenses = _filter != 'Ingresos';
+    final income = showIncome ? _txService.calculateIncome(filtered) : 0.0;
+    final expenses =
+        showExpenses ? _txService.calculateExpenses(filtered) : 0.0;
+
+    return Row(
+      children: [
+        if (showIncome)
+          Expanded(
+            child: _summaryStat(
+              label: 'Ingresos',
+              amount: income,
+              color: AppTheme.secondary,
+              icon: Icons.arrow_downward_rounded,
+            ),
+          ),
+        if (showIncome && showExpenses) const SizedBox(width: 10),
+        if (showExpenses)
+          Expanded(
+            child: _summaryStat(
+              label: 'Gastos',
+              amount: expenses,
+              color: AppTheme.errorRed,
+              icon: Icons.arrow_upward_rounded,
+            ),
+          ),
+      ],
+    );
+  }
+
+  Widget _summaryStat({
+    required String label,
+    required double amount,
+    required Color color,
+    required IconData icon,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.08),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 26,
+            height: 26,
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.16),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, size: 13, color: color),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  label,
+                  style: GoogleFonts.beVietnamPro(
+                    color: AppTheme.onSurfaceVariant,
+                    fontSize: 10.5,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    CurrencyFormatter.format(amount),
+                    style: GoogleFonts.plusJakartaSans(
+                      color: color,
+                      fontSize: 14.5,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   /// Píldora de filtro genérica (Categoría, Cuenta): mismo look que la de
   /// Fecha (icono + etiqueta, fondo oscuro cuando está activa, "x" para
   /// limpiar), para que todos los filtros se sientan como el mismo control.
@@ -1077,6 +1170,16 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                 ],
               ),
             ),
+
+            // Summary bar — acumulado de lo que queda visible tras aplicar
+            // todos los filtros activos (tipo, fecha, categoría, cuenta,
+            // búsqueda), no solo el total general.
+            if (all.isNotEmpty)
+              Container(
+                color: AppTheme.background,
+                padding: const EdgeInsets.fromLTRB(24, 0, 24, 14),
+                child: _buildSummaryBar(all),
+              ),
 
             // Transaction list
             Expanded(

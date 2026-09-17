@@ -13,6 +13,7 @@ import '../utils/category_icons.dart';
 import '../widgets/pressable_scale.dart';
 import '../widgets/fade_slide_in.dart';
 import 'budgets_screen.dart';
+import 'category_transactions_screen.dart';
 import '../widgets/budget_editor.dart';
 
 enum _PieRange { month, week, today }
@@ -77,6 +78,23 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
   DateTime _startOfWeek(DateTime d) {
     final date = DateTime(d.year, d.month, d.day);
     return date.subtract(Duration(days: date.weekday - 1));
+  }
+
+  /// Describe el periodo que está mostrando el donut ahora mismo (mes,
+  /// semana u hoy), para que al abrir el detalle de una categoría quede
+  /// claro que son los movimientos de ESE periodo, no todo el histórico.
+  String get _donutPeriodLabel {
+    switch (_pieRange) {
+      case _PieRange.month:
+        return '${_months[_selectedMonth - 1]} $_selectedYear';
+      case _PieRange.week:
+        final weekStart =
+            _startOfWeek(DateTime.now()).add(Duration(days: 7 * _weekOffset));
+        final weekEnd = weekStart.add(const Duration(days: 6));
+        return '${_fmtShortDate(weekStart)} - ${_fmtShortDate(weekEnd)}';
+      case _PieRange.today:
+        return 'Hoy';
+    }
   }
 
   void _prevMonth() => setState(() {
@@ -687,7 +705,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
         final tx = snap.data ?? [];
         final expenses = _txService.calculateExpenses(tx);
         final categoryData = _txService.getExpensesByCategory(tx);
-        return _buildDonutCardBody(expenses, categoryData);
+        return _buildDonutCardBody(expenses, categoryData, tx);
       },
     );
   }
@@ -823,8 +841,8 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
   // así el selector no pierde su estado al alternar entre rangos sin datos
   // y con datos (antes eran dos "return" con estructuras distintas, y
   // Flutter recreaba el selector desde cero en vez de animarlo).
-  Widget _buildDonutCardBody(
-      double expenses, Map<String, double> categoryData) {
+  Widget _buildDonutCardBody(double expenses, Map<String, double> categoryData,
+      List<TransactionModel> periodTx) {
     final isEmpty = categoryData.isEmpty;
     final emptyLabel = switch (_pieRange) {
       _PieRange.today => 'Sin gastos hoy',
@@ -1073,8 +1091,21 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                       final cat = e.value;
                       final isTouched = idx == _touchedIndex;
                       return PressableScale(
-                        onTap: () => setState(
-                            () => _touchedIndex = isTouched ? null : idx),
+                        // Tocar la leyenda abre el detalle de los gastos de
+                        // esa categoría EN ESTE PERIODO (el mismo que se ve
+                        // en el donut); para el histórico completo está la
+                        // pestaña "Movimientos" con su propio filtro. Para
+                        // solo resaltar la porción en la tarta, se toca
+                        // directamente el donut.
+                        onTap: () => openCategoryTransactionsScreen(
+                          context,
+                          category: cat.key,
+                          transactions: periodTx
+                              .where((t) =>
+                                  !t.isIncome && t.category == cat.key)
+                              .toList(),
+                          periodLabel: _donutPeriodLabel,
+                        ),
                         child: AnimatedContainer(
                           duration: const Duration(milliseconds: 150),
                           padding: const EdgeInsets.symmetric(
@@ -1109,6 +1140,9 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                                       : FontWeight.w400,
                                 ),
                               ),
+                              const SizedBox(width: 4),
+                              Icon(Icons.chevron_right_rounded,
+                                  size: 14, color: AppTheme.outlineVariant),
                             ],
                           ),
                         ),
