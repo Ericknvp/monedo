@@ -9,17 +9,76 @@ import '../utils/currency_formatter.dart';
 import '../widgets/transaction_tile.dart';
 import 'add_transaction_screen.dart';
 
+/// Hoja de detalle genérica: una lista de movimientos ya filtrados (por
+/// categoría, por día...) con su total, editable/eliminable igual que en
+/// "Movimientos" — ventana modal centrada en escritorio, pantalla completa
+/// en móvil. La usan [openCategoryTransactionsScreen] y
+/// [openDayTransactionsScreen]; no recibe un `userId` ni arma su propio
+/// stream porque siempre parte de una lista ya recortada por quien la abre
+/// (el periodo que se esté viendo en Estadísticas), no del histórico
+/// completo — para eso está la pestaña "Movimientos" con su propio filtro.
+
 /// Abre el detalle de los gastos de una categoría PARA UN PERIODO dado (el
 /// mismo que se esté viendo en el donut de Estadísticas — mes, semana u
-/// hoy): ventana modal centrada en escritorio, pantalla completa en móvil
-/// — mismo patrón que [openRecurringTransactionsScreen]. Para el histórico
-/// completo de todos los periodos está la pestaña "Movimientos" con su
-/// propio filtro por categoría.
+/// hoy). Solo gastos (así es como se arma la gráfica de torta), un único
+/// total.
 Future<void> openCategoryTransactionsScreen(
   BuildContext context, {
   required String category,
   required List<TransactionModel> transactions,
   required String periodLabel,
+}) {
+  return _openDetailScreen(
+    context,
+    title: category,
+    subtitle: periodLabel,
+    icon: CategoryIconRegistry.iconFor(category),
+    color: CategoryColors.forCategory(category),
+    transactions: transactions,
+    showIncome: false,
+    emptyMessage: 'Sin gastos en "$category"',
+  );
+}
+
+/// Abre todos los movimientos (ingresos y gastos) de un día puntual — se
+/// usa al tocar una barra de "Gastos por día" en la sección semanal de
+/// Estadísticas.
+Future<void> openDayTransactionsScreen(
+  BuildContext context, {
+  required DateTime date,
+  required List<TransactionModel> transactions,
+}) {
+  const weekdays = [
+    'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo',
+  ];
+  const months = [
+    'ene', 'feb', 'mar', 'abr', 'may', 'jun',
+    'jul', 'ago', 'sep', 'oct', 'nov', 'dic',
+  ];
+  final title = weekdays[date.weekday - 1];
+  final subtitle = '${date.day} ${months[date.month - 1]} ${date.year}';
+
+  return _openDetailScreen(
+    context,
+    title: title,
+    subtitle: subtitle,
+    icon: Icons.calendar_today_rounded,
+    color: AppTheme.secondary,
+    transactions: transactions,
+    showIncome: true,
+    emptyMessage: 'Sin movimientos ese día',
+  );
+}
+
+Future<void> _openDetailScreen(
+  BuildContext context, {
+  required String title,
+  required String subtitle,
+  required IconData icon,
+  required Color color,
+  required List<TransactionModel> transactions,
+  required bool showIncome,
+  required String emptyMessage,
 }) {
   final isDesktop = MediaQuery.of(context).size.width >= 900;
 
@@ -30,10 +89,14 @@ Future<void> openCategoryTransactionsScreen(
       barrierLabel: 'Cerrar',
       barrierColor: Colors.black.withOpacity(0.55),
       transitionDuration: const Duration(milliseconds: 220),
-      pageBuilder: (_, __, ___) => CategoryTransactionsScreen(
-        category: category,
+      pageBuilder: (_, __, ___) => TransactionsDetailScreen(
+        title: title,
+        subtitle: subtitle,
+        icon: icon,
+        color: color,
         transactions: transactions,
-        periodLabel: periodLabel,
+        showIncome: showIncome,
+        emptyMessage: emptyMessage,
         isDialog: true,
       ),
       transitionBuilder: (context, animation, secondaryAnimation, child) {
@@ -53,36 +116,47 @@ Future<void> openCategoryTransactionsScreen(
   return Navigator.push(
     context,
     MaterialPageRoute(
-      builder: (_) => CategoryTransactionsScreen(
-        category: category,
+      builder: (_) => TransactionsDetailScreen(
+        title: title,
+        subtitle: subtitle,
+        icon: icon,
+        color: color,
         transactions: transactions,
-        periodLabel: periodLabel,
+        showIncome: showIncome,
+        emptyMessage: emptyMessage,
       ),
     ),
   );
 }
 
-class CategoryTransactionsScreen extends StatefulWidget {
-  final String category;
+class TransactionsDetailScreen extends StatefulWidget {
+  final String title;
+  final String subtitle;
+  final IconData icon;
+  final Color color;
   final List<TransactionModel> transactions;
-  final String periodLabel;
+  final bool showIncome;
+  final String emptyMessage;
   final bool isDialog;
 
-  const CategoryTransactionsScreen({
+  const TransactionsDetailScreen({
     super.key,
-    required this.category,
+    required this.title,
+    required this.subtitle,
+    required this.icon,
+    required this.color,
     required this.transactions,
-    required this.periodLabel,
+    required this.showIncome,
+    required this.emptyMessage,
     this.isDialog = false,
   });
 
   @override
-  State<CategoryTransactionsScreen> createState() =>
-      _CategoryTransactionsScreenState();
+  State<TransactionsDetailScreen> createState() =>
+      _TransactionsDetailScreenState();
 }
 
-class _CategoryTransactionsScreenState
-    extends State<CategoryTransactionsScreen> {
+class _TransactionsDetailScreenState extends State<TransactionsDetailScreen> {
   final _txService = TransactionService();
   late List<TransactionModel> _items;
 
@@ -143,7 +217,7 @@ class _CategoryTransactionsScreenState
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
-          widget.category,
+          widget.title,
           style: GoogleFonts.plusJakartaSans(
             color: AppTheme.primary,
             fontSize: 18,
@@ -156,7 +230,7 @@ class _CategoryTransactionsScreenState
         children: [
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
-            child: _periodBadge(),
+            child: _subtitleLabel(),
           ),
           Expanded(child: _buildBody()),
         ],
@@ -166,7 +240,6 @@ class _CategoryTransactionsScreenState
 
   /// Ventana modal centrada (escritorio).
   Widget _buildDialog(BuildContext context) {
-    final color = CategoryColors.forCategory(widget.category);
     return Dialog(
       backgroundColor: Colors.transparent,
       insetPadding: const EdgeInsets.all(24),
@@ -189,13 +262,11 @@ class _CategoryTransactionsScreenState
                         width: 44,
                         height: 44,
                         decoration: BoxDecoration(
-                          color: color.withOpacity(0.14),
+                          color: widget.color.withOpacity(0.14),
                           borderRadius: BorderRadius.circular(14),
                         ),
-                        child: Icon(
-                            CategoryIconRegistry.iconFor(widget.category),
-                            color: color,
-                            size: 20),
+                        child:
+                            Icon(widget.icon, color: widget.color, size: 20),
                       ),
                       const SizedBox(width: 16),
                       Expanded(
@@ -203,7 +274,7 @@ class _CategoryTransactionsScreenState
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              widget.category,
+                              widget.title,
                               style: GoogleFonts.plusJakartaSans(
                                 color: AppTheme.primary,
                                 fontSize: 19,
@@ -211,7 +282,7 @@ class _CategoryTransactionsScreenState
                               ),
                             ),
                             const SizedBox(height: 2),
-                            _periodBadge(compact: true),
+                            _subtitleLabel(compact: true),
                           ],
                         ),
                       ),
@@ -232,11 +303,11 @@ class _CategoryTransactionsScreenState
     );
   }
 
-  Widget _periodBadge({bool compact = false}) {
+  Widget _subtitleLabel({bool compact = false}) {
     return Padding(
       padding: EdgeInsets.only(bottom: compact ? 0 : 10),
       child: Text(
-        widget.periodLabel,
+        widget.subtitle,
         style: GoogleFonts.beVietnamPro(
           color: AppTheme.onSurfaceVariant,
           fontSize: compact ? 12 : 12.5,
@@ -258,7 +329,8 @@ class _CategoryTransactionsScreenState
                   size: 40, color: AppTheme.outlineVariant),
               const SizedBox(height: 12),
               Text(
-                'Sin gastos en "${widget.category}"',
+                widget.emptyMessage,
+                textAlign: TextAlign.center,
                 style: GoogleFonts.plusJakartaSans(
                   color: AppTheme.primary,
                   fontSize: 15,
@@ -267,7 +339,7 @@ class _CategoryTransactionsScreenState
               ),
               const SizedBox(height: 4),
               Text(
-                widget.periodLabel,
+                widget.subtitle,
                 style: GoogleFonts.beVietnamPro(
                     color: AppTheme.onSurfaceVariant, fontSize: 12.5),
               ),
@@ -277,31 +349,12 @@ class _CategoryTransactionsScreenState
       );
     }
 
-    final total = _items.fold<double>(0, (sum, t) => sum + t.amount);
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
           padding: const EdgeInsets.fromLTRB(20, 8, 20, 4),
-          child: Row(
-            children: [
-              Text(
-                '${_items.length} movimiento${_items.length == 1 ? '' : 's'}',
-                style: GoogleFonts.beVietnamPro(
-                    color: AppTheme.onSurfaceVariant, fontSize: 13),
-              ),
-              const Spacer(),
-              Text(
-                CurrencyFormatter.format(total),
-                style: GoogleFonts.plusJakartaSans(
-                  color: AppTheme.errorRed,
-                  fontSize: 15,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ],
-          ),
+          child: _summaryRow(),
         ),
         Expanded(
           child: ListView.builder(
@@ -318,6 +371,91 @@ class _CategoryTransactionsScreenState
           ),
         ),
       ],
+    );
+  }
+
+  /// Sin `showIncome`: un solo total (gastos, en rojo) — así es como se
+  /// arma la lista, sería redundante repetir "Gastos" en la etiqueta. Con
+  /// `showIncome`: dos totales lado a lado, igual que la barra de resumen
+  /// de "Movimientos".
+  Widget _summaryRow() {
+    final countLabel =
+        '${_items.length} movimiento${_items.length == 1 ? '' : 's'}';
+
+    if (!widget.showIncome) {
+      final total = _items.fold<double>(0, (sum, t) => sum + t.amount);
+      return Row(
+        children: [
+          Text(countLabel,
+              style: GoogleFonts.beVietnamPro(
+                  color: AppTheme.onSurfaceVariant, fontSize: 13)),
+          const Spacer(),
+          Text(
+            CurrencyFormatter.format(total),
+            style: GoogleFonts.plusJakartaSans(
+              color: AppTheme.errorRed,
+              fontSize: 15,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
+      );
+    }
+
+    final income = _txService.calculateIncome(_items);
+    final expenses = _txService.calculateExpenses(_items);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(countLabel,
+            style: GoogleFonts.beVietnamPro(
+                color: AppTheme.onSurfaceVariant, fontSize: 13)),
+        const SizedBox(height: 10),
+        Row(
+          children: [
+            if (income > 0)
+              Expanded(
+                  child: _statChip('Ingresos', income, AppTheme.secondary)),
+            if (income > 0 && expenses > 0) const SizedBox(width: 10),
+            if (expenses > 0)
+              Expanded(
+                  child: _statChip('Gastos', expenses, AppTheme.errorRed)),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _statChip(String label, double amount, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.08),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(label,
+              style: GoogleFonts.beVietnamPro(
+                  color: AppTheme.onSurfaceVariant,
+                  fontSize: 10.5,
+                  fontWeight: FontWeight.w600)),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Text(
+              CurrencyFormatter.format(amount),
+              style: GoogleFonts.plusJakartaSans(
+                color: color,
+                fontSize: 14.5,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

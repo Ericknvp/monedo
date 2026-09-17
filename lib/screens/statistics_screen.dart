@@ -13,7 +13,7 @@ import '../utils/category_icons.dart';
 import '../widgets/pressable_scale.dart';
 import '../widgets/fade_slide_in.dart';
 import 'budgets_screen.dart';
-import 'category_transactions_screen.dart';
+import 'transactions_detail_screen.dart';
 import '../widgets/budget_editor.dart';
 
 enum _PieRange { month, week, today }
@@ -31,6 +31,11 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
   int _selectedMonth = DateTime.now().month;
   int _selectedYear = DateTime.now().year;
   int? _touchedIndex;
+  bool _legendExpanded = false;
+  // Cuántas categorías se ven de entrada en la leyenda del donut antes de
+  // "Ver más" — con muchas categorías propias (cuenta con historial largo)
+  // la leyenda sin colapsar se vuelve una pared de texto.
+  static const _legendCollapsedCount = 6;
   _PieRange _pieRange = _PieRange.month;
   // 0 = semana actual, -1 = la anterior, etc. No se permite ir al futuro.
   int _weekOffset = 0;
@@ -958,7 +963,12 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
             }),
             const SizedBox(height: 28),
             Builder(builder: (context) {
-              final entries = categoryData.entries.toList();
+              final entries = categoryData.entries.toList()
+                ..sort((a, b) => b.value.compareTo(a.value));
+              // En escritorio hay ancho de sobra para que la leyenda se
+              // envuelva en varias líneas sin problema; el colapso
+              // "Ver más" es solo para no acumular tanto en móvil.
+              final isDesktop = MediaQuery.of(context).size.width >= 900;
               final hasTouch =
                   _touchedIndex != null && _touchedIndex! < entries.length;
               final touchedEntry = hasTouch ? entries[_touchedIndex!] : null;
@@ -1083,10 +1093,21 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                     ),
                   ),
                   const SizedBox(height: 24),
-                  Wrap(
+                  AnimatedSize(
+                    duration: const Duration(milliseconds: 220),
+                    curve: Curves.easeOutCubic,
+                    alignment: Alignment.topLeft,
+                    child: Wrap(
                     spacing: 16,
                     runSpacing: 10,
-                    children: entries.asMap().entries.map((e) {
+                    children: [
+                      ...(isDesktop || _legendExpanded
+                              ? entries
+                              : entries.take(_legendCollapsedCount))
+                          .toList()
+                          .asMap()
+                          .entries
+                          .map((e) {
                       final idx = e.key;
                       final cat = e.value;
                       final isTouched = idx == _touchedIndex;
@@ -1147,13 +1168,49 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                           ),
                         ),
                       );
-                    }).toList(),
+                      }),
+                      if (!isDesktop && entries.length > _legendCollapsedCount)
+                        _legendToggleChip(entries.length - _legendCollapsedCount),
+                    ],
+                    ),
                   ),
                 ],
               );
             }),
           ],
         ],
+      ),
+    );
+  }
+
+  /// "Ver más (+N)" / "Ver menos" al final de la leyenda del donut, con el
+  /// mismo tratamiento visual que una entrada normal de la leyenda (para
+  /// que se sienta parte de la lista, no un botón aparte).
+  Widget _legendToggleChip(int hiddenCount) {
+    return PressableScale(
+      onTap: () => setState(() => _legendExpanded = !_legendExpanded),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              _legendExpanded ? 'Ver menos' : 'Ver más (+$hiddenCount)',
+              style: GoogleFonts.beVietnamPro(
+                color: AppTheme.secondary,
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            const SizedBox(width: 2),
+            AnimatedRotation(
+              duration: const Duration(milliseconds: 200),
+              turns: _legendExpanded ? 0.5 : 0,
+              child: Icon(Icons.expand_more_rounded,
+                  size: 15, color: AppTheme.secondary),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -1447,6 +1504,27 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                           );
                         },
                       ),
+                      // Tocar una barra abre el detalle de ese día (todos
+                      // sus movimientos, ingresos y gastos) — solo en el
+                      // "tap" final, no en cada evento de hover/arrastre
+                      // (esos ya mueven el tooltip por su cuenta).
+                      touchCallback: (event, response) {
+                        if (event is! FlTapUpEvent) return;
+                        final idx = response?.spot?.touchedBarGroupIndex;
+                        if (idx == null || idx < 0 || idx >= dayKeys.length) {
+                          return;
+                        }
+                        final day = dayKeys[idx];
+                        if (day.isAfter(today)) return;
+                        final dayTx = currentTx
+                            .where((t) =>
+                                t.date.year == day.year &&
+                                t.date.month == day.month &&
+                                t.date.day == day.day)
+                            .toList();
+                        openDayTransactionsScreen(context,
+                            date: day, transactions: dayTx);
+                      },
                     ),
                     titlesData: FlTitlesData(
                       topTitles: const AxisTitles(
