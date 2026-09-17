@@ -269,6 +269,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }
 
   // ── MOBILE ───────────────────────────────────────────────────
+  // Cabecera reducida a una sola fila (logo + título) y campos en
+  // versión "dense" para que el formulario completo, botón de Google
+  // incluido, entre en pantalla sin necesitar scroll en la mayoría de
+  // equipos; el SingleChildScrollView solo actúa como red de seguridad
+  // en pantallas muy chicas o con texto grande.
   Widget _buildMobile() {
     return Scaffold(
       body: Container(
@@ -287,33 +292,23 @@ class _RegisterScreenState extends State<RegisterScreen> {
               child: Column(
                 children: [
                   Padding(
-                    padding: const EdgeInsets.fromLTRB(28, 24, 28, 28),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                    padding: const EdgeInsets.fromLTRB(28, 16, 28, 14),
+                    child: Row(
                       children: [
                         Image.asset(
                           'assets/images/logomonedo_new.png',
-                          width: 60,
-                          height: 60,
+                          width: 61,
+                          height: 61,
                           fit: BoxFit.contain,
                         ),
-                        const SizedBox(height: 20),
+                        const SizedBox(width: 12),
                         Text(
                           'Crear cuenta',
                           style: GoogleFonts.plusJakartaSans(
-                            fontSize: 30,
+                            fontSize: 22,
                             fontWeight: FontWeight.w700,
                             color: Colors.white,
-                            letterSpacing: -0.5,
-                          ),
-                        ),
-                        const SizedBox(height: 6),
-                        Text(
-                          'Comienza tu camino hacia la claridad financiera.',
-                          style: GoogleFonts.beVietnamPro(
-                            fontSize: 15,
-                            color: AppTheme.secondaryFixed.withOpacity(0.85),
-                            height: 1.5,
+                            letterSpacing: -0.4,
                           ),
                         ),
                       ],
@@ -328,8 +323,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             BorderRadius.vertical(top: Radius.circular(32)),
                       ),
                       child: SingleChildScrollView(
-                        padding: const EdgeInsets.fromLTRB(28, 36, 28, 28),
-                        child: _buildFormFields(),
+                        padding: const EdgeInsets.fromLTRB(28, 24, 28, 16),
+                        physics: const ClampingScrollPhysics(),
+                        child: _buildMobileFormFields(),
                       ),
                     ),
                   ),
@@ -339,6 +335,179 @@ class _RegisterScreenState extends State<RegisterScreen> {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildMobileFormFields() {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        AppTextField(
+          controller: _usernameController,
+          label: 'Nombre de usuario',
+          icon: Icons.alternate_email_rounded,
+          textCapitalization: TextCapitalization.words,
+          textInputAction: TextInputAction.next,
+          autofillHints: const [AutofillHints.username],
+          errorText: _usernameError,
+          dense: true,
+          onChanged: (_) {
+            if (_usernameError != null) setState(() => _usernameError = null);
+          },
+          onSubmitted: (_) => _emailFocus.requestFocus(),
+        ),
+        const SizedBox(height: 14),
+        AppTextField(
+          controller: _emailController,
+          focusNode: _emailFocus,
+          label: 'Correo electrónico',
+          icon: Icons.email_outlined,
+          keyboardType: TextInputType.emailAddress,
+          textInputAction: TextInputAction.next,
+          autofillHints: const [AutofillHints.email],
+          errorText: _emailError,
+          dense: true,
+          onChanged: (_) {
+            if (_emailError != null) setState(() => _emailError = null);
+          },
+          onSubmitted: (_) => _passwordFocus.requestFocus(),
+        ),
+        const SizedBox(height: 14),
+        AppTextField(
+          controller: _passwordController,
+          focusNode: _passwordFocus,
+          label: 'Contraseña',
+          icon: Icons.lock_outlined,
+          obscureText: true,
+          showObscureToggle: true,
+          textInputAction: TextInputAction.next,
+          autofillHints: const [AutofillHints.newPassword],
+          errorText: _passwordError,
+          dense: true,
+          onChanged: (_) {
+            if (_passwordError != null) setState(() => _passwordError = null);
+          },
+          onSubmitted: (_) => _confirmFocus.requestFocus(),
+        ),
+        const SizedBox(height: 14),
+        AppTextField(
+          controller: _confirmPasswordController,
+          focusNode: _confirmFocus,
+          label: 'Confirmar contraseña',
+          icon: Icons.lock_outlined,
+          obscureText: true,
+          showObscureToggle: true,
+          textInputAction: TextInputAction.done,
+          autofillHints: const [AutofillHints.newPassword],
+          errorText: _confirmError,
+          dense: true,
+          onChanged: (_) {
+            if (_confirmError != null) setState(() => _confirmError = null);
+          },
+          onSubmitted: (_) => _register(),
+        ),
+        const SizedBox(height: 22),
+        SizedBox(
+          width: double.infinity,
+          child: ElevatedButton(
+            onPressed: _isLoading ? null : _register,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppTheme.successFixed,
+              shape: const StadiumBorder(),
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              elevation: 0,
+            ),
+            child: _isLoading
+                ? const SizedBox(
+                    width: 22,
+                    height: 22,
+                    child: CircularProgressIndicator(
+                        color: Colors.white, strokeWidth: 2.4),
+                  )
+                : Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        'Crear cuenta',
+                        style: GoogleFonts.plusJakartaSans(
+                            fontSize: 16, fontWeight: FontWeight.w600),
+                      ),
+                      const SizedBox(width: 8),
+                      const Icon(Icons.arrow_forward_rounded, size: 20),
+                    ],
+                  ),
+          ),
+        ),
+        const SizedBox(height: 16),
+        Row(
+          children: [
+            Expanded(child: Divider(color: AppTheme.outlineVariant)),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: Text(
+                'o continúa con',
+                style: GoogleFonts.beVietnamPro(
+                    color: AppTheme.onSurfaceVariant, fontSize: 12),
+              ),
+            ),
+            Expanded(child: Divider(color: AppTheme.outlineVariant)),
+          ],
+        ),
+        const SizedBox(height: 16),
+        SizedBox(
+          width: double.infinity,
+          child: OutlinedButton(
+            onPressed: _isLoading ? null : _signInWithGoogle,
+            style: OutlinedButton.styleFrom(
+              foregroundColor: AppTheme.primary,
+              shape: const StadiumBorder(),
+              side: BorderSide(color: AppTheme.outlineVariant),
+              padding: const EdgeInsets.symmetric(vertical: 14),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const GoogleLogo(size: 18),
+                const SizedBox(width: 10),
+                Text(
+                  'Continuar con Google',
+                  style: GoogleFonts.beVietnamPro(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: AppTheme.primary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(height: 16),
+        Center(
+          child: TextButton(
+            onPressed: () => Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (_) => const LoginScreen()),
+            ),
+            child: RichText(
+              text: TextSpan(
+                text: '¿Ya tienes cuenta? ',
+                style: GoogleFonts.beVietnamPro(
+                    color: AppTheme.onSurfaceVariant, fontSize: 14),
+                children: [
+                  TextSpan(
+                    text: 'Inicia sesión',
+                    style: GoogleFonts.beVietnamPro(
+                      color: AppTheme.secondary,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 
