@@ -233,7 +233,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return Container(
       width: 280,
       decoration: const BoxDecoration(
-        color: AppTheme.primary,
+        color: AppTheme.navyFixed,
         border: Border(right: BorderSide(color: Colors.white10)),
       ),
       child: Column(
@@ -346,21 +346,21 @@ class _DashboardScreenState extends State<DashboardScreen> {
         margin: const EdgeInsets.symmetric(vertical: 2),
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 13),
         decoration: BoxDecoration(
-          color: isSelected ? AppTheme.surfaceContainerLowest : Colors.transparent,
+          color: isSelected ? Colors.white : Colors.transparent,
           borderRadius: BorderRadius.circular(100),
         ),
         child: Row(
           children: [
             Icon(
               icon,
-              color: isSelected ? AppTheme.primary : Colors.white,
+              color: isSelected ? AppTheme.navyFixed : Colors.white,
               size: 20,
             ),
             const SizedBox(width: 14),
             Text(
               label,
               style: GoogleFonts.beVietnamPro(
-                color: isSelected ? AppTheme.primary : Colors.white,
+                color: isSelected ? AppTheme.navyFixed : Colors.white,
                 fontSize: 14,
                 fontWeight: isSelected ? FontWeight.w700 : FontWeight.w400,
               ),
@@ -382,7 +382,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return Container(
       height: 72,
       padding: const EdgeInsets.symmetric(horizontal: 40),
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         color: AppTheme.background,
         border: Border(bottom: BorderSide(color: AppTheme.surfaceVariant)),
       ),
@@ -415,7 +415,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             icon: const Icon(Icons.add_rounded, size: 18),
             label: const Text('Agregar movimiento'),
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.secondary,
+              backgroundColor: AppTheme.successFixed,
               foregroundColor: Colors.white,
               shape: const StadiumBorder(),
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
@@ -844,7 +844,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   BarChartData(
                     barTouchData: BarTouchData(
                       touchTooltipData: BarTouchTooltipData(
-                        getTooltipColor: (group) => AppTheme.primary,
+                        getTooltipColor: (group) => AppTheme.navyFixed,
                         getTooltipItem: (group, groupIndex, rod, rodIndex) {
                           final textColor = rodIndex == 0
                               ? AppTheme.secondaryFixed
@@ -875,7 +875,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           ),
                           BarChartRodData(
                             toY: e.value.expenses,
-                            color: AppTheme.primary.withOpacity(0.15),
+                            color: AppTheme.navyFixed.withOpacity(0.15),
                             width: 12,
                             borderRadius: BorderRadius.circular(4),
                           ),
@@ -924,7 +924,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             children: [
               _chartLegend(AppTheme.secondaryFixed, 'Ingresos'),
               const SizedBox(width: 20),
-              _chartLegend(AppTheme.primary.withOpacity(0.2), 'Gastos'),
+              _chartLegend(AppTheme.navyFixed.withOpacity(0.2), 'Gastos'),
             ],
           ),
         ],
@@ -987,14 +987,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ],
             ),
           ),
-          const Divider(height: 1, color: AppTheme.surfaceVariant),
+          Divider(height: 1, color: AppTheme.surfaceVariant),
           if (monthTx.isEmpty)
             Padding(
               padding: const EdgeInsets.all(32),
               child: Center(
                 child: Column(
                   children: [
-                    const Icon(Icons.receipt_long_outlined,
+                    Icon(Icons.receipt_long_outlined,
                         size: 40, color: AppTheme.outlineVariant),
                     const SizedBox(height: 10),
                     Text(
@@ -1078,7 +1078,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return Scaffold(
       backgroundColor: AppTheme.background,
       appBar: AppBar(
-        backgroundColor: AppTheme.primary,
+        backgroundColor: AppTheme.navyFixed,
         elevation: 0,
         titleSpacing: 20,
         title: Row(
@@ -1106,7 +1106,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       body: pages[safeIndex],
       floatingActionButton: safeIndex == 0
           ? FloatingActionButton(
-              backgroundColor: AppTheme.secondary,
+              backgroundColor: AppTheme.successFixed,
               foregroundColor: Colors.white,
               onPressed: () => openAddTransaction(context),
               child: const Icon(Icons.add_rounded),
@@ -1114,7 +1114,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           : null,
       bottomNavigationBar: NavigationBar(
         backgroundColor: AppTheme.surfaceContainer,
-        indicatorColor: AppTheme.secondary,
+        indicatorColor: AppTheme.successFixed,
         selectedIndex: safeIndex,
         labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
         onDestinationSelected: (i) => setState(() => _selectedIndex = i),
@@ -1204,7 +1204,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         padding: const EdgeInsets.all(32),
                         child: Column(
                           children: [
-                            const Icon(Icons.receipt_long_outlined,
+                            Icon(Icons.receipt_long_outlined,
                                 size: 56, color: AppTheme.outlineVariant),
                             const SizedBox(height: 14),
                             Text(

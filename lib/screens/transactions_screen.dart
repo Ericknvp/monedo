@@ -263,7 +263,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                     Navigator.pop(ctx);
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.secondary,
+                    backgroundColor: AppTheme.successFixed,
                     foregroundColor: Colors.white,
                     shape: const StadiumBorder(),
                     padding: const EdgeInsets.symmetric(vertical: 16),
@@ -286,10 +286,10 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
         duration: const Duration(milliseconds: 160),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         decoration: BoxDecoration(
-          color: selected ? AppTheme.secondary : AppTheme.surfaceContainerLow,
+          color: selected ? AppTheme.successFixed : AppTheme.surfaceContainerLow,
           borderRadius: BorderRadius.circular(100),
           border: Border.all(
-            color: selected ? AppTheme.secondary : AppTheme.outlineVariant,
+            color: selected ? AppTheme.successFixed : AppTheme.outlineVariant,
           ),
         ),
         child: Text(
@@ -425,7 +425,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                                   horizontal: 20, vertical: 9),
                               decoration: BoxDecoration(
                                 color: isSelected
-                                    ? AppTheme.primary
+                                    ? AppTheme.navyFixed
                                     : AppTheme.surfaceContainer,
                                 borderRadius: BorderRadius.circular(100),
                               ),
@@ -452,7 +452,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                                 horizontal: 16, vertical: 9),
                             decoration: BoxDecoration(
                               color: _dateFilterActive
-                                  ? AppTheme.primary
+                                  ? AppTheme.navyFixed
                                   : AppTheme.surfaceContainer,
                               borderRadius: BorderRadius.circular(100),
                             ),
@@ -511,7 +511,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(Icons.ios_share_rounded,
+                            Icon(Icons.ios_share_rounded,
                                 size: 17, color: AppTheme.primary),
                             const SizedBox(width: 8),
                             Text(
@@ -540,7 +540,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                             color: AppTheme.surfaceContainer,
                             border: Border.all(color: AppTheme.outlineVariant),
                           ),
-                          child: const Icon(Icons.ios_share_rounded,
+                          child: Icon(Icons.ios_share_rounded,
                               size: 17, color: AppTheme.primary),
                         ),
                       ),
@@ -563,7 +563,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                               color: AppTheme.surfaceContainer,
                               shape: BoxShape.circle,
                             ),
-                            child: const Icon(Icons.receipt_long_outlined,
+                            child: Icon(Icons.receipt_long_outlined,
                                 size: 36, color: AppTheme.onSurfaceVariant),
                           ),
                           const SizedBox(height: 20),
@@ -640,7 +640,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
             if (all.isNotEmpty)
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                decoration: const BoxDecoration(
+                decoration: BoxDecoration(
                   color: AppTheme.background,
                   border: Border(top: BorderSide(color: AppTheme.surfaceVariant)),
                 ),
@@ -722,7 +722,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
         height: 32,
         margin: const EdgeInsets.symmetric(horizontal: 2),
         decoration: BoxDecoration(
-          color: isSelected ? AppTheme.primary : Colors.transparent,
+          color: isSelected ? AppTheme.navyFixed : Colors.transparent,
           borderRadius: BorderRadius.circular(8),
         ),
         child: Center(

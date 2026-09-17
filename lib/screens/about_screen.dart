@@ -210,7 +210,7 @@ class AboutScreen extends StatelessWidget {
                         ),
                         child: Row(
                           children: [
-                            const Icon(Icons.badge_outlined,
+                            Icon(Icons.badge_outlined,
                                 color: AppTheme.onSurfaceVariant, size: 20),
                             const SizedBox(width: 12),
                             Expanded(
@@ -238,7 +238,7 @@ class AboutScreen extends StatelessWidget {
                               ),
                             ),
                             IconButton(
-                              icon: const Icon(Icons.copy_rounded,
+                              icon: Icon(Icons.copy_rounded,
                                   color: AppTheme.secondary, size: 18),
                               tooltip: 'Copiar ID',
                               onPressed: () {
@@ -265,7 +265,7 @@ class AboutScreen extends StatelessWidget {
                           ),
                           child: Row(
                             children: [
-                              const Icon(Icons.event_available_outlined,
+                              Icon(Icons.event_available_outlined,
                                   color: AppTheme.onSurfaceVariant, size: 20),
                               const SizedBox(width: 12),
                               Expanded(
@@ -303,7 +303,7 @@ class AboutScreen extends StatelessWidget {
                           icon: const Icon(Icons.support_agent_rounded, size: 19),
                           label: const Text('Reportar un problema'),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: AppTheme.secondary,
+                            backgroundColor: AppTheme.successFixed,
                             foregroundColor: Colors.white,
                             shape: const StadiumBorder(),
                             padding: const EdgeInsets.symmetric(vertical: 16),
@@ -329,7 +329,7 @@ class AboutScreen extends StatelessWidget {
                       label: const Text('Cerrar sesión'),
                       style: OutlinedButton.styleFrom(
                         foregroundColor: AppTheme.errorRed,
-                        side: const BorderSide(color: AppTheme.errorRed),
+                        side: BorderSide(color: AppTheme.errorRed),
                         shape: const StadiumBorder(),
                         padding: const EdgeInsets.symmetric(vertical: 16),
                       ),
@@ -340,7 +340,7 @@ class AboutScreen extends StatelessWidget {
               ],
 
               // Footer
-              const Divider(color: AppTheme.surfaceVariant),
+              Divider(color: AppTheme.surfaceVariant),
               const SizedBox(height: 20),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -360,7 +360,7 @@ class AboutScreen extends StatelessWidget {
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Icon(Icons.language_rounded,
+                          Icon(Icons.language_rounded,
                               color: AppTheme.secondary, size: 16),
                           const SizedBox(width: 6),
                           Text(
@@ -391,7 +391,7 @@ class AboutScreen extends StatelessWidget {
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Icon(Icons.code_rounded,
+                          Icon(Icons.code_rounded,
                               color: AppTheme.onSurfaceVariant, size: 14),
                           const SizedBox(width: 6),
                           Text(
@@ -487,7 +487,7 @@ class AboutScreen extends StatelessWidget {
             ),
             child: Row(
               children: [
-                const Icon(Icons.system_update_rounded,
+                Icon(Icons.system_update_rounded,
                     color: AppTheme.secondary, size: 20),
                 const SizedBox(width: 12),
                 Expanded(
@@ -513,7 +513,7 @@ class AboutScreen extends StatelessWidget {
                     ],
                   ),
                 ),
-                const Icon(Icons.chevron_right_rounded,
+                Icon(Icons.chevron_right_rounded,
                     color: AppTheme.secondary, size: 18),
               ],
             ),

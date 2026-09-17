@@ -9,9 +9,10 @@ void showAppToast(
   BuildContext context, {
   required String message,
   IconData icon = Icons.check_circle_rounded,
-  Color accentColor = AppTheme.secondary,
+  Color? accentColor,
   Duration duration = const Duration(seconds: 3),
 }) {
+  final resolvedAccentColor = accentColor ?? AppTheme.secondary;
   final overlay = Overlay.of(context);
   final isDesktop = MediaQuery.of(context).size.width >= 900;
 
@@ -23,7 +24,7 @@ void showAppToast(
     builder: (overlayContext) => _AppToast(
       message: message,
       icon: icon,
-      accentColor: accentColor,
+      accentColor: resolvedAccentColor,
       isDesktop: isDesktop,
       topPadding: MediaQuery.of(overlayContext).padding.top,
       duration: duration,

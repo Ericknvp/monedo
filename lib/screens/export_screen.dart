@@ -173,7 +173,7 @@ class _ExportScreenState extends State<ExportScreen> {
         backgroundColor: AppTheme.surfaceContainerLowest,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded, color: AppTheme.primary),
+          icon: Icon(Icons.arrow_back_rounded, color: AppTheme.primary),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
@@ -221,7 +221,7 @@ class _ExportScreenState extends State<ExportScreen> {
                           color: AppTheme.secondary.withOpacity(0.12),
                           borderRadius: BorderRadius.circular(14),
                         ),
-                        child: const Icon(Icons.ios_share_rounded,
+                        child: Icon(Icons.ios_share_rounded,
                             color: AppTheme.secondary, size: 22),
                       ),
                       const SizedBox(width: 16),
@@ -236,7 +236,7 @@ class _ExportScreenState extends State<ExportScreen> {
                         ),
                       ),
                       IconButton(
-                        icon: const Icon(Icons.close_rounded,
+                        icon: Icon(Icons.close_rounded,
                             color: AppTheme.onSurfaceVariant),
                         onPressed: () => Navigator.pop(context),
                       ),
@@ -363,10 +363,10 @@ class _ExportScreenState extends State<ExportScreen> {
         duration: const Duration(milliseconds: 160),
         padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 11),
         decoration: BoxDecoration(
-          color: isSelected ? AppTheme.secondary : AppTheme.surfaceContainerLow,
+          color: isSelected ? AppTheme.successFixed : AppTheme.surfaceContainerLow,
           borderRadius: BorderRadius.circular(100),
           border: Border.all(
-            color: isSelected ? AppTheme.secondary : AppTheme.outlineVariant,
+            color: isSelected ? AppTheme.successFixed : AppTheme.outlineVariant,
           ),
         ),
         child: Text(

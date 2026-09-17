@@ -78,7 +78,7 @@ class _BudgetsScreenState extends State<BudgetsScreen> {
         backgroundColor: AppTheme.surfaceContainerLowest,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded, color: AppTheme.primary),
+          icon: Icon(Icons.arrow_back_rounded, color: AppTheme.primary),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
@@ -120,7 +120,7 @@ class _BudgetsScreenState extends State<BudgetsScreen> {
                           color: AppTheme.secondary.withOpacity(0.12),
                           borderRadius: BorderRadius.circular(14),
                         ),
-                        child: const Icon(Icons.pie_chart_outline_rounded,
+                        child: Icon(Icons.pie_chart_outline_rounded,
                             color: AppTheme.secondary, size: 20),
                       ),
                       const SizedBox(width: 16),
@@ -135,7 +135,7 @@ class _BudgetsScreenState extends State<BudgetsScreen> {
                         ),
                       ),
                       IconButton(
-                        icon: const Icon(Icons.close_rounded,
+                        icon: Icon(Icons.close_rounded,
                             color: AppTheme.onSurfaceVariant),
                         onPressed: () => Navigator.pop(context),
                       ),
@@ -269,7 +269,7 @@ class _BudgetsScreenState extends State<BudgetsScreen> {
               ),
             ),
             const SizedBox(width: 6),
-            const Icon(Icons.chevron_right_rounded,
+            Icon(Icons.chevron_right_rounded,
                 color: AppTheme.onSurfaceVariant, size: 20),
           ],
         ),

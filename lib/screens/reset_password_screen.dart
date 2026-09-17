@@ -309,7 +309,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
         labelText: label,
         labelStyle:
             GoogleFonts.beVietnamPro(color: AppTheme.onSurfaceVariant, fontSize: 14),
-        prefixIcon: const Icon(Icons.lock_outlined,
+        prefixIcon: Icon(Icons.lock_outlined,
             color: AppTheme.onSurfaceVariant, size: 20),
         suffixIcon: IconButton(
           icon: Icon(
@@ -328,11 +328,11 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(color: AppTheme.outlineVariant),
+          borderSide: BorderSide(color: AppTheme.outlineVariant),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(color: AppTheme.secondary, width: 1.6),
+          borderSide: BorderSide(color: AppTheme.secondary, width: 1.6),
         ),
       ),
     );
@@ -344,7 +344,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
       child: ElevatedButton(
         onPressed: onPressed,
         style: ElevatedButton.styleFrom(
-          backgroundColor: AppTheme.secondary,
+          backgroundColor: AppTheme.successFixed,
           foregroundColor: Colors.white,
           shape: const StadiumBorder(),
           padding: const EdgeInsets.symmetric(vertical: 18),

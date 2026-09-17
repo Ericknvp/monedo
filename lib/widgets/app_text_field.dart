@@ -204,7 +204,7 @@ class _AppTextFieldState extends State<AppTextField> {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.error_outline_rounded,
+                      Icon(Icons.error_outline_rounded,
                           color: AppTheme.errorRed, size: 14),
                       const SizedBox(width: 6),
                       Flexible(

@@ -115,7 +115,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
           ElevatedButton(
             onPressed: () => Navigator.pop(ctx, true),
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.errorRed,
+              backgroundColor: AppTheme.dangerFixed,
               shape: const StadiumBorder(),
             ),
             child: const Text('Eliminar'),
@@ -162,7 +162,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
         backgroundColor: AppTheme.surfaceContainerLowest,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded, color: AppTheme.primary),
+          icon: Icon(Icons.arrow_back_rounded, color: AppTheme.primary),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
@@ -205,7 +205,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                           color: AppTheme.secondary.withOpacity(0.12),
                           borderRadius: BorderRadius.circular(14),
                         ),
-                        child: const Icon(Icons.category_outlined,
+                        child: Icon(Icons.category_outlined,
                             color: AppTheme.secondary, size: 20),
                       ),
                       const SizedBox(width: 16),
@@ -220,7 +220,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                         ),
                       ),
                       IconButton(
-                        icon: const Icon(Icons.close_rounded,
+                        icon: Icon(Icons.close_rounded,
                             color: AppTheme.onSurfaceVariant),
                         onPressed: () => Navigator.pop(context),
                       ),
@@ -271,7 +271,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                         icon: const Icon(Icons.add_rounded, size: 20),
                         label: const Text('Nueva categoría'),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: AppTheme.secondary,
+                          backgroundColor: AppTheme.successFixed,
                           foregroundColor: Colors.white,
                           shape: const StadiumBorder(),
                           padding: const EdgeInsets.symmetric(vertical: 16),
@@ -300,7 +300,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                         ),
                         child: Column(
                           children: [
-                            const Icon(Icons.category_outlined,
+                            Icon(Icons.category_outlined,
                                 size: 40, color: AppTheme.outlineVariant),
                             const SizedBox(height: 10),
                             Text(
@@ -506,13 +506,13 @@ class _CategoryTileState extends State<_CategoryTile> {
                     else ...[
                       if (widget.onEdit != null)
                         IconButton(
-                          icon: const Icon(Icons.edit_outlined,
+                          icon: Icon(Icons.edit_outlined,
                               color: AppTheme.onSurfaceVariant, size: 20),
                           onPressed: widget.onEdit,
                         ),
                       if (widget.onDelete != null)
                         IconButton(
-                          icon: const Icon(Icons.delete_outline_rounded,
+                          icon: Icon(Icons.delete_outline_rounded,
                               color: AppTheme.errorRed, size: 20),
                           onPressed: widget.onDelete,
                         ),
@@ -675,7 +675,7 @@ class _AddCategorySheetState extends State<_AddCategorySheet> {
                       border: Border.all(color: AppTheme.outlineVariant),
                     ),
                     child: _selectedIcon == null
-                        ? const Icon(Icons.add_photo_alternate_outlined,
+                        ? Icon(Icons.add_photo_alternate_outlined,
                             color: AppTheme.onSurfaceVariant)
                         : Icon(_selectedIcon, color: previewColor, size: 28),
                   ),
@@ -756,7 +756,7 @@ class _AddCategorySheetState extends State<_AddCategorySheet> {
             child: ElevatedButton(
               onPressed: _saving ? null : _save,
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.secondary,
+                backgroundColor: AppTheme.successFixed,
                 foregroundColor: Colors.white,
                 shape: const StadiumBorder(),
                 padding: const EdgeInsets.symmetric(vertical: 18),

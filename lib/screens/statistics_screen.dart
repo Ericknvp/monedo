@@ -276,12 +276,12 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
         padding:
             EdgeInsets.symmetric(horizontal: isActive ? 24 : 16, vertical: 10),
         decoration: BoxDecoration(
-          color: isActive ? AppTheme.primary : Colors.transparent,
+          color: isActive ? AppTheme.navyFixed : Colors.transparent,
           borderRadius: BorderRadius.circular(100),
           boxShadow: isActive
               ? [
                   BoxShadow(
-                    color: AppTheme.primary.withOpacity(0.2),
+                    color: AppTheme.navyFixed.withOpacity(0.2),
                     blurRadius: 8,
                     offset: const Offset(0, 2),
                   )
@@ -454,7 +454,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
               color: AppTheme.secondary.withOpacity(0.15),
               borderRadius: BorderRadius.circular(14),
             ),
-            child: const Icon(Icons.pie_chart_outline_rounded,
+            child: Icon(Icons.pie_chart_outline_rounded,
                 color: AppTheme.secondary, size: 22),
           ),
           const SizedBox(width: 16),
@@ -485,7 +485,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                   icon: const Icon(Icons.add_circle_outline_rounded, size: 17),
                   label: const Text('Configurar presupuestos'),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.secondary,
+                    backgroundColor: AppTheme.successFixed,
                     foregroundColor: Colors.white,
                     shape: const StadiumBorder(),
                     padding: const EdgeInsets.symmetric(
@@ -600,7 +600,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                               ),
                             ),
                             const SizedBox(width: 4),
-                            const Icon(Icons.chevron_right_rounded,
+                            Icon(Icons.chevron_right_rounded,
                                 color: AppTheme.onSurfaceVariant, size: 16),
                           ],
                         ),
@@ -726,11 +726,11 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                 child: Container(
                   width: constraints.maxWidth / 3,
                   decoration: BoxDecoration(
-                    color: AppTheme.secondary,
+                    color: AppTheme.successFixed,
                     borderRadius: BorderRadius.circular(100),
                     boxShadow: [
                       BoxShadow(
-                        color: AppTheme.secondary.withOpacity(0.3),
+                        color: AppTheme.successFixed.withOpacity(0.3),
                         blurRadius: 8,
                         offset: const Offset(0, 2),
                       ),
@@ -864,7 +864,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
             Center(
               child: Column(
                 children: [
-                  const Icon(Icons.bar_chart_outlined,
+                  Icon(Icons.bar_chart_outlined,
                       size: 56, color: AppTheme.outlineVariant),
                   const SizedBox(height: 14),
                   Text(

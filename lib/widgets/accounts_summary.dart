@@ -54,7 +54,7 @@ class AccountsSummaryCard extends StatelessWidget {
                           fontWeight: FontWeight.w700,
                         ),
                       ),
-                      const Icon(Icons.chevron_right_rounded,
+                      Icon(Icons.chevron_right_rounded,
                           color: AppTheme.secondary, size: 16),
                     ],
                   ),
@@ -79,7 +79,7 @@ class AccountsSummaryCard extends StatelessWidget {
                 ),
                 child: Column(
                   children: [
-                    const Icon(Icons.add_circle_outline_rounded,
+                    Icon(Icons.add_circle_outline_rounded,
                         color: AppTheme.onSurfaceVariant, size: 22),
                     const SizedBox(height: 6),
                     Text(
@@ -112,7 +112,7 @@ class AccountsSummaryCard extends StatelessWidget {
                           borderRadius: BorderRadius.circular(14),
                           border: Border.all(color: AppTheme.outlineVariant),
                         ),
-                        child: const Icon(Icons.add_rounded,
+                        child: Icon(Icons.add_rounded,
                             color: AppTheme.onSurfaceVariant),
                       ),
                     );

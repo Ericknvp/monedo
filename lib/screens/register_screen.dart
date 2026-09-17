@@ -137,7 +137,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   Widget _buildBrandingPanel() {
     return Container(
-      color: AppTheme.primary,
+      color: AppTheme.navyFixed,
       child: Stack(
         children: [
           Positioned(
@@ -146,7 +146,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
           ),
           Positioned(
             bottom: -80, left: -80,
-            child: _blob(450, AppTheme.secondary, 0.15),
+            child: _blob(450, AppTheme.successFixed, 0.15),
           ),
           Padding(
             padding: const EdgeInsets.all(60),
@@ -233,7 +233,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   Widget _buildFormPanel() {
     return Container(
-      color: Colors.white,
+      color: AppTheme.surfaceContainerLowest,
       padding: const EdgeInsets.symmetric(horizontal: 56),
       child: Center(
         child: SingleChildScrollView(
@@ -281,7 +281,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
             ),
             Positioned(
               top: 60, left: -70,
-              child: _blob(180, AppTheme.secondary, 0.18),
+              child: _blob(180, AppTheme.successFixed, 0.18),
             ),
             SafeArea(
               child: Column(
@@ -322,7 +322,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   Expanded(
                     child: Container(
                       width: double.infinity,
-                      decoration: const BoxDecoration(
+                      decoration: BoxDecoration(
                         color: AppTheme.surfaceContainerLowest,
                         borderRadius:
                             BorderRadius.vertical(top: Radius.circular(32)),
@@ -413,7 +413,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
           child: ElevatedButton(
             onPressed: _isLoading ? null : _register,
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.secondary,
+              backgroundColor: AppTheme.successFixed,
               shape: const StadiumBorder(),
               padding: const EdgeInsets.symmetric(vertical: 20),
               elevation: 0,
@@ -437,7 +437,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         const SizedBox(height: 28),
         Row(
           children: [
-            const Expanded(child: Divider(color: AppTheme.outlineVariant)),
+            Expanded(child: Divider(color: AppTheme.outlineVariant)),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 12),
               child: Text(
@@ -446,7 +446,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     color: AppTheme.onSurfaceVariant, fontSize: 13),
               ),
             ),
-            const Expanded(child: Divider(color: AppTheme.outlineVariant)),
+            Expanded(child: Divider(color: AppTheme.outlineVariant)),
           ],
         ),
         const SizedBox(height: 24),
@@ -457,7 +457,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
             style: OutlinedButton.styleFrom(
               foregroundColor: AppTheme.primary,
               shape: const StadiumBorder(),
-              side: const BorderSide(color: AppTheme.outlineVariant),
+              side: BorderSide(color: AppTheme.outlineVariant),
               padding: const EdgeInsets.symmetric(vertical: 18),
             ),
             child: Row(

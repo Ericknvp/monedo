@@ -49,7 +49,7 @@ class _BrandedLoadingScreenState extends State<BrandedLoadingScreen>
         child: Stack(
           children: [
             Positioned(top: -110, left: -100, child: _blob(300, AppTheme.secondaryFixed, 0.18)),
-            Positioned(bottom: -130, right: -90, child: _blob(340, AppTheme.secondary, 0.16)),
+            Positioned(bottom: -130, right: -90, child: _blob(340, AppTheme.successFixed, 0.16)),
             Positioned(top: 220, right: -70, child: _blob(200, AppTheme.onSecondaryContainer, 0.12)),
             Center(
               child: Column(

@@ -192,7 +192,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             ),
             Positioned(
               bottom: -120, right: -80,
-              child: _blob(280, AppTheme.secondary, 0.2),
+              child: _blob(280, AppTheme.successFixed, 0.2),
             ),
             SafeArea(
               child: Center(
@@ -260,7 +260,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                               child: ElevatedButton(
                                 onPressed: _canProceed && !_saving ? _next : null,
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: AppTheme.secondary,
+                                  backgroundColor: AppTheme.successFixed,
                                   foregroundColor: Colors.white,
                                   disabledBackgroundColor:
                                       Colors.white.withOpacity(0.12),

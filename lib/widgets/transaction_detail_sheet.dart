@@ -65,12 +65,12 @@ class _TypePill extends StatelessWidget {
         ? AppTheme.surfaceContainerHighest
         : (t.isIncome
             ? AppTheme.secondaryContainer.withOpacity(0.5)
-            : AppTheme.primaryContainer.withOpacity(0.15));
+            : AppTheme.expenseContainer);
     final fg = t.isTransfer
         ? AppTheme.onSurfaceVariant
         : (t.isIncome
             ? AppTheme.onSecondaryContainer
-            : AppTheme.onPrimaryFixedVariant);
+            : AppTheme.onExpenseContainer);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(100)),
@@ -199,7 +199,7 @@ class _MobileDetailSheet extends StatelessWidget {
                   color: amountColor, fontSize: 34, fontWeight: FontWeight.w800, letterSpacing: -0.5),
             ),
             const SizedBox(height: 24),
-            const Divider(color: AppTheme.surfaceVariant, height: 1),
+            Divider(color: AppTheme.surfaceVariant, height: 1),
             const SizedBox(height: 20),
             _row('Categoría',
                 child: Row(mainAxisSize: MainAxisSize.min, children: [
@@ -241,7 +241,7 @@ class _MobileDetailSheet extends StatelessWidget {
                       label: const Text('Editar'),
                       style: OutlinedButton.styleFrom(
                         foregroundColor: AppTheme.primary,
-                        side: const BorderSide(color: AppTheme.outlineVariant),
+                        side: BorderSide(color: AppTheme.outlineVariant),
                         shape: const StadiumBorder(),
                         padding: const EdgeInsets.symmetric(vertical: 14),
                       ),
@@ -360,8 +360,8 @@ class _DesktopDetailDialog extends StatelessWidget {
                         borderRadius: BorderRadius.circular(8),
                         onTap: () => Navigator.pop(context),
                         hoverColor: AppTheme.surfaceContainerHigh,
-                        child: const Padding(
-                          padding: EdgeInsets.all(4),
+                        child: Padding(
+                          padding: const EdgeInsets.all(4),
                           child: Icon(Icons.close_rounded, color: AppTheme.onSurfaceVariant, size: 20),
                         ),
                       ),
@@ -376,7 +376,7 @@ class _DesktopDetailDialog extends StatelessWidget {
                         color: amountColor, fontSize: 27, fontWeight: FontWeight.w800, letterSpacing: -0.4),
                   ),
                   const SizedBox(height: 16),
-                  const Divider(color: AppTheme.surfaceContainerHigh, height: 1),
+                  Divider(color: AppTheme.surfaceContainerHigh, height: 1),
                   const SizedBox(height: 14),
                   _row('Categoría',
                       child: Row(mainAxisSize: MainAxisSize.min, children: [
@@ -431,7 +431,7 @@ class _DesktopDetailDialog extends StatelessWidget {
                           icon: const Icon(Icons.edit_outlined, size: 15),
                           label: const Text('Editar'),
                           style: FilledButton.styleFrom(
-                            backgroundColor: AppTheme.secondary,
+                            backgroundColor: AppTheme.successFixed,
                             foregroundColor: Colors.white,
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 11),

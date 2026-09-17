@@ -34,25 +34,59 @@ void main() async {
   // en español en vez de inglés.
   await FirebaseAuth.instance.setLanguageCode('es');
 
+  await AppTheme.initThemeMode();
+
   runApp(const MonedoApp());
 }
 
-class MonedoApp extends StatelessWidget {
+class MonedoApp extends StatefulWidget {
   const MonedoApp({super.key});
 
   @override
+  State<MonedoApp> createState() => _MonedoAppState();
+}
+
+class _MonedoAppState extends State<MonedoApp> with WidgetsBindingObserver {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangePlatformBrightness() {
+    // Solo importa cuando el modo elegido es "sistema"; en ese caso
+    // refreshResolvedBrightness recalcula isDarkNotifier y listener de
+    // abajo repinta toda la app.
+    AppTheme.refreshResolvedBrightness();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Monedo',
-      debugShowCheckedModeBanner: false,
-      theme: AppTheme.lightTheme,
-      home: ValueListenableBuilder<Currency>(
-        valueListenable: CurrencyFormatter.notifier,
-        // No usar `const` aquí: se necesita una instancia nueva en cada
-        // notificación para que Flutter reconstruya todo el subárbol
-        // (si no, al ser idéntica al widget anterior, se omite el rebuild).
-        builder: (context, _, __) => AuthWrapper(),
-      ),
+    return ValueListenableBuilder<bool>(
+      valueListenable: AppTheme.isDarkNotifier,
+      builder: (context, isDark, _) {
+        return MaterialApp(
+          title: 'Monedo',
+          debugShowCheckedModeBanner: false,
+          theme: AppTheme.lightTheme,
+          darkTheme: AppTheme.darkTheme,
+          themeMode: isDark ? ThemeMode.dark : ThemeMode.light,
+          home: ValueListenableBuilder<Currency>(
+            valueListenable: CurrencyFormatter.notifier,
+            // No usar `const` aquí: se necesita una instancia nueva en cada
+            // notificación para que Flutter reconstruya todo el subárbol
+            // (si no, al ser idéntica al widget anterior, se omite el rebuild).
+            builder: (context, _, __) => AuthWrapper(),
+          ),
+        );
+      },
     );
   }
 }

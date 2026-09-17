@@ -111,7 +111,7 @@ class _ChangePasswordDialogState extends State<ChangePasswordDialog> {
         labelText: label,
         labelStyle:
             GoogleFonts.beVietnamPro(color: AppTheme.onSurfaceVariant, fontSize: 14),
-        prefixIcon: const Icon(Icons.lock_outlined,
+        prefixIcon: Icon(Icons.lock_outlined,
             color: AppTheme.onSurfaceVariant, size: 20),
         suffixIcon: IconButton(
           icon: Icon(
@@ -130,11 +130,11 @@ class _ChangePasswordDialogState extends State<ChangePasswordDialog> {
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(color: AppTheme.outlineVariant),
+          borderSide: BorderSide(color: AppTheme.outlineVariant),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(color: AppTheme.secondary, width: 1.6),
+          borderSide: BorderSide(color: AppTheme.secondary, width: 1.6),
         ),
       ),
     );
@@ -208,7 +208,7 @@ class _ChangePasswordDialogState extends State<ChangePasswordDialog> {
               child: ElevatedButton(
                 onPressed: _isLoading ? null : _submit,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.secondary,
+                  backgroundColor: AppTheme.successFixed,
                   foregroundColor: Colors.white,
                   shape: const StadiumBorder(),
                   padding: const EdgeInsets.symmetric(vertical: 16),
@@ -260,7 +260,7 @@ class _ChangePasswordDialogState extends State<ChangePasswordDialog> {
           child: ElevatedButton(
             onPressed: () => Navigator.pop(context),
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.secondary,
+              backgroundColor: AppTheme.successFixed,
               foregroundColor: Colors.white,
               shape: const StadiumBorder(),
               padding: const EdgeInsets.symmetric(vertical: 16),

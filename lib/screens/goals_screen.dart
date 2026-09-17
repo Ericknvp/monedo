@@ -54,7 +54,7 @@ class _GoalsScreenState extends State<GoalsScreen> {
               : _buildGoalsList(context, goals, userId, goalService, isDesktop),
           floatingActionButton: goals.isNotEmpty
               ? FloatingActionButton.extended(
-                  backgroundColor: AppTheme.secondary,
+                  backgroundColor: AppTheme.successFixed,
                   foregroundColor: Colors.white,
                   onPressed: () =>
                       _showGoalSheet(context, userId, goalService),
@@ -83,7 +83,7 @@ class _GoalsScreenState extends State<GoalsScreen> {
               color: AppTheme.surfaceContainerHigh,
               borderRadius: BorderRadius.circular(100),
             ),
-            child: const Icon(Icons.savings_outlined,
+            child: Icon(Icons.savings_outlined,
                 size: 40, color: AppTheme.outlineVariant),
           ),
           const SizedBox(height: 20),
@@ -107,7 +107,7 @@ class _GoalsScreenState extends State<GoalsScreen> {
             icon: const Icon(Icons.add_circle_outline_rounded, size: 18),
             label: const Text('Crear meta'),
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.secondary,
+              backgroundColor: AppTheme.successFixed,
               foregroundColor: Colors.white,
               shape: const StadiumBorder(),
               padding:
@@ -171,7 +171,7 @@ class _GoalsScreenState extends State<GoalsScreen> {
                   icon: const Icon(Icons.add_circle_outline_rounded, size: 18),
                   label: const Text('Crear meta'),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.secondary,
+                    backgroundColor: AppTheme.successFixed,
                     foregroundColor: Colors.white,
                     shape: const StadiumBorder(),
                     padding: const EdgeInsets.symmetric(
@@ -210,7 +210,7 @@ class _GoalsScreenState extends State<GoalsScreen> {
             alignment: Alignment.center,
             decoration: BoxDecoration(
               color:
-                  selected ? AppTheme.secondary : AppTheme.surfaceContainerLow,
+                  selected ? AppTheme.successFixed : AppTheme.surfaceContainerLow,
               borderRadius: BorderRadius.circular(100),
             ),
             child: Text(
@@ -327,7 +327,7 @@ class _GoalsScreenState extends State<GoalsScreen> {
                             color: AppTheme.surfaceContainerHigh,
                             borderRadius: BorderRadius.circular(100),
                           ),
-                          child: const Icon(Icons.add_circle_outline_rounded,
+                          child: Icon(Icons.add_circle_outline_rounded,
                               size: 28, color: AppTheme.outlineVariant),
                         ),
                         const SizedBox(height: 12),
@@ -444,7 +444,7 @@ class _GoalCardState extends State<_GoalCard> {
           ElevatedButton(
             onPressed: () => Navigator.pop(ctx, true),
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.errorRed,
+              backgroundColor: AppTheme.dangerFixed,
               shape: const StadiumBorder(),
             ),
             child: const Text('Continuar'),
@@ -637,7 +637,7 @@ class _GoalCardState extends State<_GoalCard> {
                               label: const Text('Editar'),
                               style: OutlinedButton.styleFrom(
                                 foregroundColor: AppTheme.primary,
-                                side: const BorderSide(
+                                side: BorderSide(
                                     color: AppTheme.outlineVariant),
                                 shape: const StadiumBorder(),
                                 padding:
@@ -691,7 +691,7 @@ class _GoalCardState extends State<_GoalCard> {
                         ),
                       ],
                       const SizedBox(height: 28),
-                      const Divider(color: AppTheme.surfaceVariant),
+                      Divider(color: AppTheme.surfaceVariant),
                       const SizedBox(height: 20),
                       Text(
                         'Historial de aportes',
@@ -725,7 +725,7 @@ class _GoalCardState extends State<_GoalCard> {
                             children: [
                               for (var i = 0; i < contributions.length; i++) ...[
                                 if (i > 0)
-                                  const Divider(
+                                  Divider(
                                       height: 1,
                                       color: AppTheme.surfaceVariant),
                                 MouseRegion(
@@ -750,7 +750,7 @@ class _GoalCardState extends State<_GoalCard> {
                                                   .withOpacity(0.1),
                                               shape: BoxShape.circle,
                                             ),
-                                            child: const Icon(
+                                            child: Icon(
                                                 Icons.savings_rounded,
                                                 color: AppTheme.secondary,
                                                 size: 16),
@@ -776,7 +776,7 @@ class _GoalCardState extends State<_GoalCard> {
                                             ),
                                           ),
                                           const SizedBox(width: 6),
-                                          const Icon(
+                                          Icon(
                                               Icons.chevron_right_rounded,
                                               color: AppTheme.onSurfaceVariant,
                                               size: 16),
@@ -1009,7 +1009,7 @@ class _GoalCardState extends State<_GoalCard> {
                           onPressed: () => _showDetail(context),
                           style: OutlinedButton.styleFrom(
                             foregroundColor: AppTheme.primary,
-                            side: const BorderSide(
+                            side: BorderSide(
                                 color: AppTheme.outlineVariant),
                             shape: const StadiumBorder(),
                             padding: const EdgeInsets.symmetric(vertical: 12),
@@ -1175,7 +1175,7 @@ class _GoalCardState extends State<_GoalCard> {
                       }
                     },
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.secondary,
+                backgroundColor: AppTheme.successFixed,
                 shape: const StadiumBorder(),
               ),
               child: isSubmitting
@@ -1476,7 +1476,7 @@ class _GoalSheetState extends State<_GoalSheet> {
               child: ElevatedButton(
                 onPressed: _isLoading ? null : _save,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.secondary,
+                  backgroundColor: AppTheme.successFixed,
                   foregroundColor: Colors.white,
                   shape: const StadiumBorder(),
                   padding: const EdgeInsets.symmetric(vertical: 16),
@@ -1592,7 +1592,7 @@ class _GoalSheetState extends State<_GoalSheet> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.add_photo_alternate_outlined,
+          Icon(Icons.add_photo_alternate_outlined,
               color: AppTheme.onSurfaceVariant, size: 28),
           const SizedBox(height: 6),
           Text(
@@ -1617,10 +1617,10 @@ class _GoalSheetState extends State<_GoalSheet> {
         padding: const EdgeInsets.symmetric(vertical: 12),
         alignment: Alignment.center,
         decoration: BoxDecoration(
-          color: selected ? AppTheme.secondary : AppTheme.surfaceContainerLow,
+          color: selected ? AppTheme.successFixed : AppTheme.surfaceContainerLow,
           borderRadius: BorderRadius.circular(100),
           border: Border.all(
-            color: selected ? AppTheme.secondary : AppTheme.outlineVariant,
+            color: selected ? AppTheme.successFixed : AppTheme.outlineVariant,
           ),
         ),
         child: Text(

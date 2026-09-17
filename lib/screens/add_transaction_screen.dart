@@ -164,7 +164,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
           ElevatedButton(
             onPressed: () => Navigator.pop(ctx, true),
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.errorRed,
+              backgroundColor: AppTheme.dangerFixed,
               shape: const StadiumBorder(),
             ),
             child: const Text('Continuar'),
@@ -299,7 +299,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
         backgroundColor: AppTheme.surfaceContainerLowest,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded, color: AppTheme.primary),
+          icon: Icon(Icons.arrow_back_rounded, color: AppTheme.primary),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
@@ -398,7 +398,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                               ),
                             ),
                             IconButton(
-                              icon: const Icon(Icons.close_rounded,
+                              icon: Icon(Icons.close_rounded,
                                   color: AppTheme.onSurfaceVariant),
                               onPressed: () => Navigator.pop(context),
                             ),
@@ -433,7 +433,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
           if (isEditing)
             TextButton.icon(
               onPressed: _isLoading ? null : _confirmDelete,
-              icon: const Icon(Icons.delete_outline_rounded,
+              icon: Icon(Icons.delete_outline_rounded,
                   color: AppTheme.errorRed, size: 17),
               label: Text(
                 'Eliminar movimiento',
@@ -594,7 +594,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
           24, 14, 24, MediaQuery.of(context).padding.bottom + 18),
       decoration: BoxDecoration(
         color: AppTheme.surfaceContainerLowest,
-        border: const Border(
+        border: Border(
             top: BorderSide(color: AppTheme.surfaceContainerHigh)),
         boxShadow: [
           BoxShadow(
@@ -612,7 +612,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
             child: ElevatedButton(
               onPressed: _isLoading ? null : _save,
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.secondary,
+                backgroundColor: AppTheme.successFixed,
                 foregroundColor: Colors.white,
                 shape: const StadiumBorder(),
                 padding: const EdgeInsets.symmetric(vertical: 18),
@@ -635,7 +635,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
           if (isEditing)
             TextButton.icon(
               onPressed: _isLoading ? null : _confirmDelete,
-              icon: const Icon(Icons.delete_outline_rounded,
+              icon: Icon(Icons.delete_outline_rounded,
                   color: AppTheme.errorRed, size: 16),
               label: Text(
                 'Eliminar movimiento',
@@ -846,7 +846,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
     final innerRadius = compact ? 7.0 : 100.0;
     final fontSize = compact ? 11.0 : 12.5;
     final iconSize = compact ? 13.0 : 15.0;
-    final color = _isIncome ? AppTheme.secondary : AppTheme.errorRed;
+    final color = _isIncome ? AppTheme.successFixed : AppTheme.dangerFixed;
 
     Widget seg(String label, bool isIncome, IconData icon) {
       final selected = _isIncome == isIncome;
@@ -950,7 +950,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.note_add_outlined,
+                Icon(Icons.note_add_outlined,
                     size: 15, color: AppTheme.onSurfaceVariant),
                 const SizedBox(width: 7),
                 Text(
@@ -982,7 +982,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
           ),
           child: Row(
             children: [
-              const Icon(Icons.note_add_outlined,
+              Icon(Icons.note_add_outlined,
                   size: 18, color: AppTheme.onSurfaceVariant),
               const SizedBox(width: 8),
               Expanded(
@@ -1080,12 +1080,12 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                         const EdgeInsets.fromLTRB(6, 6, 11, 6),
                     decoration: BoxDecoration(
                       color: isSelected
-                          ? AppTheme.primary
+                          ? AppTheme.navyFixed
                           : AppTheme.surfaceContainerLowest,
                       borderRadius: BorderRadius.circular(9),
                       border: Border.all(
                         color: isSelected
-                            ? AppTheme.primary
+                            ? AppTheme.navyFixed
                             : (hovered
                                 ? AppTheme.outline
                                 : AppTheme.surfaceContainerHigh),
@@ -1280,7 +1280,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(Icons.add_circle_outline_rounded,
+                            Icon(Icons.add_circle_outline_rounded,
                                 size: 15, color: AppTheme.secondary),
                             const SizedBox(width: 6),
                             Text(
@@ -1303,7 +1303,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(Icons.tune_rounded,
+                            Icon(Icons.tune_rounded,
                                 size: 15, color: AppTheme.onSurfaceVariant),
                             const SizedBox(width: 6),
                             Text(
@@ -1379,7 +1379,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
             AppFieldShell(
               icon: Icons.account_balance_wallet_outlined,
               dense: dense,
-              trailing: const Icon(Icons.expand_more_rounded,
+              trailing: Icon(Icons.expand_more_rounded,
                   color: AppTheme.onSurfaceVariant, size: 18),
               child: DropdownButtonHideUnderline(
                 child: DropdownButton<String>(
@@ -1422,7 +1422,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.add_circle_outline_rounded,
+                    Icon(Icons.add_circle_outline_rounded,
                         size: 15, color: AppTheme.secondary),
                     const SizedBox(width: 6),
                     Text(

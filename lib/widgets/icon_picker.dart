@@ -75,7 +75,7 @@ class _IconPickerSheetState extends State<_IconPickerSheet> {
                         hintText: 'Buscar ícono (ej: comida, viaje...)',
                         hintStyle: GoogleFonts.beVietnamPro(
                             color: AppTheme.outline, fontSize: 14),
-                        prefixIcon: const Icon(Icons.search_rounded,
+                        prefixIcon: Icon(Icons.search_rounded,
                             color: AppTheme.onSurfaceVariant, size: 20),
                         filled: true,
                         fillColor: AppTheme.surfaceContainerLow,
@@ -124,7 +124,7 @@ class _IconPickerSheetState extends State<_IconPickerSheet> {
                                   height: 48,
                                   decoration: BoxDecoration(
                                     color: isSelected
-                                        ? AppTheme.secondary
+                                        ? AppTheme.successFixed
                                         : AppTheme.surfaceContainerLow,
                                     borderRadius: BorderRadius.circular(16),
                                     border: isSelected

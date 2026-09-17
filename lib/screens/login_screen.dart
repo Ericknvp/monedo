@@ -115,7 +115,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Widget _buildBrandingPanel() {
     return Container(
-      color: AppTheme.primary,
+      color: AppTheme.navyFixed,
       child: Stack(
         children: [
           Positioned(
@@ -128,7 +128,7 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
           Positioned(
             bottom: -160, left: 60,
-            child: _blob(600, AppTheme.secondary, 0.15),
+            child: _blob(600, AppTheme.successFixed, 0.15),
           ),
           Padding(
             padding: const EdgeInsets.all(60),
@@ -255,7 +255,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Widget _buildFormPanel() {
     return Container(
-      color: Colors.white,
+      color: AppTheme.surfaceContainerLowest,
       padding: const EdgeInsets.symmetric(horizontal: 64),
       child: Center(
         child: SingleChildScrollView(
@@ -344,7 +344,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   Expanded(
                     child: Container(
                       width: double.infinity,
-                      decoration: const BoxDecoration(
+                      decoration: BoxDecoration(
                         color: AppTheme.surfaceContainerLowest,
                         borderRadius:
                             BorderRadius.vertical(top: Radius.circular(32)),
@@ -427,7 +427,7 @@ class _LoginScreenState extends State<LoginScreen> {
           child: ElevatedButton(
             onPressed: _isLoading ? null : _login,
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.secondary,
+              backgroundColor: AppTheme.successFixed,
               foregroundColor: Colors.white,
               shape: const StadiumBorder(),
               padding: const EdgeInsets.symmetric(vertical: 20),
@@ -454,7 +454,7 @@ class _LoginScreenState extends State<LoginScreen> {
         const SizedBox(height: 28),
         Row(
           children: [
-            const Expanded(child: Divider(color: AppTheme.outlineVariant)),
+            Expanded(child: Divider(color: AppTheme.outlineVariant)),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 12),
               child: Text(
@@ -463,7 +463,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     color: AppTheme.onSurfaceVariant, fontSize: 13),
               ),
             ),
-            const Expanded(child: Divider(color: AppTheme.outlineVariant)),
+            Expanded(child: Divider(color: AppTheme.outlineVariant)),
           ],
         ),
         const SizedBox(height: 24),
@@ -474,7 +474,7 @@ class _LoginScreenState extends State<LoginScreen> {
             style: OutlinedButton.styleFrom(
               foregroundColor: AppTheme.primary,
               shape: const StadiumBorder(),
-              side: const BorderSide(color: AppTheme.outlineVariant),
+              side: BorderSide(color: AppTheme.outlineVariant),
               padding: const EdgeInsets.symmetric(vertical: 18),
             ),
             child: Row(

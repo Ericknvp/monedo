@@ -117,7 +117,7 @@ class _ForgotPasswordDialogState extends State<ForgotPasswordDialog> {
             errorText: _errorText,
             labelStyle: GoogleFonts.beVietnamPro(
                 color: AppTheme.onSurfaceVariant, fontSize: 14),
-            prefixIcon: const Icon(Icons.email_outlined,
+            prefixIcon: Icon(Icons.email_outlined,
                 color: AppTheme.onSurfaceVariant, size: 20),
             filled: true,
             fillColor: AppTheme.surfaceContainerLow,
@@ -129,15 +129,15 @@ class _ForgotPasswordDialogState extends State<ForgotPasswordDialog> {
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),
-              borderSide: const BorderSide(color: AppTheme.outlineVariant),
+              borderSide: BorderSide(color: AppTheme.outlineVariant),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),
-              borderSide: const BorderSide(color: AppTheme.secondary, width: 1.6),
+              borderSide: BorderSide(color: AppTheme.secondary, width: 1.6),
             ),
             errorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),
-              borderSide: const BorderSide(color: AppTheme.errorRed),
+              borderSide: BorderSide(color: AppTheme.errorRed),
             ),
           ),
         ),
@@ -165,7 +165,7 @@ class _ForgotPasswordDialogState extends State<ForgotPasswordDialog> {
               child: ElevatedButton(
                 onPressed: _isLoading ? null : _submit,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.secondary,
+                  backgroundColor: AppTheme.successFixed,
                   foregroundColor: Colors.white,
                   shape: const StadiumBorder(),
                   padding: const EdgeInsets.symmetric(vertical: 16),
@@ -226,7 +226,7 @@ class _ForgotPasswordDialogState extends State<ForgotPasswordDialog> {
           child: ElevatedButton(
             onPressed: () => Navigator.pop(context),
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.secondary,
+              backgroundColor: AppTheme.successFixed,
               foregroundColor: Colors.white,
               shape: const StadiumBorder(),
               padding: const EdgeInsets.symmetric(vertical: 16),

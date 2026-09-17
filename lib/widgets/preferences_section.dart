@@ -144,7 +144,7 @@ class _PreferencesSectionState extends State<PreferencesSection> {
           ),
           child: Row(
             children: [
-              const Icon(Icons.person_outline,
+              Icon(Icons.person_outline,
                   color: AppTheme.onSurfaceVariant, size: 20),
               const SizedBox(width: 14),
               Expanded(
@@ -167,7 +167,7 @@ class _PreferencesSectionState extends State<PreferencesSection> {
                       ),
               ),
               IconButton(
-                icon: const Icon(Icons.edit_outlined,
+                icon: Icon(Icons.edit_outlined,
                     size: 18, color: AppTheme.onSurfaceVariant),
                 onPressed: _loadingUsername ? null : _editUsername,
               ),
@@ -187,6 +187,8 @@ class _PreferencesSectionState extends State<PreferencesSection> {
             ),
           ),
         ],
+        const SizedBox(height: 20),
+        _appearanceSection(),
         const SizedBox(height: 20),
         IgnorePointer(
           ignoring: _savingCurrency,
@@ -245,6 +247,93 @@ class _PreferencesSectionState extends State<PreferencesSection> {
     );
   }
 
+  Widget _appearanceSection() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+      decoration: BoxDecoration(
+        color: AppTheme.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppTheme.outlineVariant),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.dark_mode_outlined,
+                  color: AppTheme.onSurfaceVariant, size: 20),
+              const SizedBox(width: 14),
+              Text(
+                'Apariencia',
+                style: GoogleFonts.beVietnamPro(
+                  color: AppTheme.primary,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          ValueListenableBuilder<ThemeMode>(
+            valueListenable: AppTheme.themeModeNotifier,
+            builder: (context, mode, _) {
+              return Row(
+                children: [
+                  _appearanceOption(
+                      'Sistema', Icons.brightness_auto_rounded, ThemeMode.system, mode),
+                  const SizedBox(width: 8),
+                  _appearanceOption(
+                      'Claro', Icons.light_mode_rounded, ThemeMode.light, mode),
+                  const SizedBox(width: 8),
+                  _appearanceOption(
+                      'Oscuro', Icons.dark_mode_rounded, ThemeMode.dark, mode),
+                ],
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _appearanceOption(
+      String label, IconData icon, ThemeMode value, ThemeMode current) {
+    final selected = value == current;
+    return Expanded(
+      child: InkWell(
+        borderRadius: BorderRadius.circular(12),
+        onTap: () => AppTheme.setThemeMode(value),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 160),
+          padding: const EdgeInsets.symmetric(vertical: 10),
+          decoration: BoxDecoration(
+            color: selected ? AppTheme.successFixed : AppTheme.surfaceContainerLowest,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: selected ? AppTheme.successFixed : AppTheme.outlineVariant,
+            ),
+          ),
+          child: Column(
+            children: [
+              Icon(icon,
+                  size: 18,
+                  color: selected ? AppTheme.onSecondary : AppTheme.onSurfaceVariant),
+              const SizedBox(height: 4),
+              Text(
+                label,
+                style: GoogleFonts.beVietnamPro(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                  color: selected ? AppTheme.onSecondary : AppTheme.onSurfaceVariant,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _navRow(
     BuildContext context, {
     required IconData icon,
@@ -277,7 +366,7 @@ class _PreferencesSectionState extends State<PreferencesSection> {
                 ),
               ),
             ),
-            const Icon(Icons.chevron_right_rounded,
+            Icon(Icons.chevron_right_rounded,
                 color: AppTheme.onSurfaceVariant),
           ],
         ),

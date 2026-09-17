@@ -177,7 +177,7 @@ class _AppDatePickerDialogState extends State<_AppDatePickerDialog> {
                           aspectRatio: 1,
                           child: Material(
                             color: isSelected
-                                ? AppTheme.secondary
+                                ? AppTheme.successFixed
                                 : Colors.transparent,
                             shape: const CircleBorder(),
                             child: InkWell(
@@ -233,7 +233,7 @@ class _AppDatePickerDialogState extends State<_AppDatePickerDialog> {
                   ElevatedButton(
                     onPressed: () => Navigator.pop(context, _selected),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppTheme.secondary,
+                      backgroundColor: AppTheme.successFixed,
                       foregroundColor: Colors.white,
                       shape: const StadiumBorder(),
                       elevation: 0,

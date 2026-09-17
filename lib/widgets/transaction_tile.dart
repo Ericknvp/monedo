@@ -148,7 +148,7 @@ class _TransactionTileState extends State<TransactionTile> {
                           ? AppTheme.surfaceContainerHighest
                           : (isIncome
                               ? AppTheme.secondaryContainer.withOpacity(0.5)
-                              : AppTheme.primaryContainer.withOpacity(0.15)),
+                              : AppTheme.expenseContainer),
                       borderRadius: BorderRadius.circular(100),
                     ),
                     child: Text(
@@ -158,7 +158,7 @@ class _TransactionTileState extends State<TransactionTile> {
                             ? AppTheme.onSurfaceVariant
                             : (isIncome
                                 ? AppTheme.onSecondaryContainer
-                                : AppTheme.onPrimaryFixedVariant),
+                                : AppTheme.onExpenseContainer),
                         fontSize: 10,
                         fontWeight: FontWeight.w700,
                         letterSpacing: 0.5,

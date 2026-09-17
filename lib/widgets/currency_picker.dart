@@ -74,7 +74,7 @@ Future<Currency?> showCurrencyPicker(BuildContext context, {Currency? selected})
                         ),
                       ),
                       trailing: isSelected
-                          ? const Icon(Icons.check_circle_rounded,
+                          ? Icon(Icons.check_circle_rounded,
                               color: AppTheme.secondary)
                           : null,
                       onTap: () => Navigator.pop(ctx, c),
@@ -146,7 +146,7 @@ class CurrencyPickerField extends StatelessWidget {
                 ],
               ),
             ),
-            const Icon(Icons.keyboard_arrow_down_rounded,
+            Icon(Icons.keyboard_arrow_down_rounded,
                 color: AppTheme.onSurfaceVariant),
           ],
         ),

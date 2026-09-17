@@ -128,7 +128,7 @@ Future<void> showEditAccountDialog(
                       ElevatedButton(
                         onPressed: () => Navigator.pop(confirmCtx, true),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: AppTheme.secondary,
+                          backgroundColor: AppTheme.successFixed,
                           shape: const StadiumBorder(),
                         ),
                         child: const Text('Confirmar'),
@@ -141,7 +141,7 @@ Future<void> showEditAccountDialog(
               Navigator.pop(ctx, (name, parsed));
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.secondary,
+              backgroundColor: AppTheme.successFixed,
               shape: const StadiumBorder(),
             ),
             child: const Text('Guardar'),
@@ -253,7 +253,7 @@ class _AccountsScreenState extends State<AccountsScreen> {
           ElevatedButton(
             onPressed: () => Navigator.pop(ctx, true),
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.errorRed,
+              backgroundColor: AppTheme.dangerFixed,
               shape: const StadiumBorder(),
             ),
             child: const Text('Eliminar'),
@@ -280,7 +280,7 @@ class _AccountsScreenState extends State<AccountsScreen> {
         backgroundColor: AppTheme.surfaceContainerLowest,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded, color: AppTheme.primary),
+          icon: Icon(Icons.arrow_back_rounded, color: AppTheme.primary),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
@@ -323,7 +323,7 @@ class _AccountsScreenState extends State<AccountsScreen> {
                           color: AppTheme.secondary.withOpacity(0.12),
                           borderRadius: BorderRadius.circular(14),
                         ),
-                        child: const Icon(Icons.account_balance_wallet_outlined,
+                        child: Icon(Icons.account_balance_wallet_outlined,
                             color: AppTheme.secondary, size: 20),
                       ),
                       const SizedBox(width: 16),
@@ -338,7 +338,7 @@ class _AccountsScreenState extends State<AccountsScreen> {
                         ),
                       ),
                       IconButton(
-                        icon: const Icon(Icons.close_rounded,
+                        icon: Icon(Icons.close_rounded,
                             color: AppTheme.onSurfaceVariant),
                         onPressed: () => Navigator.pop(context),
                       ),
@@ -428,7 +428,7 @@ class _AccountsScreenState extends State<AccountsScreen> {
                             icon: const Icon(Icons.add_rounded, size: 20),
                             label: const Text('Nueva cuenta'),
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: AppTheme.secondary,
+                              backgroundColor: AppTheme.successFixed,
                               foregroundColor: Colors.white,
                               shape: const StadiumBorder(),
                               padding:
@@ -448,7 +448,7 @@ class _AccountsScreenState extends State<AccountsScreen> {
                               label: const Text('Transferir'),
                               style: OutlinedButton.styleFrom(
                                 foregroundColor: AppTheme.primary,
-                                side: const BorderSide(
+                                side: BorderSide(
                                     color: AppTheme.outlineVariant),
                                 shape: const StadiumBorder(),
                                 padding: const EdgeInsets.symmetric(
@@ -471,7 +471,7 @@ class _AccountsScreenState extends State<AccountsScreen> {
                         ),
                         child: Column(
                           children: [
-                            const Icon(Icons.account_balance_wallet_outlined,
+                            Icon(Icons.account_balance_wallet_outlined,
                                 size: 40, color: AppTheme.outlineVariant),
                             const SizedBox(height: 10),
                             Text(
@@ -565,13 +565,13 @@ class _AccountsScreenState extends State<AccountsScreen> {
                                     ),
                                   ),
                                   IconButton(
-                                    icon: const Icon(Icons.edit_outlined,
+                                    icon: Icon(Icons.edit_outlined,
                                         color: AppTheme.onSurfaceVariant,
                                         size: 18),
                                     onPressed: () => _editAccount(a),
                                   ),
                                   IconButton(
-                                    icon: const Icon(
+                                    icon: Icon(
                                         Icons.delete_outline_rounded,
                                         color: AppTheme.errorRed,
                                         size: 18),
@@ -805,7 +805,7 @@ class _AddAccountSheetState extends State<_AddAccountSheet> {
             child: ElevatedButton(
               onPressed: _saving ? null : _save,
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.secondary,
+                backgroundColor: AppTheme.successFixed,
                 foregroundColor: Colors.white,
                 shape: const StadiumBorder(),
                 padding: const EdgeInsets.symmetric(vertical: 18),
@@ -1020,7 +1020,7 @@ class _TransferSheetState extends State<_TransferSheet> {
             onChanged: (v) => setState(() => _fromId = v),
           ),
           const SizedBox(height: 12),
-          const Icon(Icons.arrow_downward_rounded,
+          Icon(Icons.arrow_downward_rounded,
               color: AppTheme.onSurfaceVariant, size: 20),
           const SizedBox(height: 12),
           _accountDropdown(
@@ -1060,7 +1060,7 @@ class _TransferSheetState extends State<_TransferSheet> {
             child: ElevatedButton(
               onPressed: _saving ? null : _transfer,
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.secondary,
+                backgroundColor: AppTheme.successFixed,
                 foregroundColor: Colors.white,
                 shape: const StadiumBorder(),
                 padding: const EdgeInsets.symmetric(vertical: 18),

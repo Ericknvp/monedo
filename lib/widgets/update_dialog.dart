@@ -26,7 +26,7 @@ Future<void> checkAndShowUpdateDialog(BuildContext context) async {
           color: AppTheme.secondary.withOpacity(0.12),
           shape: BoxShape.circle,
         ),
-        child: const Icon(Icons.system_update_rounded,
+        child: Icon(Icons.system_update_rounded,
             color: AppTheme.secondary, size: 26),
       ),
       title: Text(
@@ -61,7 +61,7 @@ Future<void> checkAndShowUpdateDialog(BuildContext context) async {
             Navigator.pop(ctx);
           },
           style: ElevatedButton.styleFrom(
-            backgroundColor: AppTheme.secondary,
+            backgroundColor: AppTheme.successFixed,
             foregroundColor: Colors.white,
             shape: const StadiumBorder(),
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
