@@ -21,6 +21,7 @@ import '../utils/category_icons.dart';
 import '../utils/category_colors.dart';
 import '../utils/category_visibility.dart';
 import '../widgets/balance_card.dart';
+import '../widgets/masked_balance.dart';
 import '../widgets/accounts_summary.dart';
 import '../widgets/transaction_tile.dart';
 import '../widgets/update_dialog.dart';
@@ -702,6 +703,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       fontWeight: FontWeight.w600,
                     ),
                   ),
+                  const Spacer(),
+                  BalanceVisibilityToggle(color: AppTheme.secondaryFixed),
                 ],
               ),
               const SizedBox(height: 12),
@@ -709,18 +712,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 crossAxisAlignment: CrossAxisAlignment.baseline,
                 textBaseline: TextBaseline.alphabetic,
                 children: [
-                  TweenAnimationBuilder<double>(
-                    tween: Tween(begin: 0, end: balance),
-                    duration: const Duration(milliseconds: 700),
-                    curve: Curves.easeOutCubic,
-                    builder: (context, value, child) => Text(
-                      CurrencyFormatter.format(value),
-                      style: GoogleFonts.plusJakartaSans(
-                        color: Colors.white,
-                        fontSize: 36,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: -0.72,
-                      ),
+                  MaskedAmount(
+                    balance,
+                    animate: true,
+                    style: GoogleFonts.plusJakartaSans(
+                      color: Colors.white,
+                      fontSize: 36,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: -0.72,
                     ),
                   ),
                   const SizedBox(width: 8),

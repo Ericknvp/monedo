@@ -14,6 +14,7 @@ import '../widgets/app_toast.dart';
 import '../widgets/undo_toast.dart';
 import '../widgets/fade_slide_in.dart';
 import '../widgets/form_kit.dart';
+import '../widgets/masked_balance.dart';
 
 /// Abre el formulario para crear un bolsillo nuevo (ej. Efectivo, Nu, Nequi):
 /// ventana modal centrada en escritorio (mismo patrón que
@@ -442,20 +443,18 @@ class _AccountsScreenState extends State<AccountsScreen> {
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
+                              const Spacer(),
+                              BalanceVisibilityToggle(color: AppTheme.secondaryFixed),
                             ],
                           ),
                           const SizedBox(height: 10),
-                          TweenAnimationBuilder<double>(
-                            tween: Tween(begin: 0, end: total),
-                            duration: const Duration(milliseconds: 700),
-                            curve: Curves.easeOutCubic,
-                            builder: (context, value, child) => Text(
-                              CurrencyFormatter.format(value),
-                              style: GoogleFonts.plusJakartaSans(
-                                color: Colors.white,
-                                fontSize: 30,
-                                fontWeight: FontWeight.w700,
-                              ),
+                          MaskedAmount(
+                            total,
+                            animate: true,
+                            style: GoogleFonts.plusJakartaSans(
+                              color: Colors.white,
+                              fontSize: 30,
+                              fontWeight: FontWeight.w700,
                             ),
                           ),
                           const SizedBox(height: 4),
@@ -582,8 +581,8 @@ class _AccountsScreenState extends State<AccountsScreen> {
                                             fontWeight: FontWeight.w600,
                                           ),
                                         ),
-                                        Text(
-                                          CurrencyFormatter.format(a.balance),
+                                        MaskedAmount(
+                                          a.balance,
                                           style: GoogleFonts.beVietnamPro(
                                             color: AppTheme.onSurfaceVariant,
                                             fontSize: 12,

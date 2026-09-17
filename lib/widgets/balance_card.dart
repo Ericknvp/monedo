@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../theme/app_theme.dart';
 import '../utils/currency_formatter.dart';
+import 'masked_balance.dart';
 
 class BalanceCard extends StatelessWidget {
   final double balance;
@@ -60,6 +61,8 @@ class BalanceCard extends StatelessWidget {
                       fontWeight: FontWeight.w600,
                     ),
                   ),
+                  const Spacer(),
+                  BalanceVisibilityToggle(color: AppTheme.secondaryFixed),
                 ],
               ),
               const SizedBox(height: 12),
@@ -67,18 +70,14 @@ class BalanceCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.baseline,
                 textBaseline: TextBaseline.alphabetic,
                 children: [
-                  TweenAnimationBuilder<double>(
-                    tween: Tween(begin: 0, end: balance),
-                    duration: const Duration(milliseconds: 700),
-                    curve: Curves.easeOutCubic,
-                    builder: (context, value, child) => Text(
-                      CurrencyFormatter.format(value),
-                      style: GoogleFonts.plusJakartaSans(
-                        color: Colors.white,
-                        fontSize: 34,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: -0.68,
-                      ),
+                  MaskedAmount(
+                    balance,
+                    animate: true,
+                    style: GoogleFonts.plusJakartaSans(
+                      color: Colors.white,
+                      fontSize: 34,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: -0.68,
                     ),
                   ),
                   const SizedBox(width: 8),

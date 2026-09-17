@@ -20,6 +20,7 @@ import 'screens/onboarding_screen.dart';
 import 'widgets/setup_gate.dart';
 import 'widgets/branded_loading_screen.dart';
 import 'utils/currency_formatter.dart';
+import 'utils/balance_visibility.dart';
 import 'utils/web_redirect.dart' if (dart.library.io) 'utils/web_redirect_stub.dart';
 
 void main() async {
@@ -35,6 +36,7 @@ void main() async {
   await FirebaseAuth.instance.setLanguageCode('es');
 
   await AppTheme.initThemeMode();
+  await BalanceVisibility.init();
 
   runApp(const MonedoApp());
 }

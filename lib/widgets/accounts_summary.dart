@@ -4,7 +4,7 @@ import '../models/account.dart';
 import '../screens/accounts_screen.dart';
 import '../theme/app_theme.dart';
 import '../utils/account_colors.dart';
-import '../utils/currency_formatter.dart';
+import 'masked_balance.dart';
 
 /// Tarjeta que muestra en qué bolsillos está el dinero del usuario, con
 /// acceso directo a agregarlos o administrarlos (Mis bolsillos).
@@ -145,8 +145,8 @@ class AccountsSummaryCard extends StatelessWidget {
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
-                            Text(
-                              CurrencyFormatter.format(a.balance),
+                            MaskedAmount(
+                              a.balance,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: GoogleFonts.beVietnamPro(
