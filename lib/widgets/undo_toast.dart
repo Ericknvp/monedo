@@ -22,7 +22,7 @@ void showUndoToast(
   required String message,
   required Future<void> Function() onConfirmed,
   VoidCallback? onUndo,
-  Duration duration = const Duration(seconds: 5),
+  Duration duration = const Duration(seconds: 4),
 }) {
   final overlay = Overlay.of(context);
   final isDesktop = MediaQuery.of(context).size.width >= 900;

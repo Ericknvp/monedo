@@ -222,7 +222,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
             child: Column(
               children: [
                 _buildDesktopHeader(userId),
-                Expanded(child: pages[safeIndex]),
+                // IndexedStack (no un simple pages[safeIndex]) para que las
+                // pestañas no se destruyan y reconstruyan al navegar entre
+                // ellas: así los StreamBuilder de cada una (saldo, etc.) no
+                // pierden su suscripción ni vuelven a emitir un snapshot
+                // vacío de arranque, que disparaba de nuevo animaciones
+                // (conteo del balance) que solo deben verse una vez.
+                Expanded(child: IndexedStack(index: safeIndex, children: pages)),
               ],
             ),
           ),
@@ -1111,7 +1117,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ],
         ),
       ),
-      body: pages[safeIndex],
+      // IndexedStack en vez de pages[safeIndex]: mantiene las 5 pestañas
+      // montadas (solo oculta las que no están activas) para que sus
+      // StreamBuilder no se reinicien al navegar — evita el "parpadeo" a un
+      // snapshot vacío que reactivaba la animación del balance en cada
+      // cambio de pestaña.
+      body: IndexedStack(index: safeIndex, children: pages),
       floatingActionButton: safeIndex == 0
           ? FloatingActionButton(
               backgroundColor: AppTheme.successFixed,
