@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../theme/app_theme.dart';
 
@@ -22,6 +23,8 @@ class AppTextField extends StatefulWidget {
     this.autofillHints,
     this.maxLines = 1,
     this.dense = false,
+    this.inputFormatters,
+    this.autofocus = false,
   });
 
   final TextEditingController controller;
@@ -38,6 +41,8 @@ class AppTextField extends StatefulWidget {
   final ValueChanged<String>? onChanged;
   final Iterable<String>? autofillHints;
   final int maxLines;
+  final List<TextInputFormatter>? inputFormatters;
+  final bool autofocus;
   /// Versión más compacta (menos padding vertical) para contextos con poco
   /// espacio vertical, como el diálogo de escritorio.
   final bool dense;
@@ -85,6 +90,7 @@ class _AppTextFieldState extends State<AppTextField> {
     // para mouse, no una versión encogida de móvil.
     final radius = widget.dense ? 10.0 : 14.0;
     return Column(
+      mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         AnimatedContainer(
@@ -139,6 +145,8 @@ class _AppTextFieldState extends State<AppTextField> {
                   onSubmitted: widget.onSubmitted,
                   onChanged: widget.onChanged,
                   autofillHints: widget.autofillHints,
+                  inputFormatters: widget.inputFormatters,
+                  autofocus: widget.autofocus,
                   style: GoogleFonts.beVietnamPro(
                     color: AppTheme.primary,
                     fontSize: 16,

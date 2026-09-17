@@ -350,7 +350,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         AppTextField(
           controller: _usernameController,
           label: 'Nombre de usuario',
-          icon: Icons.person_outline,
+          icon: Icons.alternate_email_rounded,
           textCapitalization: TextCapitalization.words,
           textInputAction: TextInputAction.next,
           autofillHints: const [AutofillHints.username],

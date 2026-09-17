@@ -13,10 +13,12 @@ import '../models/transaction.dart';
 import '../theme/app_theme.dart';
 import '../utils/currency_formatter.dart';
 import '../utils/amount_input_formatter.dart';
+import '../widgets/app_text_field.dart';
 import '../widgets/app_toast.dart';
 import '../widgets/branded_loading_screen.dart';
 import '../widgets/blurred_image_frame.dart';
 import '../widgets/fade_slide_in.dart';
+import '../widgets/form_kit.dart';
 import '../widgets/pressable_scale.dart';
 import 'add_transaction_screen.dart';
 
@@ -383,6 +385,37 @@ class _GoalsScreenState extends State<GoalsScreen> {
     GoalService goalService, {
     GoalModel? existing,
   }) {
+    final isDesktop = MediaQuery.of(context).size.width >= 900;
+
+    if (isDesktop) {
+      showDialog(
+        context: context,
+        builder: (_) => Dialog(
+          backgroundColor: Colors.transparent,
+          insetPadding: const EdgeInsets.all(24),
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 640, maxHeight: 760),
+              child: Material(
+                color: AppTheme.surfaceContainerLowest,
+                borderRadius: BorderRadius.circular(28),
+                clipBehavior: Clip.antiAlias,
+                elevation: 24,
+                shadowColor: Colors.black.withOpacity(0.4),
+                child: _GoalSheet(
+                  userId: userId,
+                  goalService: goalService,
+                  existing: existing,
+                  isDialog: true,
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      return;
+    }
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -1077,44 +1110,28 @@ class _GoalCardState extends State<_GoalCard> {
                     color: AppTheme.onSurfaceVariant, fontSize: 13),
               ),
               const SizedBox(height: 20),
-              TextField(
+              AppTextField(
                 controller: ctrl,
+                label: 'Monto a ahorrar',
+                icon: Icons.savings_outlined,
                 keyboardType:
                     const TextInputType.numberWithOptions(decimal: true),
                 inputFormatters: [AmountInputFormatter()],
-                style: GoogleFonts.beVietnamPro(color: AppTheme.primary),
-                decoration: InputDecoration(
-                  labelText: 'Monto a ahorrar',
-                  labelStyle: GoogleFonts.beVietnamPro(
-                      color: AppTheme.onSurfaceVariant),
-                ),
+                dense: true,
+                autofocus: true,
               ),
               const SizedBox(height: 16),
+              // AccountPickerField hace su propio StreamBuilder para pintar
+              // la lista; este de afuera solo mantiene accountsCache al día
+              // para el chequeo de saldo insuficiente al guardar.
               StreamBuilder<List<AccountModel>>(
                 stream: accountService.getAccounts(userId),
                 builder: (context, snap) {
-                  final accounts = snap.data ?? [];
-                  accountsCache = accounts;
-                  return DropdownButtonFormField<String>(
-                    value: selectedAccountId,
-                    dropdownColor: AppTheme.surfaceContainerLowest,
-                    borderRadius: BorderRadius.circular(14),
-                    elevation: 3,
-                    style: GoogleFonts.beVietnamPro(color: AppTheme.primary),
-                    hint: Text('¿De qué cuenta sale?',
-                        style: GoogleFonts.beVietnamPro(
-                            color: AppTheme.outline, fontSize: 14)),
-                    decoration: InputDecoration(
-                      labelText: 'Cuenta',
-                      labelStyle: GoogleFonts.beVietnamPro(
-                          color: AppTheme.onSurfaceVariant),
-                    ),
-                    items: accounts
-                        .map((a) => DropdownMenuItem(
-                              value: a.id,
-                              child: Text(a.name),
-                            ))
-                        .toList(),
+                  accountsCache = snap.data ?? [];
+                  return AccountPickerField(
+                    selectedAccountId: selectedAccountId,
+                    dense: true,
+                    showAddAccount: false,
                     onChanged: (v) =>
                         setDialogState(() => selectedAccountId = v),
                   );
@@ -1176,7 +1193,10 @@ class _GoalCardState extends State<_GoalCard> {
                     },
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppTheme.successFixed,
+                foregroundColor: Colors.white,
                 shape: const StadiumBorder(),
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+                elevation: 0,
               ),
               child: isSubmitting
                   ? const SizedBox(
@@ -1188,7 +1208,9 @@ class _GoalCardState extends State<_GoalCard> {
                             AlwaysStoppedAnimation<Color>(Colors.white),
                       ),
                     )
-                  : const Text('Ahorrar'),
+                  : Text('Ahorrar',
+                      style: GoogleFonts.plusJakartaSans(
+                          fontWeight: FontWeight.w600, fontSize: 14)),
             ),
           ],
         ),
@@ -1236,11 +1258,13 @@ class _GoalSheet extends StatefulWidget {
   final String userId;
   final GoalService goalService;
   final GoalModel? existing;
+  final bool isDialog;
 
   const _GoalSheet({
     required this.userId,
     required this.goalService,
     this.existing,
+    this.isDialog = false,
   });
 
   @override
@@ -1380,6 +1404,91 @@ class _GoalSheetState extends State<_GoalSheet> {
 
   @override
   Widget build(BuildContext context) {
+    return widget.isDialog ? _buildDialogBody(context) : _buildSheetBody(context);
+  }
+
+  /// Campos compartidos entre la hoja de móvil y el diálogo de escritorio —
+  /// solo cambia el "chrome" alrededor (handle+título vs. header con ícono
+  /// y botón de cierre, footer fijo vs. píldora flotante).
+  List<Widget> _buildFields() {
+    return [
+      AppTextField(
+        controller: _titleCtrl,
+        label: 'Nombre de la meta',
+        icon: Icons.flag_outlined,
+        textCapitalization: TextCapitalization.sentences,
+      ),
+      const SizedBox(height: 20),
+      AppTextField(
+        controller: _targetCtrl,
+        label: 'Precio de la meta',
+        icon: Icons.savings_outlined,
+        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+        inputFormatters: [AmountInputFormatter()],
+      ),
+      if (!_isEditing) ...[
+        const SizedBox(height: 20),
+        Text(
+          '¿Ya tienes algo ahorrado para esto, o es una meta nueva?',
+          style: GoogleFonts.beVietnamPro(
+            color: AppTheme.onSurfaceVariant,
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(height: 10),
+        Row(
+          children: [
+            Expanded(
+              child: _savingsChoiceChip(
+                label: 'Meta nueva',
+                selected: !_hasExistingSavings,
+                onTap: () => setState(() => _hasExistingSavings = false),
+              ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: _savingsChoiceChip(
+                label: 'Ya tengo ahorros',
+                selected: _hasExistingSavings,
+                onTap: () => setState(() => _hasExistingSavings = true),
+              ),
+            ),
+          ],
+        ),
+        if (_hasExistingSavings) ...[
+          const SizedBox(height: 16),
+          AppTextField(
+            controller: _initialSavedCtrl,
+            label: 'Cuánto ya tienes ahorrado',
+            icon: Icons.account_balance_wallet_outlined,
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            inputFormatters: [AmountInputFormatter()],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Este monto se suma a la meta directamente, sin descontarse de ninguna cuenta.',
+            style: GoogleFonts.beVietnamPro(
+              color: AppTheme.onSurfaceVariant,
+              fontSize: 12,
+              height: 1.4,
+            ),
+          ),
+        ],
+      ],
+      const SizedBox(height: 20),
+      _buildImagePicker(),
+      const SizedBox(height: 20),
+      AppTextField(
+        controller: _noteCtrl,
+        label: 'Nota (opcional)',
+        icon: Icons.note_outlined,
+        maxLines: 2,
+      ),
+    ];
+  }
+
+  Widget _buildSheetBody(BuildContext context) {
     return Padding(
       padding: EdgeInsets.only(
         left: 28, right: 28, top: 28,
@@ -1410,90 +1519,117 @@ class _GoalSheetState extends State<_GoalSheet> {
               ),
             ),
             const SizedBox(height: 24),
-            _field(_titleCtrl, 'Nombre de la meta',
-                hint: 'Ej: Moto, Viaje, Computador...'),
-            const SizedBox(height: 20),
-            _field(_targetCtrl, 'Precio de la meta',
-                keyboardType:
-                    const TextInputType.numberWithOptions(decimal: true),
-                inputFormatters: [AmountInputFormatter()],
-                hint: 'Ej: 7000000'),
-            if (!_isEditing) ...[
-              const SizedBox(height: 20),
-              Text(
-                '¿Ya tienes algo ahorrado para esto, o es una meta nueva?',
-                style: GoogleFonts.beVietnamPro(
-                  color: AppTheme.onSurfaceVariant,
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              const SizedBox(height: 10),
-              Row(
-                children: [
-                  Expanded(
-                    child: _savingsChoiceChip(
-                      label: 'Meta nueva',
-                      selected: !_hasExistingSavings,
-                      onTap: () => setState(() => _hasExistingSavings = false),
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: _savingsChoiceChip(
-                      label: 'Ya tengo ahorros',
-                      selected: _hasExistingSavings,
-                      onTap: () => setState(() => _hasExistingSavings = true),
-                    ),
-                  ),
-                ],
-              ),
-              if (_hasExistingSavings) ...[
-                const SizedBox(height: 16),
-                _field(_initialSavedCtrl, 'Cuánto ya tienes ahorrado',
-                    keyboardType:
-                        const TextInputType.numberWithOptions(decimal: true),
-                    inputFormatters: [AmountInputFormatter()],
-                    hint: 'Ej: 500000'),
-                const SizedBox(height: 8),
-                Text(
-                  'Este monto se suma a la meta directamente, sin descontarse de ninguna cuenta.',
-                  style: GoogleFonts.beVietnamPro(
-                    color: AppTheme.onSurfaceVariant,
-                    fontSize: 12,
-                    height: 1.4,
-                  ),
-                ),
-              ],
-            ],
-            const SizedBox(height: 20),
-            _buildImagePicker(),
-            const SizedBox(height: 20),
-            _field(_noteCtrl, 'Nota (opcional)', maxLines: 2),
+            ..._buildFields(),
             const SizedBox(height: 28),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: _isLoading ? null : _save,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.successFixed,
-                  foregroundColor: Colors.white,
-                  shape: const StadiumBorder(),
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  elevation: 0,
-                ),
-                child: _isLoading
-                    ? const CircularProgressIndicator(color: Colors.white)
-                    : Text(
-                        _isEditing ? 'Guardar cambios' : 'Crear meta',
-                        style: GoogleFonts.plusJakartaSans(
-                            fontSize: 15, fontWeight: FontWeight.w600),
-                      ),
-              ),
+            FullWidthPrimaryButton(
+              label: _isEditing ? 'Guardar cambios' : 'Crear meta',
+              isLoading: _isLoading,
+              onTap: _save,
             ),
           ],
         ),
       ),
+    );
+  }
+
+  /// Ventana modal centrada (escritorio) — mismo patrón que
+  /// [AddTransactionScreen._buildDialog]: header con ícono + título +
+  /// subtítulo + botón de cierre, cuerpo scrolleable, footer con un solo
+  /// botón flotante fuera del scroll.
+  Widget _buildDialogBody(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Flexible(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(36, 26, 36, 16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        color: AppTheme.secondary.withOpacity(0.12),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Icon(
+                        _isEditing
+                            ? Icons.edit_note_rounded
+                            : Icons.savings_rounded,
+                        color: AppTheme.secondary,
+                        size: 20,
+                      ),
+                    ),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            _isEditing ? 'Editar meta' : 'Nueva meta de ahorro',
+                            style: GoogleFonts.plusJakartaSans(
+                              color: AppTheme.primary,
+                              fontSize: 18,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            'Completa los datos de tu meta',
+                            style: GoogleFonts.beVietnamPro(
+                                color: AppTheme.onSurfaceVariant,
+                                fontSize: 12.5),
+                          ),
+                        ],
+                      ),
+                    ),
+                    IconButton(
+                      icon: Icon(Icons.close_rounded,
+                          color: AppTheme.onSurfaceVariant),
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 14),
+                ..._buildFields(),
+              ],
+            ),
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(36, 0, 36, 22),
+          child: Row(
+            children: [
+              const Spacer(),
+              FloatingPillButton(
+                color: AppTheme.secondary,
+                width: 220,
+                onTap: _isLoading ? null : _save,
+                child: _isLoading
+                    ? const SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(
+                            color: Colors.white, strokeWidth: 2.4),
+                      )
+                    : Text(
+                        _isEditing ? 'Guardar cambios' : 'Crear meta',
+                        style: GoogleFonts.plusJakartaSans(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 14,
+                        ),
+                      ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 
@@ -1635,29 +1771,4 @@ class _GoalSheetState extends State<_GoalSheet> {
     );
   }
 
-  Widget _field(
-    TextEditingController ctrl,
-    String label, {
-    String? hint,
-    int maxLines = 1,
-    TextInputType? keyboardType,
-    List<TextInputFormatter>? inputFormatters,
-  }) {
-    return TextField(
-      controller: ctrl,
-      maxLines: maxLines,
-      keyboardType: keyboardType,
-      inputFormatters: inputFormatters,
-      textCapitalization: TextCapitalization.sentences,
-      style: GoogleFonts.beVietnamPro(color: AppTheme.primary, fontSize: 15),
-      decoration: InputDecoration(
-        labelText: label,
-        hintText: hint,
-        labelStyle: GoogleFonts.beVietnamPro(
-            color: AppTheme.onSurfaceVariant, fontSize: 13),
-        hintStyle: GoogleFonts.beVietnamPro(
-            color: AppTheme.outlineVariant, fontSize: 14),
-      ),
-    );
-  }
 }

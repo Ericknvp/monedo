@@ -8,6 +8,7 @@ import '../screens/accounts_screen.dart';
 import '../screens/budgets_screen.dart';
 import '../screens/export_screen.dart';
 import 'currency_picker.dart';
+import 'app_text_field.dart';
 import 'app_toast.dart';
 import 'change_password_dialog.dart';
 
@@ -59,57 +60,92 @@ class _PreferencesSectionState extends State<PreferencesSection> {
 
   Future<void> _editUsername() async {
     final controller = TextEditingController(text: _username ?? '');
+    String? error;
+    bool saving = false;
+
     final newUsername = await showDialog<String>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(
-          'Cambiar nombre de usuario',
-          style: GoogleFonts.plusJakartaSans(
-              fontWeight: FontWeight.w700, color: AppTheme.primary),
-        ),
-        content: TextField(
-          controller: controller,
-          autofocus: true,
-          textCapitalization: TextCapitalization.words,
-          decoration: const InputDecoration(labelText: 'Nombre de usuario'),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancelar'),
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialogState) => AlertDialog(
+          backgroundColor: AppTheme.surfaceContainerLowest,
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: Text(
+            'Cambiar nombre de usuario',
+            style: GoogleFonts.plusJakartaSans(
+                fontWeight: FontWeight.w700, color: AppTheme.primary),
           ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, controller.text.trim()),
-            child: const Text('Guardar'),
+          content: AppTextField(
+            controller: controller,
+            label: 'Nombre de usuario',
+            icon: Icons.alternate_email_rounded,
+            autofocus: true,
+            textCapitalization: TextCapitalization.words,
+            errorText: error,
+            onChanged: (_) {
+              if (error != null) setDialogState(() => error = null);
+            },
           ),
-        ],
+          actions: [
+            TextButton(
+              onPressed: saving ? null : () => Navigator.pop(ctx),
+              child: Text('Cancelar',
+                  style: TextStyle(color: AppTheme.onSurfaceVariant)),
+            ),
+            ElevatedButton(
+              onPressed: saving
+                  ? null
+                  : () async {
+                      final trimmed = controller.text.trim();
+                      if (trimmed.isEmpty) {
+                        setDialogState(
+                            () => error = 'Ingresa un nombre de usuario');
+                        return;
+                      }
+                      if (trimmed == _username) {
+                        Navigator.pop(ctx);
+                        return;
+                      }
+                      setDialogState(() => saving = true);
+                      final result = await _authService.updateUsername(trimmed);
+                      if (result != null) {
+                        setDialogState(() {
+                          saving = false;
+                          error = result;
+                        });
+                        return;
+                      }
+                      if (ctx.mounted) Navigator.pop(ctx, trimmed);
+                    },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.successFixed,
+                foregroundColor: Colors.white,
+                shape: const StadiumBorder(),
+              ),
+              child: saving
+                  ? const SizedBox(
+                      height: 16,
+                      width: 16,
+                      child: CircularProgressIndicator(
+                          strokeWidth: 2, color: Colors.white),
+                    )
+                  : const Text('Guardar'),
+            ),
+          ],
+        ),
       ),
     );
     controller.dispose();
 
-    if (newUsername == null || newUsername.isEmpty || newUsername == _username) {
-      return;
-    }
-
-    final error = await _authService.updateUsername(newUsername);
-    if (!mounted) return;
-    if (error != null) {
-      showAppToast(
-        context,
-        message: error,
-        icon: Icons.error_outline_rounded,
-        accentColor: AppTheme.errorRed,
-      );
-    } else {
-      setState(() => _username = newUsername);
-      widget.onUsernameChanged?.call();
-      showAppToast(
-        context,
-        message: 'Nombre de usuario actualizado',
-        icon: Icons.check_circle_rounded,
-        accentColor: AppTheme.secondary,
-      );
-    }
+    if (newUsername == null || !mounted) return;
+    setState(() => _username = newUsername);
+    widget.onUsernameChanged?.call();
+    showAppToast(
+      context,
+      message: 'Nombre de usuario actualizado',
+      icon: Icons.check_circle_rounded,
+      accentColor: AppTheme.secondary,
+    );
   }
 
   Future<void> _changeCurrency(Currency currency) async {
@@ -144,7 +180,7 @@ class _PreferencesSectionState extends State<PreferencesSection> {
           ),
           child: Row(
             children: [
-              Icon(Icons.person_outline,
+              Icon(Icons.alternate_email_rounded,
                   color: AppTheme.onSurfaceVariant, size: 20),
               const SizedBox(width: 14),
               Expanded(
@@ -158,7 +194,7 @@ class _PreferencesSectionState extends State<PreferencesSection> {
                         ),
                       )
                     : Text(
-                        _username ?? 'Sin nombre de usuario',
+                        _username != null ? '@$_username' : 'Sin nombre de usuario',
                         style: GoogleFonts.beVietnamPro(
                           color: AppTheme.primary,
                           fontSize: 14,

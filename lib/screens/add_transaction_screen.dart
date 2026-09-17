@@ -10,15 +10,10 @@ import '../models/recurring_transaction.dart';
 import '../theme/app_theme.dart';
 import '../utils/amount_input_formatter.dart';
 import '../utils/currency_formatter.dart';
-import '../utils/category_icons.dart';
-import '../utils/category_colors.dart';
-import '../utils/category_visibility.dart';
-import '../utils/account_colors.dart';
-import 'categories_screen.dart';
-import 'accounts_screen.dart';
 import '../widgets/app_toast.dart';
 import '../widgets/app_date_picker.dart';
 import '../widgets/app_text_field.dart';
+import '../widgets/form_kit.dart';
 import '../widgets/pressable_scale.dart';
 
 /// Abre el formulario de movimiento: como una ventana modal centrada (con
@@ -90,7 +85,6 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
   DateTime _selectedDate = DateTime.now();
   String _selectedCategory = 'Otros';
   String? _selectedAccountId;
-  bool _showAllCategories = false;
   bool _showNoteField = false;
 
   // Movimiento recurrente (solo aplica al crear uno nuevo, no al editar).
@@ -101,21 +95,6 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
   int? _dayOfMonth;
   bool _noEndDate = true;
   DateTime? _endDate;
-
-  static const _categories = [
-    'Alimentación',
-    'Transporte',
-    'Entretenimiento',
-    'Salud',
-    'Educación',
-    'Ropa',
-    'Hogar',
-    'Trabajo',
-    'Inversión',
-    'Ahorro',
-    'Ocio',
-    'Otros',
-  ];
 
   @override
   void initState() {
@@ -501,21 +480,13 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
       child: Row(
         children: [
           if (isEditing)
-            TextButton.icon(
-              onPressed: _isLoading ? null : _confirmDelete,
-              icon: Icon(Icons.delete_outline_rounded,
-                  color: AppTheme.errorRed, size: 17),
-              label: Text(
-                'Eliminar movimiento',
-                style: GoogleFonts.beVietnamPro(
-                  color: AppTheme.errorRed,
-                  fontWeight: FontWeight.w700,
-                  fontSize: 13,
-                ),
-              ),
+            DangerTextAction(
+              label: 'Eliminar movimiento',
+              dense: true,
+              onTap: _isLoading ? null : _confirmDelete,
             ),
           const Spacer(),
-          _floatingPill(
+          FloatingPillButton(
             color: AppTheme.secondary,
             width: 220,
             onTap: _isLoading ? null : _save,
@@ -536,50 +507,6 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                   ),
           ),
         ],
-      ),
-    );
-  }
-
-  /// Botón tipo píldora con sombra propia, para que "flote" sobre el
-  /// contenido en vez de aparecer dentro de una barra sólida.
-  Widget _floatingPill({
-    required Color color,
-    required VoidCallback? onTap,
-    required Widget child,
-    double? width,
-  }) {
-    final isDisabled = onTap == null;
-    return Container(
-      width: width,
-      decoration: BoxDecoration(
-        color: color,
-        borderRadius: BorderRadius.circular(100),
-        boxShadow: isDisabled
-            ? null
-            : [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.2),
-                  blurRadius: 16,
-                  offset: const Offset(0, 6),
-                ),
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.08),
-                  blurRadius: 4,
-                  offset: const Offset(0, 1),
-                ),
-              ],
-      ),
-      child: Material(
-        color: Colors.transparent,
-        borderRadius: BorderRadius.circular(100),
-        child: InkWell(
-          borderRadius: BorderRadius.circular(100),
-          onTap: onTap,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 13, horizontal: 24),
-            child: Center(widthFactor: 1, child: child),
-          ),
-        ),
       ),
     );
   }
@@ -685,43 +612,15 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: _isLoading ? null : _save,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.successFixed,
-                foregroundColor: Colors.white,
-                shape: const StadiumBorder(),
-                padding: const EdgeInsets.symmetric(vertical: 18),
-                elevation: 0,
-              ),
-              child: _isLoading
-                  ? const SizedBox(
-                      height: 20,
-                      width: 20,
-                      child: CircularProgressIndicator(
-                          color: Colors.white, strokeWidth: 2.4),
-                    )
-                  : Text(
-                      isEditing ? 'Guardar cambios' : 'Agregar movimiento',
-                      style: GoogleFonts.plusJakartaSans(
-                          fontSize: 16, fontWeight: FontWeight.w600),
-                    ),
-            ),
+          FullWidthPrimaryButton(
+            label: isEditing ? 'Guardar cambios' : 'Agregar movimiento',
+            isLoading: _isLoading,
+            onTap: _save,
           ),
           if (isEditing)
-            TextButton.icon(
-              onPressed: _isLoading ? null : _confirmDelete,
-              icon: Icon(Icons.delete_outline_rounded,
-                  color: AppTheme.errorRed, size: 16),
-              label: Text(
-                'Eliminar movimiento',
-                style: GoogleFonts.beVietnamPro(
-                    color: AppTheme.errorRed,
-                    fontWeight: FontWeight.w600,
-                    fontSize: 12.5),
-              ),
+            DangerTextAction(
+              label: 'Eliminar movimiento',
+              onTap: _isLoading ? null : _confirmDelete,
             ),
         ],
       ),
@@ -834,7 +733,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _fieldLabel('Monto', dense: true),
+        FormFieldLabel('Monto', dense: true),
         AnimatedContainer(
           duration: const Duration(milliseconds: 160),
           curve: Curves.easeOutCubic,
@@ -1143,7 +1042,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
             ],
           ),
           const SizedBox(height: 14),
-          _fieldLabel('Frecuencia'),
+          FormFieldLabel('Frecuencia'),
           Wrap(
             spacing: 8,
             runSpacing: 8,
@@ -1152,17 +1051,17 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                 .toList(),
           ),
           const SizedBox(height: 14),
-          _fieldLabel('Cada cuánto'),
+          FormFieldLabel('Cada cuánto'),
           _intervalStepper(),
           if (_frequency == RecurrenceFrequency.weekly) ...[
             const SizedBox(height: 14),
-            _fieldLabel('Día de la semana'),
+            FormFieldLabel('Día de la semana'),
             _dayOfWeekPicker(),
           ],
           if (_frequency == RecurrenceFrequency.monthly ||
               _frequency == RecurrenceFrequency.yearly) ...[
             const SizedBox(height: 14),
-            _fieldLabel('Día del mes'),
+            FormFieldLabel('Día del mes'),
             _dayOfMonthField(),
           ],
           const SizedBox(height: 14),
@@ -1450,416 +1349,18 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
   }
 
   Widget _buildCategoryDropdown({bool compact = false}) {
-    return ValueListenableBuilder<Map<String, IconData>>(
-      valueListenable: CategoryIconRegistry.customIcons,
-      builder: (context, customIcons, _) {
-        return ValueListenableBuilder<Set<String>>(
-          valueListenable: CategoryVisibilityRegistry.disabled,
-          builder: (context, disabledDefaults, __) {
-            final customNames = customIcons.keys
-                .where((n) => !_categories.contains(n))
-                .toList()
-              ..sort();
-            // Las categorías predeterminadas deshabilitadas no aparecen para
-            // elegir, salvo que sea la que ya tenía asignada este movimiento.
-            final visibleDefaults =
-                _categories.where((n) => !disabledDefaults.contains(n));
-            final allNames = <String>{
-              ...visibleDefaults,
-              ...customNames,
-              _selectedCategory,
-            }.toList();
-            // La seleccionada siempre va primero, para que se vea resaltada aun
-            // colapsado (si no, "elegida pero no visible" confunde).
-            final orderedNames = [
-              _selectedCategory,
-              ...allNames.where((c) => c != _selectedCategory),
-            ];
-            final collapsedCount = compact ? 8 : 5;
-            final hasMore = orderedNames.length > collapsedCount;
-            final visibleNames = _showAllCategories
-                ? orderedNames
-                : orderedNames.take(collapsedCount).toList();
-
-            // Escritorio: chip compacto en fila (ícono + nombre, radio 9,
-            // con hover) en vez de la tarjeta de 52px pensada para el dedo.
-            Widget compactCategoryTile({
-              required Widget icon,
-              required String label,
-              required bool isSelected,
-              required Color color,
-              required VoidCallback onTap,
-            }) {
-              return HoverBuilder(
-                builder: (context, hovered) => InkWell(
-                  borderRadius: BorderRadius.circular(9),
-                  onTap: onTap,
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 140),
-                    padding:
-                        const EdgeInsets.fromLTRB(6, 6, 11, 6),
-                    decoration: BoxDecoration(
-                      color: isSelected
-                          ? AppTheme.navyFixed
-                          : AppTheme.surfaceContainerLowest,
-                      borderRadius: BorderRadius.circular(9),
-                      border: Border.all(
-                        color: isSelected
-                            ? AppTheme.navyFixed
-                            : (hovered
-                                ? AppTheme.outline
-                                : AppTheme.surfaceContainerHigh),
-                      ),
-                      boxShadow: hovered && !isSelected
-                          ? [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.08),
-                                blurRadius: 8,
-                                offset: const Offset(0, 3),
-                              ),
-                            ]
-                          : null,
-                    ),
-                    transform: hovered && !isSelected
-                        ? Matrix4.translationValues(0, -1, 0)
-                        : Matrix4.identity(),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Container(
-                          width: 22,
-                          height: 22,
-                          decoration: BoxDecoration(
-                            color: color,
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          child: icon,
-                        ),
-                        const SizedBox(width: 7),
-                        Text(
-                          label,
-                          style: GoogleFonts.beVietnamPro(
-                            color: isSelected
-                                ? Colors.white
-                                : AppTheme.onSurfaceVariant,
-                            fontSize: 12,
-                            fontWeight:
-                                isSelected ? FontWeight.w700 : FontWeight.w600,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              );
-            }
-
-            Widget categoryTile({
-              required Widget icon,
-              required String label,
-              required bool isSelected,
-              required Color color,
-              required VoidCallback onTap,
-            }) {
-              if (compact) {
-                return compactCategoryTile(
-                  icon: icon,
-                  label: label,
-                  isSelected: isSelected,
-                  color: color,
-                  onTap: onTap,
-                );
-              }
-              return InkWell(
-                borderRadius: BorderRadius.circular(16),
-                onTap: onTap,
-                child: SizedBox(
-                  width: 68,
-                  child: Column(
-                    children: [
-                      AnimatedContainer(
-                        duration: const Duration(milliseconds: 160),
-                        width: 52,
-                        height: 52,
-                        decoration: BoxDecoration(
-                          color: isSelected ? color : color.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(16),
-                          border: isSelected
-                              ? null
-                              : Border.all(color: color.withOpacity(0.25)),
-                        ),
-                        child: icon,
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        label,
-                        textAlign: TextAlign.center,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: GoogleFonts.beVietnamPro(
-                          color: isSelected
-                              ? AppTheme.primary
-                              : AppTheme.onSurfaceVariant,
-                          fontSize: 11,
-                          fontWeight:
-                              isSelected ? FontWeight.w700 : FontWeight.w500,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            }
-
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                compact
-                    ? _fieldLabel('Categoría', dense: true)
-                    : Padding(
-                        padding: const EdgeInsets.only(bottom: 12),
-                        child: Text(
-                          'Categoría',
-                          style: GoogleFonts.beVietnamPro(
-                              color: AppTheme.onSurfaceVariant, fontSize: 13),
-                        ),
-                      ),
-                // AnimatedSize hace que el contenedor crezca/encoja con
-                // transición al mostrar u ocultar el resto de categorías, en
-                // vez de que la grilla salte de golpe a su tamaño final.
-                AnimatedSize(
-                  duration: const Duration(milliseconds: 260),
-                  curve: Curves.easeOutCubic,
-                  alignment: Alignment.topLeft,
-                  child: Wrap(
-                    spacing: compact ? 8 : 12,
-                    runSpacing: compact ? 8 : 14,
-                    children: [
-                      ...visibleNames.map((c) {
-                        final isSelected = c == _selectedCategory;
-                        final color = CategoryColors.forCategory(c);
-                        // En compacto el dot siempre es de color sólido
-                        // (seleccionado o no), así que el ícono siempre va
-                        // blanco encima; en la tarjeta grande el fondo es
-                        // translúcido cuando no está seleccionada.
-                        return categoryTile(
-                          icon: Icon(CategoryIconRegistry.iconFor(c),
-                              color: (isSelected || compact)
-                                  ? Colors.white
-                                  : color,
-                              size: compact ? 13 : 22),
-                          label: c,
-                          isSelected: isSelected,
-                          color: color,
-                          onTap: () => setState(() => _selectedCategory = c),
-                        );
-                      }),
-                      if (hasMore)
-                        categoryTile(
-                          icon: AnimatedRotation(
-                            duration: const Duration(milliseconds: 260),
-                            curve: Curves.easeOutCubic,
-                            turns: _showAllCategories ? 0.5 : 0,
-                            child: Icon(Icons.expand_more_rounded,
-                                color: compact
-                                    ? Colors.white
-                                    : AppTheme.onSurfaceVariant,
-                                size: compact ? 13 : 22),
-                          ),
-                          label: _showAllCategories ? 'Ver menos' : 'Ver todas',
-                          isSelected: false,
-                          color: AppTheme.outline,
-                          onTap: () => setState(
-                              () => _showAllCategories = !_showAllCategories),
-                        ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Wrap(
-                  spacing: 18,
-                  runSpacing: 4,
-                  crossAxisAlignment: WrapCrossAlignment.center,
-                  children: [
-                    InkWell(
-                      borderRadius: BorderRadius.circular(8),
-                      onTap: () async {
-                        final userId =
-                            FirebaseAuth.instance.currentUser?.uid ?? '';
-                        final created = await showAddCategorySheet(
-                          context,
-                          userId: userId,
-                          existingNames: {..._categories, ...customNames},
-                        );
-                        if (created != null) {
-                          setState(() => _selectedCategory = created);
-                        }
-                      },
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 4),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(Icons.add_circle_outline_rounded,
-                                size: 15, color: AppTheme.secondary),
-                            const SizedBox(width: 6),
-                            Text(
-                              'Agregar categoría',
-                              style: GoogleFonts.beVietnamPro(
-                                color: AppTheme.secondary,
-                                fontSize: 12.5,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    InkWell(
-                      borderRadius: BorderRadius.circular(8),
-                      onTap: () => openCategoriesScreen(context),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 4),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(Icons.tune_rounded,
-                                size: 15, color: AppTheme.onSurfaceVariant),
-                            const SizedBox(width: 6),
-                            Text(
-                              'Mis categorías',
-                              style: GoogleFonts.beVietnamPro(
-                                color: AppTheme.onSurfaceVariant,
-                                fontSize: 12.5,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            );
-          },
-        );
-      },
-    );
-  }
-
-  Widget _fieldLabel(String text, {bool dense = false}) {
-    return Padding(
-      padding: EdgeInsets.only(bottom: dense ? 6 : 8, left: 2),
-      child: Text(
-        text,
-        style: GoogleFonts.beVietnamPro(
-            color: AppTheme.onSurfaceVariant, fontSize: 12, fontWeight: FontWeight.w600),
-      ),
-    );
-  }
-
-  Widget _accountChip(AccountModel account) {
-    final color = AccountColors.forAccount(account);
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(
-          width: 20,
-          height: 20,
-          decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(7)),
-          child: const Icon(Icons.account_balance_wallet_rounded,
-              size: 11, color: Colors.white),
-        ),
-        const SizedBox(width: 8),
-        Flexible(
-          child: Text(
-            account.name,
-            overflow: TextOverflow.ellipsis,
-            style: GoogleFonts.beVietnamPro(
-                color: AppTheme.primary, fontSize: 14.5, fontWeight: FontWeight.w500),
-          ),
-        ),
-      ],
+    return CategoryPickerField(
+      selectedCategory: _selectedCategory,
+      onChanged: (v) => setState(() => _selectedCategory = v),
+      compact: compact,
     );
   }
 
   Widget _buildAccountDropdown({bool dense = false}) {
-    final userId = FirebaseAuth.instance.currentUser?.uid ?? '';
-    return StreamBuilder<List<AccountModel>>(
-      stream: _accountService.getAccounts(userId),
-      builder: (context, snap) {
-        final accounts = snap.data ?? [];
-        final hasSelection = accounts.any((a) => a.id == _selectedAccountId);
-
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _fieldLabel('Cuenta', dense: dense),
-            AppFieldShell(
-              icon: Icons.account_balance_wallet_outlined,
-              dense: dense,
-              trailing: Icon(Icons.expand_more_rounded,
-                  color: AppTheme.onSurfaceVariant, size: 18),
-              child: DropdownButtonHideUnderline(
-                child: DropdownButton<String>(
-                  value: hasSelection ? _selectedAccountId : null,
-                  isExpanded: true,
-                  isDense: true,
-                  icon: const SizedBox.shrink(),
-                  dropdownColor: AppTheme.surfaceContainerLowest,
-                  borderRadius: BorderRadius.circular(14),
-                  hint: Text('Selecciona una cuenta',
-                      style: GoogleFonts.beVietnamPro(
-                          color: AppTheme.outline, fontSize: 14)),
-                  selectedItemBuilder: (context) => accounts
-                      .map((a) => Align(
-                          alignment: Alignment.centerLeft,
-                          child: _accountChip(a)))
-                      .toList(),
-                  items: accounts
-                      .map((a) => DropdownMenuItem(
-                            value: a.id,
-                            child: _accountChip(a),
-                          ))
-                      .toList(),
-                  onChanged: (v) => setState(() => _selectedAccountId = v),
-                ),
-              ),
-            ),
-            const SizedBox(height: 6),
-            InkWell(
-              borderRadius: BorderRadius.circular(8),
-              onTap: () async {
-                final created =
-                    await showAddAccountSheet(context, userId: userId);
-                if (created != null) {
-                  setState(() => _selectedAccountId = created);
-                }
-              },
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 4),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.add_circle_outline_rounded,
-                        size: 15, color: AppTheme.secondary),
-                    const SizedBox(width: 6),
-                    Text(
-                      'Agregar cuenta',
-                      style: GoogleFonts.beVietnamPro(
-                        color: AppTheme.secondary,
-                        fontSize: 12.5,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        );
-      },
+    return AccountPickerField(
+      selectedAccountId: _selectedAccountId,
+      onChanged: (v) => setState(() => _selectedAccountId = v),
+      dense: dense,
     );
   }
 
@@ -1867,7 +1368,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _fieldLabel('Fecha', dense: dense),
+        FormFieldLabel('Fecha', dense: dense),
         AppFieldShell(
           icon: Icons.calendar_today_outlined,
           onTap: _selectDate,

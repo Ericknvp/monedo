@@ -41,8 +41,6 @@ class _TransactionTileState extends State<TransactionTile> {
     final iconBg = categoryColor.withOpacity(0.14);
     final iconColor = categoryColor;
 
-    final isDesktop = MediaQuery.of(context).size.width >= 900;
-
     return MouseRegion(
       onEnter: (_) => setState(() => _hovered = true),
       onExit: (_) => setState(() => _hovered = false),
@@ -68,10 +66,8 @@ class _TransactionTileState extends State<TransactionTile> {
         child: Material(
           color: Colors.transparent,
           child: InkWell(
-            // Tocar el movimiento completo abre VER el detalle (ícono de
-            // categoría, monto, cuenta, nota...), no editar directamente —
-            // "Editar"/"Eliminar" son acciones aparte dentro de esa hoja (o
-            // los botones que aparecen al pasar el mouse/mantener presionado).
+            // Tocar el movimiento completo abre el detalle; "Editar"/"Eliminar"
+            // viven dentro de esa hoja, no en la fila.
             onTap: () => showTransactionDetail(
               context,
               transaction: t,
@@ -189,64 +185,21 @@ class _TransactionTileState extends State<TransactionTile> {
               ),
             ),
 
-            // Amount + hover actions
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Text(
-                  t.isTransfer
-                      ? CurrencyFormatter.format(t.amount)
-                      : CurrencyFormatter.formatWithSign(t.amount, t.isIncome),
-                  style: GoogleFonts.plusJakartaSans(
-                    color: amountColor,
-                    fontSize: 15,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                // Las transferencias entre cuentas propias no se editan ni
-                // eliminan desde aquí (son dos movimientos espejo); para
-                // revertirlas se hace otra transferencia en sentido inverso.
-                if (!t.isTransfer)
-                  AnimatedOpacity(
-                    opacity: (!isDesktop || _hovered) ? 1.0 : 0.0,
-                    duration: const Duration(milliseconds: 200),
-                    child: Row(
-                      children: [
-                        _actionBtn(Icons.edit_rounded,
-                            AppTheme.onSurfaceVariant,
-                            AppTheme.surfaceContainer, widget.onEdit),
-                        const SizedBox(width: 6),
-                        _actionBtn(Icons.delete_rounded,
-                            AppTheme.errorRed,
-                            AppTheme.errorContainer, widget.onDelete),
-                      ],
-                    ),
-                  ),
-              ],
+            // Amount
+            Text(
+              t.isTransfer
+                  ? CurrencyFormatter.format(t.amount)
+                  : CurrencyFormatter.formatWithSign(t.amount, t.isIncome),
+              style: GoogleFonts.plusJakartaSans(
+                color: amountColor,
+                fontSize: 15,
+                fontWeight: FontWeight.w700,
+              ),
             ),
           ],
               ),
             ),
           ),
-        ),
-      ),
-    );
-  }
-
-  Widget _actionBtn(
-      IconData icon, Color color, Color bg, VoidCallback onTap) {
-    return MouseRegion(
-      cursor: SystemMouseCursors.click,
-      child: GestureDetector(
-        onTap: onTap,
-        child: Container(
-          padding: const EdgeInsets.all(6),
-          decoration: BoxDecoration(
-            color: bg,
-            borderRadius: BorderRadius.circular(100),
-          ),
-          child: Icon(icon, color: color, size: 16),
         ),
       ),
     );

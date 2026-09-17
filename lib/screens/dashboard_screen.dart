@@ -307,7 +307,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
-                    _currentUser?.username ?? 'Usuario',
+                    _currentUser != null ? '@${_currentUser!.username}' : 'Usuario',
                     style: GoogleFonts.beVietnamPro(
                       color: Colors.white,
                       fontSize: 13,
@@ -1168,7 +1168,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Hola, ${_currentUser?.username ?? 'Usuario'}',
+                    _currentUser != null
+                        ? 'Hola, @${_currentUser!.username}'
+                        : 'Hola, Usuario',
                     style: GoogleFonts.beVietnamPro(
                         color: AppTheme.onSurfaceVariant, fontSize: 15),
                   ),

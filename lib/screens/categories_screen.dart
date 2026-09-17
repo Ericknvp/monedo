@@ -12,16 +12,50 @@ import '../utils/category_visibility.dart';
 import '../widgets/icon_picker.dart';
 import '../widgets/category_color_picker.dart';
 import '../widgets/fade_slide_in.dart';
+import '../widgets/app_text_field.dart';
+import '../widgets/form_kit.dart';
 
 /// Abre la hoja para crear (o editar, si se pasa [existing]) una categoría
 /// propia. Devuelve el nombre de la categoría creada/editada (para poder
-/// seleccionarla al instante donde se llamó), o null si se canceló.
+/// seleccionarla al instante donde se llamó), o null si se canceló. Ventana
+/// modal centrada en escritorio, hoja inferior en móvil — mismo patrón
+/// responsivo que add_transaction_screen.dart.
 Future<String?> showAddCategorySheet(
   BuildContext context, {
   required String userId,
   required Set<String> existingNames,
   CategoryModel? existing,
 }) {
+  final isDesktop = MediaQuery.of(context).size.width >= 900;
+
+  if (isDesktop) {
+    return showGeneralDialog<String>(
+      context: context,
+      barrierDismissible: true,
+      barrierLabel: 'Cerrar',
+      barrierColor: Colors.black.withOpacity(0.55),
+      transitionDuration: const Duration(milliseconds: 220),
+      pageBuilder: (_, __, ___) => _AddCategorySheet(
+        userId: userId,
+        existingNames: existingNames,
+        categoryService: CategoryService(),
+        existing: existing,
+        isDialog: true,
+      ),
+      transitionBuilder: (context, animation, secondaryAnimation, child) {
+        final curved =
+            CurvedAnimation(parent: animation, curve: Curves.easeOutCubic);
+        return FadeTransition(
+          opacity: curved,
+          child: ScaleTransition(
+            scale: Tween<double>(begin: 0.94, end: 1).animate(curved),
+            child: child,
+          ),
+        );
+      },
+    );
+  }
+
   return showModalBottomSheet<String>(
     context: context,
     backgroundColor: AppTheme.surfaceContainerLowest,
@@ -533,12 +567,14 @@ class _AddCategorySheet extends StatefulWidget {
   final Set<String> existingNames;
   final CategoryService categoryService;
   final CategoryModel? existing;
+  final bool isDialog;
 
   const _AddCategorySheet({
     required this.userId,
     required this.existingNames,
     required this.categoryService,
     this.existing,
+    this.isDialog = false,
   });
 
   @override
@@ -583,10 +619,11 @@ class _AddCategorySheetState extends State<_AddCategorySheet> {
       setState(() => _error = 'Ponle un nombre a la categoría');
       return;
     }
-    final renamed =
-        !_isEditing || name.toLowerCase() != widget.existing!.name.toLowerCase();
+    final renamed = !_isEditing ||
+        name.toLowerCase() != widget.existing!.name.toLowerCase();
     if (renamed &&
-        widget.existingNames.any((e) => e.toLowerCase() == name.toLowerCase())) {
+        widget.existingNames
+            .any((e) => e.toLowerCase() == name.toLowerCase())) {
       setState(() => _error = 'Ya existe una categoría con ese nombre');
       return;
     }
@@ -623,8 +660,95 @@ class _AddCategorySheetState extends State<_AddCategorySheet> {
     if (mounted) Navigator.pop(context, name);
   }
 
+  Widget _buildFields({bool dense = false}) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Builder(builder: (context) {
+          final previewColor = _selectedColor ??
+              (_nameCtrl.text.trim().isEmpty
+                  ? AppTheme.secondary
+                  : CategoryColors.forCategory(_nameCtrl.text.trim()));
+          return Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              InkWell(
+                borderRadius: BorderRadius.circular(16),
+                onTap: _pickIcon,
+                child: Container(
+                  width: dense ? 56 : 64,
+                  height: dense ? 56 : 64,
+                  decoration: BoxDecoration(
+                    color: previewColor.withOpacity(0.14),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: AppTheme.outlineVariant),
+                  ),
+                  child: _selectedIcon == null
+                      ? Icon(Icons.add_photo_alternate_outlined,
+                          color: AppTheme.onSurfaceVariant)
+                      : Icon(_selectedIcon, color: previewColor, size: 28),
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: AppTextField(
+                  controller: _nameCtrl,
+                  label: 'Nombre de la categoría',
+                  icon: Icons.label_outline_rounded,
+                  textCapitalization: TextCapitalization.sentences,
+                  onChanged: (_) => setState(() {}),
+                  dense: dense,
+                ),
+              ),
+            ],
+          );
+        }),
+        const SizedBox(height: 20),
+        FormFieldLabel('Color', dense: dense),
+        Wrap(
+          spacing: 12,
+          runSpacing: 12,
+          children: CategoryColors.swatches.map((color) {
+            final isSelected = _selectedColor?.value == color.value;
+            return InkWell(
+              borderRadius: BorderRadius.circular(100),
+              onTap: () => setState(() => _selectedColor = color),
+              child: Container(
+                width: 34,
+                height: 34,
+                decoration: BoxDecoration(
+                  color: color,
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: isSelected ? AppTheme.primary : Colors.transparent,
+                    width: 2.5,
+                  ),
+                ),
+                child: isSelected
+                    ? const Icon(Icons.check_rounded,
+                        color: Colors.white, size: 16)
+                    : null,
+              ),
+            );
+          }).toList(),
+        ),
+        if (_error != null) ...[
+          const SizedBox(height: 12),
+          Text(_error!,
+              style: GoogleFonts.beVietnamPro(
+                  color: AppTheme.errorRed, fontSize: 13)),
+        ],
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    return widget.isDialog ? _buildDialog() : _buildBottomSheet();
+  }
+
+  Widget _buildBottomSheet() {
     return Padding(
       padding: EdgeInsets.only(
         left: 28,
@@ -632,150 +756,161 @@ class _AddCategorySheetState extends State<_AddCategorySheet> {
         top: 28,
         bottom: MediaQuery.of(context).viewInsets.bottom + 28,
       ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Center(
-            child: Container(
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: AppTheme.outlineVariant,
-                borderRadius: BorderRadius.circular(2),
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: AppTheme.outlineVariant,
+                  borderRadius: BorderRadius.circular(2),
+                ),
               ),
             ),
-          ),
-          const SizedBox(height: 20),
-          Text(
-            _isEditing ? 'Editar categoría' : 'Nueva categoría',
-            style: GoogleFonts.plusJakartaSans(
-              color: AppTheme.primary,
-              fontSize: 20,
-              fontWeight: FontWeight.w700,
+            const SizedBox(height: 20),
+            Text(
+              _isEditing ? 'Editar categoría' : 'Nueva categoría',
+              style: GoogleFonts.plusJakartaSans(
+                color: AppTheme.primary,
+                fontSize: 20,
+                fontWeight: FontWeight.w700,
+              ),
             ),
-          ),
-          const SizedBox(height: 24),
-          Builder(builder: (context) {
-            final previewColor = _selectedColor ??
-                (_nameCtrl.text.trim().isEmpty
-                    ? AppTheme.secondary
-                    : CategoryColors.forCategory(_nameCtrl.text.trim()));
-            return Row(
+            const SizedBox(height: 24),
+            _buildFields(),
+            const SizedBox(height: 28),
+            FullWidthPrimaryButton(
+              label: _isEditing ? 'Guardar cambios' : 'Crear categoría',
+              isLoading: _saving,
+              onTap: _save,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Ventana modal centrada (escritorio) — mismo patrón que
+  /// add_transaction_screen.dart's `_buildDialog`.
+  Widget _buildDialog() {
+    return Dialog(
+      backgroundColor: Colors.transparent,
+      insetPadding: const EdgeInsets.all(24),
+      child: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 480, maxHeight: 680),
+          child: Material(
+            color: AppTheme.surfaceContainerLowest,
+            borderRadius: BorderRadius.circular(28),
+            clipBehavior: Clip.antiAlias,
+            elevation: 24,
+            shadowColor: Colors.black.withOpacity(0.4),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                InkWell(
-                  borderRadius: BorderRadius.circular(16),
-                  onTap: _pickIcon,
-                  child: Container(
-                    width: 64,
-                    height: 64,
-                    decoration: BoxDecoration(
-                      color: previewColor.withOpacity(0.14),
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: AppTheme.outlineVariant),
+                Flexible(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.fromLTRB(32, 26, 32, 16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Container(
+                              width: 40,
+                              height: 40,
+                              decoration: BoxDecoration(
+                                color: AppTheme.secondary.withOpacity(0.12),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Icon(
+                                _isEditing
+                                    ? Icons.edit_rounded
+                                    : Icons.category_outlined,
+                                color: AppTheme.secondary,
+                                size: 20,
+                              ),
+                            ),
+                            const SizedBox(width: 14),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    _isEditing
+                                        ? 'Editar categoría'
+                                        : 'Nueva categoría',
+                                    style: GoogleFonts.plusJakartaSans(
+                                      color: AppTheme.primary,
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    'Elige un nombre, ícono y color',
+                                    style: GoogleFonts.beVietnamPro(
+                                        color: AppTheme.onSurfaceVariant,
+                                        fontSize: 12.5),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            IconButton(
+                              icon: Icon(Icons.close_rounded,
+                                  color: AppTheme.onSurfaceVariant),
+                              onPressed: () => Navigator.pop(context),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 18),
+                        _buildFields(dense: true),
+                      ],
                     ),
-                    child: _selectedIcon == null
-                        ? Icon(Icons.add_photo_alternate_outlined,
-                            color: AppTheme.onSurfaceVariant)
-                        : Icon(_selectedIcon, color: previewColor, size: 28),
                   ),
                 ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: TextField(
-                    controller: _nameCtrl,
-                    onChanged: (_) => setState(() {}),
-                    textCapitalization: TextCapitalization.sentences,
-                    style: GoogleFonts.beVietnamPro(
-                        color: AppTheme.primary, fontSize: 15),
-                    decoration: InputDecoration(
-                      labelText: 'Nombre de la categoría',
-                      hintText: 'Ej: Suscripciones',
-                      labelStyle: GoogleFonts.beVietnamPro(
-                          color: AppTheme.onSurfaceVariant, fontSize: 13),
-                      filled: true,
-                      fillColor: AppTheme.surfaceContainerLow,
-                      contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 18),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(16),
-                        borderSide: BorderSide.none,
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(32, 0, 32, 22),
+                  child: Row(
+                    children: [
+                      const Spacer(),
+                      FloatingPillButton(
+                        color: AppTheme.secondary,
+                        width: 200,
+                        onTap: _saving ? null : _save,
+                        child: _saving
+                            ? const SizedBox(
+                                height: 20,
+                                width: 20,
+                                child: CircularProgressIndicator(
+                                    color: Colors.white, strokeWidth: 2.4),
+                              )
+                            : Text(
+                                _isEditing
+                                    ? 'Guardar cambios'
+                                    : 'Crear categoría',
+                                style: GoogleFonts.plusJakartaSans(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 14,
+                                ),
+                              ),
                       ),
-                    ),
+                    ],
                   ),
                 ),
               ],
-            );
-          }),
-          const SizedBox(height: 20),
-          Text(
-            'Color',
-            style: GoogleFonts.beVietnamPro(
-              color: AppTheme.onSurfaceVariant,
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
             ),
           ),
-          const SizedBox(height: 10),
-          Wrap(
-            spacing: 12,
-            runSpacing: 12,
-            children: CategoryColors.swatches.map((color) {
-              final isSelected = _selectedColor?.value == color.value;
-              return InkWell(
-                borderRadius: BorderRadius.circular(100),
-                onTap: () => setState(() => _selectedColor = color),
-                child: Container(
-                  width: 34,
-                  height: 34,
-                  decoration: BoxDecoration(
-                    color: color,
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: isSelected ? AppTheme.primary : Colors.transparent,
-                      width: 2.5,
-                    ),
-                  ),
-                  child: isSelected
-                      ? const Icon(Icons.check_rounded,
-                          color: Colors.white, size: 16)
-                      : null,
-                ),
-              );
-            }).toList(),
-          ),
-          if (_error != null) ...[
-            const SizedBox(height: 12),
-            Text(_error!,
-                style: GoogleFonts.beVietnamPro(
-                    color: AppTheme.errorRed, fontSize: 13)),
-          ],
-          const SizedBox(height: 28),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: _saving ? null : _save,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.successFixed,
-                foregroundColor: Colors.white,
-                shape: const StadiumBorder(),
-                padding: const EdgeInsets.symmetric(vertical: 18),
-                elevation: 0,
-              ),
-              child: _saving
-                  ? const SizedBox(
-                      width: 22,
-                      height: 22,
-                      child: CircularProgressIndicator(
-                          color: Colors.white, strokeWidth: 2.4),
-                    )
-                  : Text('Crear categoría',
-                      style: GoogleFonts.plusJakartaSans(
-                          fontSize: 16, fontWeight: FontWeight.w600)),
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
 }
+

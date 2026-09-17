@@ -9,15 +9,44 @@ import '../utils/account_colors.dart';
 import '../utils/amount_input_formatter.dart';
 import '../utils/currency_formatter.dart';
 import '../widgets/account_color_picker.dart';
+import '../widgets/app_text_field.dart';
 import '../widgets/app_toast.dart';
 import '../widgets/fade_slide_in.dart';
+import '../widgets/form_kit.dart';
 
-/// Abre la hoja para crear una cuenta nueva (ej. Efectivo, Nu, Nequi).
-/// Devuelve el id de la cuenta creada, o null si se canceló.
+/// Abre el formulario para crear una cuenta nueva (ej. Efectivo, Nu, Nequi):
+/// ventana modal centrada en escritorio (mismo patrón que
+/// [openAddTransaction]), hoja inferior en móvil. Devuelve el id de la
+/// cuenta creada, o null si se canceló.
 Future<String?> showAddAccountSheet(
   BuildContext context, {
   required String userId,
 }) {
+  final isDesktop = MediaQuery.of(context).size.width >= 900;
+
+  if (isDesktop) {
+    return showDialog<String>(
+      context: context,
+      builder: (ctx) => Dialog(
+        backgroundColor: Colors.transparent,
+        insetPadding: const EdgeInsets.all(24),
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 460, maxHeight: 640),
+            child: Material(
+              color: AppTheme.surfaceContainerLowest,
+              borderRadius: BorderRadius.circular(28),
+              clipBehavior: Clip.antiAlias,
+              elevation: 24,
+              shadowColor: Colors.black.withOpacity(0.4),
+              child: _AddAccountSheet(userId: userId, isDialog: true),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   return showModalBottomSheet<String>(
     context: context,
     backgroundColor: AppTheme.surfaceContainerLowest,
@@ -25,7 +54,7 @@ Future<String?> showAddAccountSheet(
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
     ),
-    builder: (ctx) => _AddAccountSheet(userId: userId),
+    builder: (ctx) => _AddAccountSheet(userId: userId, isDialog: false),
   );
 }
 
@@ -51,29 +80,21 @@ Future<void> showEditAccountDialog(
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            TextField(
+            AppTextField(
               controller: nameCtrl,
               autofocus: true,
+              label: 'Nombre',
+              icon: Icons.badge_outlined,
               textCapitalization: TextCapitalization.sentences,
-              style: GoogleFonts.beVietnamPro(color: AppTheme.primary),
-              decoration: InputDecoration(
-                labelText: 'Nombre',
-                labelStyle:
-                    GoogleFonts.beVietnamPro(color: AppTheme.onSurfaceVariant),
-              ),
             ),
-            const SizedBox(height: 16),
-            TextField(
+            const SizedBox(height: 14),
+            AppTextField(
               controller: balanceCtrl,
+              label: 'Saldo',
+              icon: Icons.payments_outlined,
               keyboardType: const TextInputType.numberWithOptions(decimal: true),
               inputFormatters: [AmountInputFormatter()],
-              style: GoogleFonts.beVietnamPro(color: AppTheme.primary),
-              decoration: InputDecoration(
-                labelText: 'Saldo',
-                errorText: error,
-                labelStyle:
-                    GoogleFonts.beVietnamPro(color: AppTheme.onSurfaceVariant),
-              ),
+              errorText: error,
             ),
           ],
         ),
@@ -166,6 +187,31 @@ Future<void> showTransferSheet(
   BuildContext context, {
   required List<AccountModel> accounts,
 }) {
+  final isDesktop = MediaQuery.of(context).size.width >= 900;
+
+  if (isDesktop) {
+    return showDialog(
+      context: context,
+      builder: (ctx) => Dialog(
+        backgroundColor: Colors.transparent,
+        insetPadding: const EdgeInsets.all(24),
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 460, maxHeight: 680),
+            child: Material(
+              color: AppTheme.surfaceContainerLowest,
+              borderRadius: BorderRadius.circular(28),
+              clipBehavior: Clip.antiAlias,
+              elevation: 24,
+              shadowColor: Colors.black.withOpacity(0.4),
+              child: _TransferSheet(accounts: accounts, isDialog: true),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   return showModalBottomSheet(
     context: context,
     backgroundColor: AppTheme.surfaceContainerLowest,
@@ -173,7 +219,7 @@ Future<void> showTransferSheet(
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
     ),
-    builder: (ctx) => _TransferSheet(accounts: accounts),
+    builder: (ctx) => _TransferSheet(accounts: accounts, isDialog: false),
   );
 }
 
@@ -602,8 +648,9 @@ class _AccountsScreenState extends State<AccountsScreen> {
 
 class _AddAccountSheet extends StatefulWidget {
   final String userId;
+  final bool isDialog;
 
-  const _AddAccountSheet({required this.userId});
+  const _AddAccountSheet({required this.userId, required this.isDialog});
 
   @override
   State<_AddAccountSheet> createState() => _AddAccountSheetState();
@@ -685,17 +732,9 @@ class _AddAccountSheetState extends State<_AddAccountSheet> {
     if (mounted) Navigator.pop(context, id);
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.only(
-        left: 28,
-        right: 28,
-        top: 28,
-        bottom: MediaQuery.of(context).viewInsets.bottom + 28,
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
+  Widget _header() {
+    if (!widget.isDialog) {
+      return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Center(
@@ -724,6 +763,71 @@ class _AddAccountSheetState extends State<_AddAccountSheet> {
                 color: AppTheme.onSurfaceVariant, fontSize: 13),
           ),
           const SizedBox(height: 20),
+        ],
+      );
+    }
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 20),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: AppTheme.secondary.withOpacity(0.12),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(Icons.account_balance_wallet_rounded,
+                color: AppTheme.secondary, size: 20),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Nueva cuenta',
+                  style: GoogleFonts.plusJakartaSans(
+                    color: AppTheme.primary,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  '¿Dónde tienes tu dinero?',
+                  style: GoogleFonts.beVietnamPro(
+                      color: AppTheme.onSurfaceVariant, fontSize: 12.5),
+                ),
+              ],
+            ),
+          ),
+          IconButton(
+            icon: Icon(Icons.close_rounded, color: AppTheme.onSurfaceVariant),
+            onPressed: () => Navigator.pop(context),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: widget.isDialog
+          ? const EdgeInsets.fromLTRB(28, 24, 28, 28)
+          : EdgeInsets.only(
+              left: 28,
+              right: 28,
+              top: 28,
+              bottom: MediaQuery.of(context).viewInsets.bottom + 28,
+            ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _header(),
           Row(
             children: [
               Expanded(
@@ -749,49 +853,22 @@ class _AddAccountSheetState extends State<_AddAccountSheet> {
           ),
           if (_kind == _AccountKind.bank) ...[
             const SizedBox(height: 16),
-            TextField(
+            AppTextField(
               controller: _nameCtrl,
               focusNode: _nameFocus,
               autofocus: true,
               textCapitalization: TextCapitalization.sentences,
-              style:
-                  GoogleFonts.beVietnamPro(color: AppTheme.primary, fontSize: 15),
-              decoration: InputDecoration(
-                labelText: 'Nombre del banco o billetera',
-                hintText: 'Ej: PayPal, mi banco...',
-                labelStyle: GoogleFonts.beVietnamPro(
-                    color: AppTheme.onSurfaceVariant, fontSize: 13),
-                filled: true,
-                fillColor: AppTheme.surfaceContainerLow,
-                contentPadding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(16),
-                  borderSide: BorderSide.none,
-                ),
-              ),
+              label: 'Nombre del banco o billetera',
+              icon: Icons.account_balance_outlined,
             ),
           ],
           const SizedBox(height: 16),
-          TextField(
+          AppTextField(
             controller: _balanceCtrl,
+            label: 'Saldo inicial (opcional)',
+            icon: Icons.payments_outlined,
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
             inputFormatters: [AmountInputFormatter()],
-            style: GoogleFonts.beVietnamPro(color: AppTheme.primary, fontSize: 15),
-            decoration: InputDecoration(
-              labelText: 'Saldo inicial (opcional)',
-              hintText: 'Ej: 50000',
-              labelStyle: GoogleFonts.beVietnamPro(
-                  color: AppTheme.onSurfaceVariant, fontSize: 13),
-              filled: true,
-              fillColor: AppTheme.surfaceContainerLow,
-              contentPadding:
-                  const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(16),
-                borderSide: BorderSide.none,
-              ),
-            ),
           ),
           if (_error != null) ...[
             const SizedBox(height: 12),
@@ -800,28 +877,10 @@ class _AddAccountSheetState extends State<_AddAccountSheet> {
                     color: AppTheme.errorRed, fontSize: 13)),
           ],
           const SizedBox(height: 28),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: _saving ? null : _save,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.successFixed,
-                foregroundColor: Colors.white,
-                shape: const StadiumBorder(),
-                padding: const EdgeInsets.symmetric(vertical: 18),
-                elevation: 0,
-              ),
-              child: _saving
-                  ? const SizedBox(
-                      width: 22,
-                      height: 22,
-                      child: CircularProgressIndicator(
-                          color: Colors.white, strokeWidth: 2.4),
-                    )
-                  : Text('Crear cuenta',
-                      style: GoogleFonts.plusJakartaSans(
-                          fontSize: 16, fontWeight: FontWeight.w600)),
-            ),
+          FullWidthPrimaryButton(
+            label: 'Crear cuenta',
+            isLoading: _saving,
+            onTap: _save,
           ),
         ],
       ),
@@ -883,8 +942,9 @@ class _AddAccountSheetState extends State<_AddAccountSheet> {
 
 class _TransferSheet extends StatefulWidget {
   final List<AccountModel> accounts;
+  final bool isDialog;
 
-  const _TransferSheet({required this.accounts});
+  const _TransferSheet({required this.accounts, required this.isDialog});
 
   @override
   State<_TransferSheet> createState() => _TransferSheetState();
@@ -947,51 +1007,9 @@ class _TransferSheetState extends State<_TransferSheet> {
     Navigator.pop(context);
   }
 
-  Widget _accountDropdown({
-    required String label,
-    required String? value,
-    required ValueChanged<String?> onChanged,
-  }) {
-    return DropdownButtonFormField<String>(
-      value: value,
-      dropdownColor: AppTheme.surfaceContainerLowest,
-      borderRadius: BorderRadius.circular(14),
-      elevation: 3,
-      style: GoogleFonts.beVietnamPro(color: AppTheme.primary, fontSize: 15),
-      decoration: InputDecoration(
-        labelText: label,
-        labelStyle: GoogleFonts.beVietnamPro(
-            color: AppTheme.onSurfaceVariant, fontSize: 13),
-        filled: true,
-        fillColor: AppTheme.surfaceContainerLow,
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: BorderSide.none,
-        ),
-      ),
-      items: widget.accounts
-          .map((a) => DropdownMenuItem(
-                value: a.id,
-                child: Text('${a.name} · ${CurrencyFormatter.format(a.balance)}'),
-              ))
-          .toList(),
-      onChanged: onChanged,
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.only(
-        left: 28,
-        right: 28,
-        top: 28,
-        bottom: MediaQuery.of(context).viewInsets.bottom + 28,
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
+  Widget _header() {
+    if (!widget.isDialog) {
+      return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Center(
@@ -1014,39 +1032,83 @@ class _TransferSheetState extends State<_TransferSheet> {
             ),
           ),
           const SizedBox(height: 24),
-          _accountDropdown(
+        ],
+      );
+    }
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 20),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: AppTheme.secondary.withOpacity(0.12),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(Icons.swap_horiz_rounded,
+                color: AppTheme.secondary, size: 20),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Text(
+              'Transferir entre cuentas',
+              style: GoogleFonts.plusJakartaSans(
+                color: AppTheme.primary,
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+          IconButton(
+            icon: Icon(Icons.close_rounded, color: AppTheme.onSurfaceVariant),
+            onPressed: () => Navigator.pop(context),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: widget.isDialog
+          ? const EdgeInsets.fromLTRB(28, 24, 28, 28)
+          : EdgeInsets.only(
+              left: 28,
+              right: 28,
+              top: 28,
+              bottom: MediaQuery.of(context).viewInsets.bottom + 28,
+            ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _header(),
+          AccountPickerField(
             label: 'Desde',
-            value: _fromId,
+            selectedAccountId: _fromId,
+            showAddAccount: false,
             onChanged: (v) => setState(() => _fromId = v),
           ),
           const SizedBox(height: 12),
           Icon(Icons.arrow_downward_rounded,
               color: AppTheme.onSurfaceVariant, size: 20),
           const SizedBox(height: 12),
-          _accountDropdown(
+          AccountPickerField(
             label: 'Hacia',
-            value: _toId,
+            selectedAccountId: _toId,
+            showAddAccount: false,
             onChanged: (v) => setState(() => _toId = v),
           ),
           const SizedBox(height: 16),
-          TextField(
+          AppTextField(
             controller: _amountCtrl,
+            label: 'Monto a transferir',
+            icon: Icons.payments_outlined,
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
             inputFormatters: [AmountInputFormatter()],
-            style: GoogleFonts.beVietnamPro(color: AppTheme.primary, fontSize: 15),
-            decoration: InputDecoration(
-              labelText: 'Monto a transferir',
-              labelStyle: GoogleFonts.beVietnamPro(
-                  color: AppTheme.onSurfaceVariant, fontSize: 13),
-              filled: true,
-              fillColor: AppTheme.surfaceContainerLow,
-              contentPadding:
-                  const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(16),
-                borderSide: BorderSide.none,
-              ),
-            ),
           ),
           if (_error != null) ...[
             const SizedBox(height: 12),
@@ -1055,31 +1117,14 @@ class _TransferSheetState extends State<_TransferSheet> {
                     color: AppTheme.errorRed, fontSize: 13)),
           ],
           const SizedBox(height: 28),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: _saving ? null : _transfer,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.successFixed,
-                foregroundColor: Colors.white,
-                shape: const StadiumBorder(),
-                padding: const EdgeInsets.symmetric(vertical: 18),
-                elevation: 0,
-              ),
-              child: _saving
-                  ? const SizedBox(
-                      width: 22,
-                      height: 22,
-                      child: CircularProgressIndicator(
-                          color: Colors.white, strokeWidth: 2.4),
-                    )
-                  : Text('Transferir',
-                      style: GoogleFonts.plusJakartaSans(
-                          fontSize: 16, fontWeight: FontWeight.w600)),
-            ),
+          FullWidthPrimaryButton(
+            label: 'Transferir',
+            isLoading: _saving,
+            onTap: _transfer,
           ),
         ],
       ),
     );
   }
 }
+
