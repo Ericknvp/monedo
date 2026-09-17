@@ -79,6 +79,19 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
     'Sábado',
     'Domingo',
   ];
+  // Plural correcto para "Los ___ son...": los días invariables (lunes,
+  // martes, miércoles, jueves, viernes) no llevan "s", pero sábado/domingo
+  // sí — un simple "$dia + s" habría quedado mal ("Los lunes" vs "Los
+  // sábados").
+  static const _weekdaysPluralCap = [
+    'Los lunes',
+    'Los martes',
+    'Los miércoles',
+    'Los jueves',
+    'Los viernes',
+    'Los sábados',
+    'Los domingos',
+  ];
 
   DateTime _startOfWeek(DateTime d) {
     final date = DateTime(d.year, d.month, d.day);
@@ -1386,6 +1399,14 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
         final maxDaily = daily.values
             .map((v) => v['expenses'] ?? 0)
             .fold<double>(0, (m, v) => v > m ? v : m);
+        // Promedio diario: en la semana actual se divide entre los días ya
+        // transcurridos (incluye hoy), no entre 7 — si no, los días futuros
+        // sin gastos todavía bajarían el promedio de forma artificial. Una
+        // semana pasada ya está completa, ahí sí son 7 días.
+        final daysElapsed = isCurrentWeek
+            ? (today.difference(weekStart).inDays + 1).clamp(1, 7)
+            : 7;
+        final avgDailyExpense = expenses / daysElapsed;
 
         return Container(
           width: double.infinity,
@@ -1464,14 +1485,41 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                 ),
               ]),
               _weekInsightBanner(expenses, prevExpenses),
+              _weekdayPatternBanner(userId, today),
               const SizedBox(height: 24),
-              Text(
-                'Gastos por día',
-                style: GoogleFonts.beVietnamPro(
-                  color: AppTheme.onSurfaceVariant,
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                ),
+              Row(
+                children: [
+                  Text(
+                    'Gastos por día',
+                    style: GoogleFonts.beVietnamPro(
+                      color: AppTheme.onSurfaceVariant,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const Spacer(),
+                  if (expenses > 0)
+                    Text.rich(
+                      TextSpan(
+                        style: GoogleFonts.beVietnamPro(
+                          color: AppTheme.onSurfaceVariant,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                        ),
+                        children: [
+                          const TextSpan(text: 'Promedio: '),
+                          TextSpan(
+                            text:
+                                '${CurrencyFormatter.format(avgDailyExpense)}/día',
+                            style: TextStyle(
+                              color: AppTheme.errorRed,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                ],
               ),
               const SizedBox(height: 14),
               SizedBox(
@@ -1598,6 +1646,79 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
 
   // Frase corta que resume, en lenguaje simple, cómo va la semana frente a
   // la anterior. Null cuando no hay ninguna base útil para comparar.
+  // Qué día de la semana sueles gastar más, EN PROMEDIO — mirando las
+  // últimas 8 semanas completas (un patrón de comportamiento, no algo
+  // ligado a la semana que se esté navegando con las flechas). 56 días es
+  // múltiplo exacto de 7, así que cada día de la semana aparece exactamente
+  // 8 veces en la ventana: promediar es simplemente dividir entre 8, sin
+  // tener que contar ocurrencias una por una.
+  Widget _weekdayPatternBanner(String userId, DateTime today) {
+    const windowDays = 56;
+    final windowEnd = today.add(const Duration(days: 1));
+    final windowStart = windowEnd.subtract(const Duration(days: windowDays));
+    final stream = _rangeStreamCache.putIfAbsent(
+        'weekday-pattern',
+        () =>
+            _txService.getTransactionsByDateRange(userId, windowStart, windowEnd));
+
+    return StreamBuilder<List<TransactionModel>>(
+      stream: stream,
+      builder: (context, snap) {
+        final tx = snap.data ?? [];
+        final sums = List<double>.filled(7, 0);
+        for (final t in tx) {
+          if (t.isIncome || t.isTransfer) continue;
+          sums[t.date.weekday - 1] += t.amount;
+        }
+        var topIdx = 0;
+        for (var i = 1; i < 7; i++) {
+          if (sums[i] > sums[topIdx]) topIdx = i;
+        }
+        if (sums[topIdx] <= 0) return const SizedBox.shrink();
+        final avg = sums[topIdx] / (windowDays / 7);
+
+        return Padding(
+          padding: const EdgeInsets.only(top: 10),
+          child: Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            decoration: BoxDecoration(
+              color: AppTheme.secondary.withOpacity(0.08),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Row(
+              children: [
+                Icon(Icons.insights_rounded, color: AppTheme.secondary, size: 18),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text.rich(
+                    TextSpan(
+                      style: GoogleFonts.beVietnamPro(
+                        color: AppTheme.primary,
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.w500,
+                        height: 1.3,
+                      ),
+                      children: [
+                        TextSpan(
+                          text: _weekdaysPluralCap[topIdx],
+                          style: const TextStyle(fontWeight: FontWeight.w700),
+                        ),
+                        TextSpan(
+                            text:
+                                ' son los días que más gastas — promedio ${CurrencyFormatter.format(avg)}.'),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   Widget _weekInsightBanner(double expenses, double prevExpenses) {
     if (expenses == 0 && prevExpenses == 0) return const SizedBox.shrink();
 
