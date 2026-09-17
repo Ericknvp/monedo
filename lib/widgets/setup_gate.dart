@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../services/auth_service.dart';
 import '../services/account_service.dart';
+import '../services/recurring_transaction_service.dart';
 import '../screens/onboarding_screen.dart';
 import '../utils/currency_formatter.dart';
 import 'branded_loading_screen.dart';
@@ -37,10 +38,22 @@ class _SetupGateState extends State<SetupGate> {
     }
     final userId = FirebaseAuth.instance.currentUser?.uid ?? '';
     final accounts = await _accountService.getAccounts(userId).first;
+    final needsAccounts = accounts.isEmpty;
+    if (!needsAccounts) {
+      // Movimientos recurrentes vencidos (salario, renta, etc.): se generan
+      // una vez por apertura de la app, antes de mostrar el dashboard, para
+      // que los saldos ya estén al día. Se evita mientras el usuario sigue
+      // en onboarding sin cuentas configuradas. Si falla (sin conexión,
+      // reglas de Firestore aún no actualizadas, etc.) no debe bloquear el
+      // resto de la app: se reintenta en la próxima apertura.
+      try {
+        await RecurringTransactionService().generateDueTransactions(userId);
+      } catch (_) {}
+    }
     if (!mounted) return;
     setState(() {
       _needsCurrency = userData?.currency == null;
-      _needsAccounts = accounts.isEmpty;
+      _needsAccounts = needsAccounts;
     });
   }
 

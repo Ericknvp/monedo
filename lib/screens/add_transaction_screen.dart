@@ -3,8 +3,10 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../services/transaction_service.dart';
 import '../services/account_service.dart';
+import '../services/recurring_transaction_service.dart';
 import '../models/transaction.dart';
 import '../models/account.dart';
+import '../models/recurring_transaction.dart';
 import '../theme/app_theme.dart';
 import '../utils/amount_input_formatter.dart';
 import '../utils/currency_formatter.dart';
@@ -81,6 +83,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
   final _amountFocus = FocusNode();
   final _txService = TransactionService();
   final _accountService = AccountService();
+  final _recurringService = RecurringTransactionService();
 
   bool _isIncome = false;
   bool _isLoading = false;
@@ -89,6 +92,15 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
   String? _selectedAccountId;
   bool _showAllCategories = false;
   bool _showNoteField = false;
+
+  // Movimiento recurrente (solo aplica al crear uno nuevo, no al editar).
+  bool _showRecurring = false;
+  RecurrenceFrequency _frequency = RecurrenceFrequency.monthly;
+  int _interval = 1;
+  int? _dayOfWeek;
+  int? _dayOfMonth;
+  bool _noEndDate = true;
+  DateTime? _endDate;
 
   static const _categories = [
     'Alimentación',
@@ -130,6 +142,16 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
       lastDate: DateTime.now(),
     );
     if (picked != null) setState(() => _selectedDate = picked);
+  }
+
+  Future<void> _selectEndDate() async {
+    final picked = await showAppDatePicker(
+      context,
+      initialDate: _endDate ?? _selectedDate,
+      firstDate: _selectedDate,
+      lastDate: DateTime(_selectedDate.year + 20),
+    );
+    if (picked != null) setState(() => _endDate = picked);
   }
 
   void _showError(String message) {
@@ -219,25 +241,73 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
 
     setState(() => _isLoading = true);
     final userId = FirebaseAuth.instance.currentUser?.uid ?? '';
-    final tx = TransactionModel(
-      id: widget.transaction?.id ?? '',
-      userId: userId,
-      title: _titleCtrl.text.trim(),
-      amount: amount,
-      category: _selectedCategory,
-      isIncome: _isIncome,
-      date: _selectedDate,
-      note: _noteCtrl.text.trim().isEmpty ? null : _noteCtrl.text.trim(),
-      accountId: _selectedAccountId,
-      goalId: widget.transaction?.goalId,
-    );
-    if (widget.transaction != null) {
-      await _txService.updateTransaction(widget.transaction!, tx);
-    } else {
-      await _txService.addTransaction(tx);
+    final note = _noteCtrl.text.trim().isEmpty ? null : _noteCtrl.text.trim();
+
+    try {
+      await _saveTransaction(userId: userId, amount: amount, note: note);
+    } catch (_) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+        _showError('No se pudo guardar el movimiento. Intenta de nuevo.');
+      }
+      return;
     }
     setState(() => _isLoading = false);
     if (mounted) Navigator.pop(context);
+  }
+
+  Future<void> _saveTransaction({
+    required String userId,
+    required double amount,
+    required String? note,
+  }) async {
+    if (widget.transaction == null && _showRecurring) {
+      // No se crea además una transacción suelta para hoy: generateForRule
+      // ya genera la primera ocurrencia (startDate siempre está vencida,
+      // porque el date picker no permite fechas futuras).
+      final rule = RecurringTransactionModel(
+        id: '',
+        userId: userId,
+        title: _titleCtrl.text.trim(),
+        amount: amount,
+        category: _selectedCategory,
+        isIncome: _isIncome,
+        accountId: _selectedAccountId,
+        note: note,
+        frequency: _frequency,
+        interval: _interval,
+        dayOfWeek: _frequency == RecurrenceFrequency.weekly
+            ? (_dayOfWeek ?? _selectedDate.weekday)
+            : null,
+        dayOfMonth: (_frequency == RecurrenceFrequency.monthly ||
+                _frequency == RecurrenceFrequency.yearly)
+            ? (_dayOfMonth ?? _selectedDate.day)
+            : null,
+        startDate: _selectedDate,
+        endDate: _noEndDate ? null : _endDate,
+      );
+      final savedRule = await _recurringService.addRule(rule);
+      await _recurringService.generateForRule(savedRule);
+    } else {
+      final tx = TransactionModel(
+        id: widget.transaction?.id ?? '',
+        userId: userId,
+        title: _titleCtrl.text.trim(),
+        amount: amount,
+        category: _selectedCategory,
+        isIncome: _isIncome,
+        date: _selectedDate,
+        note: note,
+        accountId: _selectedAccountId,
+        goalId: widget.transaction?.goalId,
+        recurringId: widget.transaction?.recurringId,
+      );
+      if (widget.transaction != null) {
+        await _txService.updateTransaction(widget.transaction!, tx);
+      } else {
+        await _txService.addTransaction(tx);
+      }
+    }
   }
 
   Future<void> _confirmDelete() async {
@@ -550,6 +620,10 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
         _buildCategoryDropdown(compact: true),
         const SizedBox(height: 8),
         _buildNoteField(dense: true, compact: true),
+        if (!isEditing) ...[
+          const SizedBox(height: 8),
+          _buildRecurringSection(compact: true),
+        ],
       ],
     );
   }
@@ -581,6 +655,10 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
         _buildCategoryDropdown(),
         const SizedBox(height: 16),
         _buildNoteField(),
+        if (widget.transaction == null) ...[
+          const SizedBox(height: 16),
+          _buildRecurringSection(),
+        ],
       ],
     );
   }
@@ -930,6 +1008,348 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
           ],
         ),
       ),
+    );
+  }
+
+  static const _weekdayLetters = ['L', 'M', 'M', 'J', 'V', 'S', 'D'];
+
+  String _frequencyLabel(RecurrenceFrequency f) {
+    switch (f) {
+      case RecurrenceFrequency.daily:
+        return 'Diario';
+      case RecurrenceFrequency.weekly:
+        return 'Semanal';
+      case RecurrenceFrequency.monthly:
+        return 'Mensual';
+      case RecurrenceFrequency.yearly:
+        return 'Anual';
+    }
+  }
+
+  String _intervalUnitLabel(RecurrenceFrequency f, int n) {
+    final plural = n != 1;
+    switch (f) {
+      case RecurrenceFrequency.daily:
+        return plural ? 'días' : 'día';
+      case RecurrenceFrequency.weekly:
+        return plural ? 'semanas' : 'semana';
+      case RecurrenceFrequency.monthly:
+        return plural ? 'meses' : 'mes';
+      case RecurrenceFrequency.yearly:
+        return plural ? 'años' : 'año';
+    }
+  }
+
+  /// Sección "Hacer movimiento recurrente" (escritorio) / "Hacer recurrente"
+  /// (móvil), colapsada por defecto igual que
+  /// [_buildNoteField]: solo se muestra al crear un movimiento nuevo (no
+  /// al editar uno ya existente, que edita esa transacción puntual y no la
+  /// regla recurrente que la generó).
+  Widget _buildRecurringSection({bool compact = false}) {
+    void expand() => setState(() {
+          _showRecurring = true;
+          _dayOfWeek ??= _selectedDate.weekday;
+          _dayOfMonth ??= _selectedDate.day;
+        });
+
+    if (!_showRecurring) {
+      if (compact) {
+        return InkWell(
+          borderRadius: BorderRadius.circular(8),
+          onTap: expand,
+          hoverColor: AppTheme.surfaceContainerHigh,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.repeat_rounded,
+                    size: 15, color: AppTheme.onSurfaceVariant),
+                const SizedBox(width: 7),
+                Text(
+                  'Hacer movimiento recurrente',
+                  style: GoogleFonts.beVietnamPro(
+                    color: AppTheme.onSurfaceVariant,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      }
+      return InkWell(
+        borderRadius: BorderRadius.circular(100),
+        onTap: expand,
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          decoration: BoxDecoration(
+            color: AppTheme.surfaceContainer,
+            borderRadius: BorderRadius.circular(100),
+          ),
+          child: Row(
+            children: [
+              Icon(Icons.repeat_rounded,
+                  size: 18, color: AppTheme.onSurfaceVariant),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  'Hacer recurrente',
+                  style: GoogleFonts.beVietnamPro(
+                    color: AppTheme.onSurfaceVariant,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: AppTheme.surfaceContainer,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.repeat_rounded, size: 16, color: AppTheme.primary),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(
+                  compact ? 'Hacer movimiento recurrente' : 'Hacer recurrente',
+                  style: GoogleFonts.beVietnamPro(
+                    color: AppTheme.primary,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+              InkWell(
+                borderRadius: BorderRadius.circular(100),
+                onTap: () => setState(() => _showRecurring = false),
+                child: Icon(Icons.close_rounded,
+                    size: 18, color: AppTheme.onSurfaceVariant),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          _fieldLabel('Frecuencia'),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: RecurrenceFrequency.values
+                .map((f) => _frequencyPill(f))
+                .toList(),
+          ),
+          const SizedBox(height: 14),
+          _fieldLabel('Cada cuánto'),
+          _intervalStepper(),
+          if (_frequency == RecurrenceFrequency.weekly) ...[
+            const SizedBox(height: 14),
+            _fieldLabel('Día de la semana'),
+            _dayOfWeekPicker(),
+          ],
+          if (_frequency == RecurrenceFrequency.monthly ||
+              _frequency == RecurrenceFrequency.yearly) ...[
+            const SizedBox(height: 14),
+            _fieldLabel('Día del mes'),
+            _dayOfMonthField(),
+          ],
+          const SizedBox(height: 14),
+          _endDateControl(),
+        ],
+      ),
+    );
+  }
+
+  Widget _frequencyPill(RecurrenceFrequency f) {
+    final selected = _frequency == f;
+    return PressableScale(
+      onTap: () => setState(() => _frequency = f),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 160),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 9),
+        decoration: BoxDecoration(
+          color:
+              selected ? AppTheme.navyFixed : AppTheme.surfaceContainerLowest,
+          borderRadius: BorderRadius.circular(100),
+        ),
+        child: Text(
+          _frequencyLabel(f),
+          style: GoogleFonts.beVietnamPro(
+            color: selected ? Colors.white : AppTheme.onSurfaceVariant,
+            fontSize: 12.5,
+            fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _stepperButton(IconData icon, {VoidCallback? onTap}) {
+    final enabled = onTap != null;
+    return InkWell(
+      borderRadius: BorderRadius.circular(8),
+      onTap: onTap,
+      child: Container(
+        width: 30,
+        height: 30,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: AppTheme.surfaceContainerLowest,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Icon(icon,
+            size: 16, color: enabled ? AppTheme.primary : AppTheme.outlineVariant),
+      ),
+    );
+  }
+
+  Widget _intervalStepper() {
+    return Row(
+      children: [
+        Text('Cada',
+            style: GoogleFonts.beVietnamPro(
+                color: AppTheme.onSurfaceVariant, fontSize: 13.5)),
+        const SizedBox(width: 10),
+        _stepperButton(Icons.remove_rounded,
+            onTap: _interval > 1 ? () => setState(() => _interval--) : null),
+        SizedBox(
+          width: 36,
+          child: Text(
+            '$_interval',
+            textAlign: TextAlign.center,
+            style: GoogleFonts.beVietnamPro(
+                color: AppTheme.primary,
+                fontSize: 15,
+                fontWeight: FontWeight.w700),
+          ),
+        ),
+        _stepperButton(Icons.add_rounded,
+            onTap: _interval < 99 ? () => setState(() => _interval++) : null),
+        const SizedBox(width: 8),
+        Text(_intervalUnitLabel(_frequency, _interval),
+            style: GoogleFonts.beVietnamPro(
+                color: AppTheme.onSurfaceVariant, fontSize: 13.5)),
+      ],
+    );
+  }
+
+  Widget _dayOfWeekPicker() {
+    return Row(
+      children: List.generate(7, (i) {
+        final dow = i + 1; // 1=lunes .. 7=domingo (DateTime.weekday)
+        final selected = _dayOfWeek == dow;
+        return Expanded(
+          child: Padding(
+            padding: EdgeInsets.only(right: i < 6 ? 6 : 0),
+            child: InkWell(
+              borderRadius: BorderRadius.circular(100),
+              onTap: () => setState(() => _dayOfWeek = dow),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 140),
+                height: 34,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: selected
+                      ? AppTheme.navyFixed
+                      : AppTheme.surfaceContainerLowest,
+                  shape: BoxShape.circle,
+                ),
+                child: Text(
+                  _weekdayLetters[i],
+                  style: GoogleFonts.beVietnamPro(
+                    color: selected ? Colors.white : AppTheme.onSurfaceVariant,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+      }),
+    );
+  }
+
+  Widget _dayOfMonthField() {
+    return AppFieldShell(
+      icon: Icons.event_note_outlined,
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<int>(
+          value: _dayOfMonth,
+          isExpanded: true,
+          isDense: true,
+          icon: Icon(Icons.expand_more_rounded,
+              color: AppTheme.onSurfaceVariant, size: 18),
+          dropdownColor: AppTheme.surfaceContainerLowest,
+          borderRadius: BorderRadius.circular(14),
+          items: List.generate(31, (i) => i + 1)
+              .map((d) => DropdownMenuItem(
+                    value: d,
+                    child: Text('Día $d',
+                        style: GoogleFonts.beVietnamPro(
+                            color: AppTheme.primary, fontSize: 14)),
+                  ))
+              .toList(),
+          onChanged: (v) => setState(() => _dayOfMonth = v),
+        ),
+      ),
+    );
+  }
+
+  Widget _endDateControl() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                'Sin fecha de fin',
+                style: GoogleFonts.beVietnamPro(
+                  color: AppTheme.primary,
+                  fontSize: 13.5,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+            Switch(
+              value: _noEndDate,
+              activeThumbColor: AppTheme.successFixed,
+              onChanged: (v) => setState(() {
+                _noEndDate = v;
+                _endDate ??= DateTime(
+                    _selectedDate.year, _selectedDate.month + 1, _selectedDate.day);
+              }),
+            ),
+          ],
+        ),
+        if (!_noEndDate)
+          AppFieldShell(
+            icon: Icons.event_busy_outlined,
+            onTap: _selectEndDate,
+            child: Text(
+              _endDate == null
+                  ? 'Selecciona una fecha'
+                  : '${_endDate!.day}/${_endDate!.month}/${_endDate!.year}',
+              style: GoogleFonts.beVietnamPro(
+                  color: AppTheme.primary,
+                  fontSize: 14.5,
+                  fontWeight: FontWeight.w500),
+            ),
+          ),
+      ],
     );
   }
 

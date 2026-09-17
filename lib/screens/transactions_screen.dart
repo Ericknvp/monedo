@@ -12,6 +12,7 @@ import '../widgets/pressable_scale.dart';
 import '../widgets/fade_slide_in.dart';
 import 'add_transaction_screen.dart';
 import 'export_screen.dart';
+import 'recurring_transactions_screen.dart';
 
 enum _DateFilterMode { all, month, range }
 
@@ -495,6 +496,56 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                       ],
                     ),
                   ),
+                  const SizedBox(width: 8),
+                  if (isDesktop)
+                    InkWell(
+                      borderRadius: BorderRadius.circular(100),
+                      onTap: () => openRecurringTransactionsScreen(context),
+                      child: Container(
+                        height: 38,
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(100),
+                          color: AppTheme.surfaceContainer,
+                          border: Border.all(color: AppTheme.outlineVariant),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.repeat_rounded,
+                                size: 17, color: AppTheme.primary),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Recurrentes',
+                              style: GoogleFonts.beVietnamPro(
+                                color: AppTheme.primary,
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    )
+                  else
+                    Tooltip(
+                      message: 'Movimientos recurrentes',
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(100),
+                        onTap: () => openRecurringTransactionsScreen(context),
+                        child: Container(
+                          width: 38,
+                          height: 38,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: AppTheme.surfaceContainer,
+                            border: Border.all(color: AppTheme.outlineVariant),
+                          ),
+                          child: Icon(Icons.repeat_rounded,
+                              size: 17, color: AppTheme.primary),
+                        ),
+                      ),
+                    ),
                   const SizedBox(width: 8),
                   if (isDesktop)
                     InkWell(

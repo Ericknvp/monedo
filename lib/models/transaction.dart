@@ -17,6 +17,7 @@ class TransactionModel {
   final String? goalId;      // Meta de ahorro a la que pertenece (si aplica)
   final bool isTransfer;         // true si es una transferencia entre cuentas propias
   final String? transferAccountId; // Cuenta destino de la transferencia (accountId es la de origen)
+  final String? recurringId; // ID de la regla recurrente que generó este movimiento (si aplica)
 
   TransactionModel({
     required this.id,
@@ -31,6 +32,7 @@ class TransactionModel {
     this.goalId,
     this.isTransfer = false,
     this.transferAccountId,
+    this.recurringId,
   });
 
   // ---- Convierte un documento de Firestore a TransactionModel ----
@@ -48,6 +50,7 @@ class TransactionModel {
       goalId: map['goalId'],
       isTransfer: map['isTransfer'] ?? false,
       transferAccountId: map['transferAccountId'],
+      recurringId: map['recurringId'],
     );
   }
 
@@ -65,6 +68,7 @@ class TransactionModel {
       'goalId': goalId,
       'isTransfer': isTransfer,
       'transferAccountId': transferAccountId,
+      'recurringId': recurringId,
     };
   }
 }
