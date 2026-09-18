@@ -9,6 +9,7 @@ import '../theme/app_theme.dart';
 import '../utils/account_colors.dart';
 import '../utils/category_colors.dart';
 import '../utils/category_icons.dart';
+import '../utils/category_visibility.dart';
 import '../utils/currency_formatter.dart';
 import '../utils/onboarding_tour.dart';
 import '../widgets/transaction_tile.dart';
@@ -904,11 +905,22 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
         }
 
         final rawAll = snapshot.data ?? [];
-        // Catálogo de categorías para la hoja de filtro: se calcula sobre
-        // TODOS los movimientos (sin filtrar), para que la lista de opciones
-        // no se vaya encogiendo a medida que el usuario combina filtros.
-        final availableCategories = <String>{for (final t in rawAll) t.category}
-            .toList()
+        // Catálogo de categorías para la hoja de filtro: las habilitadas
+        // (predeterminadas visibles + propias), no las que de hecho
+        // aparecen en los movimientos — si no, una categoría deshabilitada
+        // sigue apareciendo por movimientos viejos y una recién creada sin
+        // usar todavía no aparece. "Transferencia" es de sistema (nunca se
+        // deshabilita) y sí puede tener movimientos que filtrar.
+        final disabledDefaults = CategoryVisibilityRegistry.disabled.value;
+        final customNames = CategoryIconRegistry.customIcons.value.keys
+            .where((n) => !kDefaultCategoryIcons.containsKey(n));
+        final visibleDefaults = kDefaultCategoryIcons.keys.where(
+            (n) => n != 'Transferencia' && !disabledDefaults.contains(n));
+        final availableCategories = <String>{
+          ...visibleDefaults,
+          ...customNames,
+          'Transferencia',
+        }.toList()
           ..sort();
 
         var all = rawAll;
