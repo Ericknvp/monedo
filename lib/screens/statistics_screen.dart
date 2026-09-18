@@ -10,6 +10,7 @@ import '../theme/app_theme.dart';
 import '../utils/currency_formatter.dart';
 import '../utils/category_colors.dart';
 import '../utils/category_icons.dart';
+import '../utils/onboarding_tour.dart';
 import '../widgets/pressable_scale.dart';
 import '../widgets/fade_slide_in.dart';
 import 'budgets_screen.dart';
@@ -163,7 +164,10 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Month selector (dial style)
-          _buildMonthSelector(isDesktop),
+          KeyedSubtree(
+            key: OnboardingTargets.monthSelector,
+            child: _buildMonthSelector(isDesktop),
+          ),
           const SizedBox(height: 32),
 
           // Data
@@ -355,7 +359,10 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
             // Donut chart (left, 8/12)
             Expanded(
               flex: 8,
-              child: _buildDonutCard(userId),
+              child: KeyedSubtree(
+                key: OnboardingTargets.categoryBreakdown,
+                child: _buildDonutCard(userId),
+              ),
             ),
             const SizedBox(width: 24),
             // Stat panel (right, 4/12): un solo panel dividido, no tres
@@ -456,7 +463,10 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
           ),
         ]),
         const SizedBox(height: 24),
-        _buildDonutCard(userId),
+        KeyedSubtree(
+          key: OnboardingTargets.categoryBreakdown,
+          child: _buildDonutCard(userId),
+        ),
         const SizedBox(height: 24),
         _buildBudgetsCard(userId, categoryData),
         const SizedBox(height: 24),

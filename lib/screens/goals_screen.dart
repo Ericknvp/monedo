@@ -13,6 +13,7 @@ import '../models/transaction.dart';
 import '../theme/app_theme.dart';
 import '../utils/currency_formatter.dart';
 import '../utils/amount_input_formatter.dart';
+import '../utils/onboarding_tour.dart';
 import '../widgets/app_text_field.dart';
 import '../widgets/app_toast.dart';
 import '../widgets/undo_toast.dart';
@@ -106,6 +107,7 @@ class _GoalsScreenState extends State<GoalsScreen> {
           ),
           const SizedBox(height: 28),
           ElevatedButton.icon(
+            key: OnboardingTargets.createGoal,
             onPressed: () => _showGoalSheet(context, userId, goalService),
             icon: const Icon(Icons.add_circle_outline_rounded, size: 18),
             label: const Text('Crear meta'),

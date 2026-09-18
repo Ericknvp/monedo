@@ -28,6 +28,9 @@ import '../widgets/update_dialog.dart';
 import '../widgets/branded_loading_screen.dart';
 import '../widgets/fade_slide_in.dart';
 import '../widgets/undo_toast.dart';
+import 'package:tutorial_coach_mark/tutorial_coach_mark.dart';
+import '../widgets/coach_mark.dart';
+import '../utils/onboarding_tour.dart';
 import 'add_transaction_screen.dart';
 import 'transactions_screen.dart';
 import 'statistics_screen.dart';
@@ -68,6 +71,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
   int _selectedIndex = 0;
   UserModel? _currentUser;
   late final Future<List<_MonthData>> _chartFuture;
+
+  // Llaves de los widgets que señala el recorrido guiado de bienvenida
+  // (ver [OnboardingTour]) en la pestaña de inicio. Se comparten entre las
+  // variantes móvil y de escritorio porque solo una está montada/visible
+  // según el ancho de pantalla.
+  final _tourPrivacyToggleKey = GlobalKey(debugLabel: 'onboarding_privacy_toggle');
+  final _tourAccountsCardKey = GlobalKey(debugLabel: 'onboarding_accounts_card');
+  final _tourAddButtonKey = GlobalKey(debugLabel: 'onboarding_add_button');
+  final _tourNavKey = GlobalKey(debugLabel: 'onboarding_nav');
+  final _tourRecentActivityKey =
+      GlobalKey(debugLabel: 'onboarding_recent_activity');
+  bool _homeTourTriggered = false;
 
   // Nota: estas listas solo se usan en el menú lateral de escritorio.
   // La barra de navegación de móvil tiene sus propios destinos fijos.
@@ -133,6 +148,175 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Future<void> _loadUser() async {
     final user = await _authService.getCurrentUserData();
     if (mounted) setState(() => _currentUser = user);
+  }
+
+  /// Cambia de pestaña y, si corresponde, dispara el recorrido guiado de
+  /// esa sección (ver doc de [OnboardingTour]: solo se muestra una vez a
+  /// cuentas nuevas, y nunca en Ajustes).
+  void _setIndex(int index) {
+    setState(() => _selectedIndex = index);
+    _maybeShowSectionTour(index);
+  }
+
+  /// Recorrido de la pestaña de inicio: se dispara una sola vez, cuando
+  /// llega el primer snapshot real de cuentas (para que "Dónde está tu
+  /// dinero" ya tenga su contenido definitivo antes de señalarla).
+  void _maybeShowHomeTour() {
+    if (_homeTourTriggered) return;
+    _homeTourTriggered = true;
+    _maybeShowSectionTour(0);
+  }
+
+  Future<void> _maybeShowSectionTour(int index) async {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) return;
+
+    final isDesktop = mounted ? MediaQuery.of(context).size.width >= 900 : false;
+
+    late final String section;
+    late final List<CoachStep> Function() buildSteps;
+    switch (index) {
+      case 0:
+        section = OnboardingTour.dashboard;
+        // Los mismos widgets viven en posiciones muy distintas según el
+        // layout: el botón de agregar y la barra de navegación están arriba
+        // en escritorio pero abajo en móvil, así que cada uno necesita su
+        // propia alineación de burbuja para no salirse de la pantalla.
+        buildSteps = () => [
+              CoachStep(
+                key: _tourAddButtonKey,
+                title: 'Registra un movimiento',
+                description:
+                    'Toca aquí cada vez que gastes o recibas dinero. Es el '
+                    'atajo que más vas a usar.',
+                shape: isDesktop ? ShapeLightFocus.RRect : ShapeLightFocus.Circle,
+                // En móvil el FAB vive pegado a la esquina inferior, muy
+                // cerca de la barra de navegación: alinear la burbuja
+                // "arriba del objetivo" con el cálculo automático la deja
+                // solapando el propio botón en vez de señalarlo. Una
+                // posición fija, lejos del borde inferior, evita el choque
+                // sin importar el tamaño real de la burbuja.
+                align: isDesktop ? ContentAlign.bottom : ContentAlign.custom,
+                customPosition: isDesktop
+                    ? null
+                    : CustomTargetContentPosition(bottom: 170),
+              ),
+              CoachStep(
+                key: _tourPrivacyToggleKey,
+                title: 'Modo privado',
+                description:
+                    'Toca aquí para ocultar tus montos al instante, ideal si '
+                    'alguien más está mirando la pantalla.',
+                shape: ShapeLightFocus.Circle,
+                align: ContentAlign.bottom,
+              ),
+              CoachStep(
+                key: _tourAccountsCardKey,
+                title: 'Dónde está tu dinero',
+                description:
+                    'Aquí ves en qué cuentas o bolsillos está repartido tu '
+                    'dinero. Tócala para agregar o administrar los tuyos.',
+                align: isDesktop ? ContentAlign.top : ContentAlign.bottom,
+              ),
+              if (isDesktop)
+                CoachStep(
+                  key: _tourRecentActivityKey,
+                  title: 'Actividad reciente',
+                  description:
+                      'Tus últimos movimientos del mes, siempre a la vista '
+                      'sin salir del inicio.',
+                  align: ContentAlign.top,
+                ),
+              CoachStep(
+                key: _tourNavKey,
+                title: 'Navega por la app',
+                description:
+                    'Desde aquí saltas entre tus movimientos, estadísticas, '
+                    'metas y ajustes.',
+                align: ContentAlign.custom,
+                customPosition: CustomTargetContentPosition(
+                    top: isDesktop ? 140 : null, bottom: isDesktop ? null : 170),
+              ),
+            ];
+        break;
+      case 1:
+        section = OnboardingTour.movements;
+        buildSteps = () => [
+              CoachStep(
+                key: OnboardingTargets.searchBar,
+                title: 'Busca cualquier movimiento',
+                description:
+                    'Escribe una palabra de la descripción o nota y '
+                    'aparecerá al instante.',
+                align: ContentAlign.bottom,
+              ),
+              CoachStep(
+                key: OnboardingTargets.filters,
+                title: 'Filtra a tu gusto',
+                description:
+                    'Combina tipo, fecha, categoría o bolsillo para '
+                    'encontrar justo lo que buscas.',
+                align: ContentAlign.bottom,
+              ),
+              CoachStep(
+                key: OnboardingTargets.exportButton,
+                title: 'Exporta tus datos',
+                description:
+                    'Descarga tus movimientos en Excel o PDF cuando los '
+                    'necesites fuera de la app.',
+                align: ContentAlign.bottom,
+              ),
+            ];
+        break;
+      case 2:
+        section = OnboardingTour.statistics;
+        buildSteps = () => [
+              CoachStep(
+                key: OnboardingTargets.monthSelector,
+                title: 'Cambia de periodo',
+                description:
+                    'Muévete entre meses para comparar tus ingresos y '
+                    'gastos.',
+                align: ContentAlign.bottom,
+              ),
+              CoachStep(
+                key: OnboardingTargets.categoryBreakdown,
+                title: 'Tus gastos por categoría',
+                description:
+                    'Este desglose te muestra en qué se te va el dinero '
+                    'cada mes.',
+                align: ContentAlign.top,
+              ),
+            ];
+        break;
+      case 3:
+        section = OnboardingTour.goals;
+        buildSteps = () => [
+              CoachStep(
+                key: OnboardingTargets.createGoal,
+                title: 'Crea tu primera meta',
+                description:
+                    'Ponle un nombre, un monto objetivo y una fecha: '
+                    'llevamos el progreso por ti.',
+                align: ContentAlign.top,
+              ),
+            ];
+        break;
+      default:
+        // Ajustes (y pestañas exclusivas de escritorio) no tienen recorrido.
+        return;
+    }
+
+    if (!await OnboardingTour.shouldShow(uid, section)) return;
+    if (!mounted) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      showCoachMarkTour(
+        context: context,
+        steps: buildSteps(),
+        onDone: () => OnboardingTour.markSeen(uid, section),
+      );
+    });
   }
 
   Future<List<_MonthData>> _loadChartData(String userId) async {
@@ -239,6 +423,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Widget _buildSidebar() {
     return Container(
+      key: _tourNavKey,
       width: 280,
       decoration: const BoxDecoration(
         color: AppTheme.navyFixed,
@@ -348,7 +533,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return MouseRegion(
       cursor: SystemMouseCursors.click,
       child: GestureDetector(
-      onTap: () => setState(() => _selectedIndex = index),
+      onTap: () => _setIndex(index),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 180),
         margin: const EdgeInsets.symmetric(vertical: 2),
@@ -419,6 +604,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
           const Spacer(),
           ElevatedButton.icon(
+            key: _tourAddButtonKey,
             onPressed: () => openAddTransaction(context),
             icon: const Icon(Icons.add_rounded, size: 18),
             label: const Text('Agregar movimiento'),
@@ -447,6 +633,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         final totalBalance = accSnap.hasData
             ? _accountService.totalBalance(accSnap.data!)
             : null;
+        if (accSnap.hasData) _maybeShowHomeTour();
 
         return StreamBuilder<List<TransactionModel>>(
           stream: _txService.getTransactionsByMonth(userId, now.year, now.month),
@@ -477,7 +664,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   _buildHeroCard(totalBalance, income, expenses),
                   const SizedBox(height: 24),
 
-                  AccountsSummaryCard(accounts: accSnap.data ?? []),
+                  AccountsSummaryCard(key: _tourAccountsCardKey, accounts: accSnap.data ?? []),
                   const SizedBox(height: 24),
 
                   // Franja de métricas: un solo contenedor dividido en vez de
@@ -496,7 +683,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       const SizedBox(width: 24),
                       SizedBox(
                         width: 360,
-                        child: _buildRecentPanel(monthTx, userId),
+                        child: KeyedSubtree(
+                          key: _tourRecentActivityKey,
+                          child: _buildRecentPanel(monthTx, userId),
+                        ),
                       ),
                     ],
                   ),
@@ -714,7 +904,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     ),
                   ),
                   const Spacer(),
-                  BalanceVisibilityToggle(color: AppTheme.secondaryFixed),
+                  BalanceVisibilityToggle(
+                      key: _tourPrivacyToggleKey, color: AppTheme.secondaryFixed),
                 ],
               ),
               const SizedBox(height: 12),
@@ -1129,6 +1320,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       body: IndexedStack(index: safeIndex, children: pages),
       floatingActionButton: safeIndex == 0
           ? FloatingActionButton(
+              key: _tourAddButtonKey,
               backgroundColor: AppTheme.successFixed,
               foregroundColor: Colors.white,
               onPressed: () => openAddTransaction(context),
@@ -1136,11 +1328,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
             )
           : null,
       bottomNavigationBar: NavigationBar(
+        key: _tourNavKey,
         backgroundColor: AppTheme.surfaceContainer,
         indicatorColor: AppTheme.successFixed,
         selectedIndex: safeIndex,
         labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
-        onDestinationSelected: (i) => setState(() => _selectedIndex = i),
+        onDestinationSelected: _setIndex,
         destinations: const [
           NavigationDestination(
             icon: Icon(Icons.dashboard_outlined),
@@ -1181,6 +1374,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         final totalBalance = accSnap.hasData
             ? _accountService.totalBalance(accSnap.data!)
             : null;
+        if (accSnap.hasData) _maybeShowHomeTour();
 
         return StreamBuilder<List<TransactionModel>>(
           stream: _txService.getTransactionsByMonth(userId, now.year, now.month),
@@ -1214,9 +1408,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   BalanceCard(
                       balance: totalBalance,
                       income: income,
-                      expenses: expenses),
+                      expenses: expenses,
+                      privacyToggleKey: _tourPrivacyToggleKey),
                   const SizedBox(height: 20),
-                  AccountsSummaryCard(accounts: accSnap.data ?? []),
+                  AccountsSummaryCard(key: _tourAccountsCardKey, accounts: accSnap.data ?? []),
                   const SizedBox(height: 28),
                   Text(
                     'Últimos movimientos',

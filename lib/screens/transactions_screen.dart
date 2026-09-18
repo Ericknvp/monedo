@@ -10,6 +10,7 @@ import '../utils/account_colors.dart';
 import '../utils/category_colors.dart';
 import '../utils/category_icons.dart';
 import '../utils/currency_formatter.dart';
+import '../utils/onboarding_tour.dart';
 import '../widgets/transaction_tile.dart';
 import '../widgets/branded_loading_screen.dart';
 import '../widgets/app_date_picker.dart';
@@ -846,6 +847,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
   /// acción que más se usa y más rápido debe sentirse.
   Widget _buildSearchBar() {
     return Container(
+      key: OnboardingTargets.searchBar,
       height: 44,
       padding: const EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
@@ -943,6 +945,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
             ),
             // Filter pills
             Container(
+              key: OnboardingTargets.filters,
               color: AppTheme.background,
               padding: const EdgeInsets.fromLTRB(24, 14, 24, 16),
               child: Row(
@@ -1129,6 +1132,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                   const SizedBox(width: 8),
                   if (isDesktop)
                     InkWell(
+                      key: OnboardingTargets.exportButton,
                       borderRadius: BorderRadius.circular(100),
                       onTap: () => openExportScreen(context),
                       child: Container(
@@ -1161,6 +1165,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                     Tooltip(
                       message: 'Exportar datos',
                       child: InkWell(
+                        key: OnboardingTargets.exportButton,
                         borderRadius: BorderRadius.circular(100),
                         onTap: () => openExportScreen(context),
                         child: Container(

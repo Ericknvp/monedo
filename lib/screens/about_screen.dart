@@ -5,12 +5,19 @@ import 'package:google_fonts/google_fonts.dart';
 import '../services/auth_service.dart';
 import '../services/update_service.dart';
 import '../theme/app_theme.dart';
+import '../utils/onboarding_tour.dart';
 import '../utils/web_redirect.dart' if (dart.library.io) '../utils/web_redirect_stub.dart';
 import '../widgets/preferences_section.dart';
 import '../widgets/app_toast.dart';
 import 'login_screen.dart';
+import 'onboarding_screen.dart';
 
 const _kSupportEmail = 'narvaezvegaerick@gmail.com';
+
+/// Cuenta del equipo usada para probar la app: las herramientas de prueba
+/// de esta pantalla (repetir tour, repetir configuración inicial) solo se
+/// muestran a este correo, para que ningún otro usuario las vea.
+const _kTestAccountEmail = 'narvaezvegaerick@gmail.com';
 
 const _months = [
   'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
@@ -316,6 +323,111 @@ class AboutScreen extends StatelessWidget {
                 );
               }),
               const SizedBox(height: 24),
+
+              // Herramientas de prueba: solo visibles para la cuenta de
+              // pruebas del equipo (ver [_kTestAccountEmail]), nunca para
+              // otros usuarios.
+              if (FirebaseAuth.instance.currentUser?.email ==
+                  _kTestAccountEmail) ...[
+                Builder(builder: (context) {
+                  final userId = FirebaseAuth.instance.currentUser?.uid ?? '';
+                  return Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(24),
+                    decoration: BoxDecoration(
+                      color: AppTheme.surfaceContainerLowest,
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: AppTheme.surfaceVariant),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Herramientas de prueba',
+                          style: GoogleFonts.plusJakartaSans(
+                            color: AppTheme.primary,
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Solo visibles para la cuenta de pruebas.',
+                          style: GoogleFonts.beVietnamPro(
+                            color: AppTheme.onSurfaceVariant,
+                            fontSize: 13,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        SizedBox(
+                          width: double.infinity,
+                          child: OutlinedButton.icon(
+                            onPressed: () async {
+                              await OnboardingTour.resetAll(userId);
+                              if (context.mounted) {
+                                showAppToast(
+                                  context,
+                                  message:
+                                      'Tour reiniciado: cambia de pestaña para verlo de nuevo',
+                                  icon: Icons.replay_rounded,
+                                  accentColor: AppTheme.secondary,
+                                );
+                              }
+                            },
+                            icon: const Icon(Icons.replay_rounded, size: 18),
+                            label: const Text('Repetir tour guiado'),
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: AppTheme.secondary,
+                              side: BorderSide(color: AppTheme.secondary),
+                              shape: const StadiumBorder(),
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        SizedBox(
+                          width: double.infinity,
+                          child: OutlinedButton.icon(
+                            onPressed: () => Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                // `onFinish` se llama recién cuando el
+                                // usuario termina el asistente, quizá varios
+                                // minutos después de tocar este botón. Usar
+                                // el `context` de "Acerca de" capturado aquí
+                                // arriba para el pop es fràgil: si esa
+                                // pantalla llegó a reconstruirse mientras
+                                // tanto, `Navigator.pop` puede fallar con un
+                                // "Null check operator used on a null value"
+                                // (contexto obsoleto). El `context` que trae
+                                // el propio `builder` de la ruta pertenece al
+                                // OnboardingScreen recién empujado y sigue
+                                // siendo válido mientras esa ruta exista.
+                                builder: (routeContext) => OnboardingScreen(
+                                  showWelcome: false,
+                                  showCurrency: true,
+                                  showAccounts: true,
+                                  showExplanatory: false,
+                                  onFinish: () => Navigator.pop(routeContext),
+                                ),
+                              ),
+                            ),
+                            icon: const Icon(Icons.restart_alt_rounded, size: 18),
+                            label: const Text('Repetir configuración inicial'),
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: AppTheme.secondary,
+                              side: BorderSide(color: AppTheme.secondary),
+                              shape: const StadiumBorder(),
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }),
+                const SizedBox(height: 24),
+              ],
 
               // Logout button (solo en móvil: en escritorio ya vive en el
               // pie del menú lateral).

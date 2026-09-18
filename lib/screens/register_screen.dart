@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../services/auth_service.dart';
 import '../theme/app_theme.dart';
+import '../utils/onboarding_tour.dart';
 import '../widgets/app_toast.dart';
 import '../widgets/app_text_field.dart';
 import '../widgets/google_logo.dart';
@@ -700,7 +701,11 @@ class _PostAuthOnboardingState extends State<PostAuthOnboarding> {
       showCurrency: true,
       showAccounts: true,
       showExplanatory: false,
-      onFinish: () => setState(() => _done = true),
+      onFinish: () async {
+        final uid = AuthService().currentUser?.uid;
+        if (uid != null) await OnboardingTour.markNewAccount(uid);
+        if (mounted) setState(() => _done = true);
+      },
     );
   }
 }

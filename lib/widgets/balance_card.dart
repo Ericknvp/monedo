@@ -11,11 +11,16 @@ class BalanceCard extends StatelessWidget {
   final double income;
   final double expenses;
 
+  /// Llave opcional para señalar el toggle de modo privado desde afuera
+  /// (recorrido guiado de bienvenida, ver [OnboardingTour]).
+  final GlobalKey? privacyToggleKey;
+
   const BalanceCard({
     super.key,
     required this.balance,
     required this.income,
     required this.expenses,
+    this.privacyToggleKey,
   });
 
   @override
@@ -64,7 +69,8 @@ class BalanceCard extends StatelessWidget {
                     ),
                   ),
                   const Spacer(),
-                  BalanceVisibilityToggle(color: AppTheme.secondaryFixed),
+                  BalanceVisibilityToggle(
+                      key: privacyToggleKey, color: AppTheme.secondaryFixed),
                 ],
               ),
               const SizedBox(height: 12),
