@@ -1385,6 +1385,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
     return AccountPickerField(
       selectedAccountId: _selectedAccountId,
       onChanged: (v) => setState(() => _selectedAccountId = v),
+      label: _isIncome ? 'Recibido en' : 'Pagado con',
       dense: dense,
     );
   }
