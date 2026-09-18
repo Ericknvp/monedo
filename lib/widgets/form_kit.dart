@@ -527,13 +527,16 @@ class _CategoryPickerFieldState extends State<CategoryPickerField> {
                     duration: const Duration(milliseconds: 140),
                     padding: const EdgeInsets.fromLTRB(6, 6, 11, 6),
                     decoration: BoxDecoration(
+                      // El color de la categoría (no un navy fijo): en modo
+                      // oscuro `navyFixed` casi se confundía con el fondo de
+                      // los chips sin seleccionar (ambos casi negros).
                       color: isSelected
-                          ? AppTheme.navyFixed
+                          ? color
                           : AppTheme.surfaceContainerLowest,
                       borderRadius: BorderRadius.circular(9),
                       border: Border.all(
                         color: isSelected
-                            ? AppTheme.navyFixed
+                            ? color
                             : (hovered
                                 ? AppTheme.outline
                                 : AppTheme.surfaceContainerHigh),
