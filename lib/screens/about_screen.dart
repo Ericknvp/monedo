@@ -127,55 +127,6 @@ class AboutScreen extends StatelessWidget {
                 const SizedBox(height: 24),
               ],
 
-              // "Sobre Monedo" solo en escritorio: en móvil sobra (la app ya
-              // se explica sola navegándola) y deja la pantalla más corta.
-              if (isDesktop) ...[
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(24),
-                  decoration: BoxDecoration(
-                    color: AppTheme.surfaceContainerLowest,
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: AppTheme.surfaceVariant),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Sobre Monedo',
-                        style: GoogleFonts.plusJakartaSans(
-                          color: AppTheme.primary,
-                          fontSize: 18,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      Text(
-                        'Monedo es tu app de finanzas personales: organiza el dinero de todos tus bolsillos, registra cada movimiento y sigue tus metas de ahorro.',
-                        style: GoogleFonts.beVietnamPro(
-                          color: AppTheme.onSurfaceVariant,
-                          fontSize: 15,
-                          height: 1.6,
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-                      _featureRow(Icons.account_balance_wallet_rounded,
-                          'Bolsillos separados y transferencias entre ellos'),
-                      const SizedBox(height: 10),
-                      _featureRow(Icons.savings_rounded,
-                          'Metas de ahorro con seguimiento de aportes'),
-                      const SizedBox(height: 10),
-                      _featureRow(Icons.analytics_rounded,
-                          'Estadísticas visuales por mes'),
-                      const SizedBox(height: 10),
-                      _featureRow(Icons.ios_share_rounded,
-                          'Exportación de datos a Excel y PDF'),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 24),
-              ],
-
               // Support card
               Builder(builder: (context) {
                 final userId = FirebaseAuth.instance.currentUser?.uid ?? '';
@@ -632,26 +583,6 @@ class AboutScreen extends StatelessWidget {
           ),
         );
       },
-    );
-  }
-
-  Widget _featureRow(IconData icon, String text) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Icon(icon, color: AppTheme.secondary, size: 18),
-        const SizedBox(width: 10),
-        Expanded(
-          child: Text(
-            text,
-            style: GoogleFonts.beVietnamPro(
-              color: AppTheme.onSurfaceVariant,
-              fontSize: 14,
-              height: 1.4,
-            ),
-          ),
-        ),
-      ],
     );
   }
 }
