@@ -437,6 +437,57 @@
     .brand-mark:hover {
       transform: rotate(-8deg) scale(1.06);
     }
+
+    /* ── Mockup del celular en "Descargar para Android": una captura real
+       de la app, no un ícono genérico ni una plantilla de 3 teléfonos ── */
+    .phone-mock {
+      perspective: 1400px;
+    }
+    .phone-mock-body {
+      transform: rotate3d(0.4, -1, 0.05, 11deg);
+      box-shadow: 0 46px 80px -16px rgba(0, 31, 45, 0.5), 0 20px 34px -14px rgba(0, 31, 45, 0.35);
+      transition: transform 0.5s var(--ease-out), box-shadow 0.5s var(--ease-out);
+    }
+    .phone-mock:hover .phone-mock-body {
+      transform: rotate3d(0.4, -1, 0.05, 5deg) translateY(-6px);
+      box-shadow: 0 54px 90px -16px rgba(0, 31, 45, 0.56), 0 24px 38px -14px rgba(0, 31, 45, 0.4);
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .phone-mock-body { transition: none; }
+    }
+
+    /* Dos capturas reales (dashboard/estadísticas) que se van alternando en
+       el mismo lugar — no las dos a la vez. */
+    .phone-mock-slide {
+      position: relative;
+    }
+    .phone-mock-slide img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      /* El contenedor ya tiene la proporción exacta de la captura
+         (aspect-ratio 1080/2400): no hay que recortar nada, solo escalar. */
+      object-fit: contain;
+      animation: phone-slide-fade 9s ease-in-out infinite;
+    }
+    .phone-mock-slide img:last-child {
+      animation-delay: -4.5s;
+    }
+    /* Cada imagen queda visible más del 50% del ciclo a propósito: así, al
+       alternar con la otra (desfasada exactamente medio ciclo), siempre hay
+       una en pantalla — nunca un instante con las dos en 0. */
+    @keyframes phone-slide-fade {
+      0%   { opacity: 0; }
+      6%   { opacity: 1; }
+      60%  { opacity: 1; }
+      66%  { opacity: 0; }
+      100% { opacity: 0; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .phone-mock-slide img { animation: none; opacity: 0; }
+      .phone-mock-slide img:first-child { opacity: 1; }
+    }
   </style>
 
 </head>
@@ -1135,7 +1186,14 @@
         <p class="mt-4 text-on-surface-variant text-xs">v2.4.3 · ~62 MB · Android 6.0 o superior</p>
       </div>
       <div class="relative z-10 flex-none flex flex-col items-center gap-5">
-        <span class="float-icon material-symbols-outlined text-secondary text-[120px] md:text-[160px]" style="font-variation-settings:'FILL' 1;">android</span>
+        <div class="phone-mock w-[190px] md:w-[210px]">
+          <div class="phone-mock-body rounded-[38px] bg-primary p-[9px]">
+            <div class="phone-mock-slide rounded-[30px] overflow-hidden bg-primary" style="aspect-ratio:1080/2400;">
+              <img src="screenshots/dashboard-android.png" alt="El dashboard de Monedo en un celular Android" width="1080" height="2400"/>
+              <img src="screenshots/stats-android.png" alt="Las estadísticas de Monedo en un celular Android" width="1080" height="2400"/>
+            </div>
+          </div>
+        </div>
         <div class="inline-flex items-center gap-2.5 px-4 py-2.5 rounded-full border border-outline-variant/50 bg-surface-container-low text-on-surface-variant text-sm font-semibold">
           <img src="icons/google-play.svg" alt="Google Play" class="w-[22px] h-[22px]"/>
           Próximamente en Play Store

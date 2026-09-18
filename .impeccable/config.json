@@ -65,6 +65,15 @@
         ],
         "createdAt": "2026-09-18T20:39:16.242Z",
         "reason": "Claude reviewed: card-hover/nav-scrolled shadows use rgba(0,31,45,0.08), 8% opacity, real offset+blur, on light surfaces - purposeful subtle elevation, not a chromatic glow halo on a dark page."
+      },
+      {
+        "rule": "buried-raster",
+        "value": "*",
+        "files": [
+          "web/landing.html"
+        ],
+        "createdAt": "2026-09-18T21:39:07.483Z",
+        "reason": "Claude reviewed: the two phone-mock screenshots crossfade via a CSS keyframe animation (phone-slide-fade) that alternates each image to opacity 1 for ~40% of a 9s loop - the detector's static analysis reads the base/mid-cycle opacity:0 state as permanently hidden, but it's an intentional alternating slideshow the user explicitly requested, not a buried asset."
       }
     ]
   }
