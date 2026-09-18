@@ -442,7 +442,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return StreamBuilder<List<AccountModel>>(
       stream: _accountService.getAccounts(userId),
       builder: (context, accSnap) {
-        final totalBalance = _accountService.totalBalance(accSnap.data ?? []);
+        // null mientras no llega el primer snapshot: evita que MaskedAmount
+        // tome un 0 de relleno como saldo real (ver su doc).
+        final totalBalance = accSnap.hasData
+            ? _accountService.totalBalance(accSnap.data!)
+            : null;
 
         return StreamBuilder<List<TransactionModel>>(
           stream: _txService.getTransactionsByMonth(userId, now.year, now.month),
@@ -665,7 +669,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildHeroCard(double balance, double income, double expenses) {
+  Widget _buildHeroCard(double? balance, double income, double expenses) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(32),
@@ -1172,7 +1176,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return StreamBuilder<List<AccountModel>>(
       stream: _accountService.getAccounts(userId),
       builder: (context, accSnap) {
-        final totalBalance = _accountService.totalBalance(accSnap.data ?? []);
+        // null mientras no llega el primer snapshot: evita que MaskedAmount
+        // tome un 0 de relleno como saldo real (ver su doc).
+        final totalBalance = accSnap.hasData
+            ? _accountService.totalBalance(accSnap.data!)
+            : null;
 
         return StreamBuilder<List<TransactionModel>>(
           stream: _txService.getTransactionsByMonth(userId, now.year, now.month),

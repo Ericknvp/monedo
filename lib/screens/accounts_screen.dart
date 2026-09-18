@@ -413,7 +413,9 @@ class _AccountsScreenState extends State<AccountsScreen> {
         stream: _accountService.getAccounts(_userId),
         builder: (context, snap) {
           final accounts = snap.data ?? [];
-          final total = _accountService.totalBalance(accounts);
+          // null mientras no llega el primer snapshot: evita que
+          // MaskedAmount tome un 0 de relleno como saldo real (ver su doc).
+          final total = snap.hasData ? _accountService.totalBalance(accounts) : null;
 
           final content = SingleChildScrollView(
                 padding: EdgeInsets.all(isDialog ? 24 : (isDesktop ? 32 : 20)),

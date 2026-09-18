@@ -5,7 +5,9 @@ import '../utils/currency_formatter.dart';
 import 'masked_balance.dart';
 
 class BalanceCard extends StatelessWidget {
-  final double balance;
+  /// `null` mientras el saldo real todavía no llegó del stream (ver doc de
+  /// [MaskedAmount]).
+  final double? balance;
   final double income;
   final double expenses;
 

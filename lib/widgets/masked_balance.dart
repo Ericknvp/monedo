@@ -21,13 +21,20 @@ class _BalanceTracker {
 /// Muestra un monto de dinero, reemplazándolo por puntos cuando el usuario
 /// activó "ocultar saldo".
 ///
+/// [amount] es `null` mientras el dato real todavía no llegó (p.ej. el
+/// primer frame de un `StreamBuilder` antes de su primer snapshot): en ese
+/// caso no se anima ni se registra nada, para no tomar un 0 de relleno como
+/// si fuera el saldo real — eso hacía que, justo después de abrir la app, el
+/// primer movimiento comparara contra ese 0 falso y se viera siempre en
+/// verde sin importar si subía o bajaba.
+///
 /// Con [animate] activado, el número cuenta ascendiendo solo la primera vez
-/// que se muestra en la sesión o cuando [amount] cambia de verdad respecto
-/// al último valor visto para [trackingId] (por defecto compartido entre
-/// todas las vistas del balance total); si se vuelve a montar con el mismo
-/// valor (p.ej. al volver de otra pestaña) se muestra estático, sin repetir
-/// la animación. Cuando el monto sube se tiñe de un leve verde y cuando baja
-/// de un leve rojo mientras se asienta en el nuevo valor.
+/// que llega un valor real en la sesión o cuando [amount] cambia de verdad
+/// respecto al último valor visto para [trackingId] (por defecto compartido
+/// entre todas las vistas del balance total); si se vuelve a montar con el
+/// mismo valor (p.ej. al volver de otra pestaña) se muestra estático, sin
+/// repetir la animación. Cuando el monto sube se tiñe de un leve verde y
+/// cuando baja de un leve rojo mientras se asienta en el nuevo valor.
 class MaskedAmount extends StatefulWidget {
   const MaskedAmount(
     this.amount, {
@@ -39,7 +46,7 @@ class MaskedAmount extends StatefulWidget {
     this.overflow,
   });
 
-  final double amount;
+  final double? amount;
   final TextStyle? style;
   final bool animate;
   final String? trackingId;
@@ -66,7 +73,13 @@ class _MaskedAmountState extends State<MaskedAmount>
     super.initState();
     _flashController =
         AnimationController(vsync: this, duration: _flashDuration);
-    _consume(widget.amount);
+    final amount = widget.amount;
+    // Solo los `MaskedAmount` animados deben registrar su valor en el
+    // tracker compartido: los que no animan (p.ej. el saldo de cada cuenta
+    // individual) no pasan un `trackingId` propio, así que si consumieran
+    // aquí pisarían el último valor visto del balance total y arruinarían
+    // la comparación (verde/rojo) del próximo movimiento real.
+    if (widget.animate && amount != null) _consume(amount);
   }
 
   void _consume(double amount) {
@@ -87,8 +100,10 @@ class _MaskedAmountState extends State<MaskedAmount>
   @override
   void didUpdateWidget(covariant MaskedAmount oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.animate && widget.amount != oldWidget.amount) {
-      setState(() => _consume(widget.amount));
+    if (!widget.animate) return;
+    final amount = widget.amount;
+    if (amount != null && amount != oldWidget.amount) {
+      setState(() => _consume(amount));
     }
   }
 
@@ -110,7 +125,15 @@ class _MaskedAmountState extends State<MaskedAmount>
               overflow: widget.overflow);
         }
         if (!widget.animate) {
-          return Text(CurrencyFormatter.format(widget.amount),
+          return Text(CurrencyFormatter.format(widget.amount ?? 0),
+              style: widget.style,
+              maxLines: widget.maxLines,
+              overflow: widget.overflow);
+        }
+        if (widget.amount == null) {
+          // Todavía no hay dato real: no mostrar ni registrar un 0 de
+          // relleno (ver doc de la clase).
+          return Text('',
               style: widget.style,
               maxLines: widget.maxLines,
               overflow: widget.overflow);
@@ -126,9 +149,9 @@ class _MaskedAmountState extends State<MaskedAmount>
               builder: (context, _) {
                 var color = baseColor;
                 if (_flashColor != null) {
+                  const hold = Interval(0.12, 1.0, curve: Curves.easeOut);
                   final intensity =
-                      (1 - Curves.easeOut.transform(_flashController.value)) *
-                          0.55;
+                      (1 - hold.transform(_flashController.value)) * 0.9;
                   color = Color.lerp(baseColor, _flashColor, intensity);
                 }
                 return Text(
