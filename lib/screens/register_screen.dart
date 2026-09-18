@@ -700,6 +700,7 @@ class _PostAuthOnboardingState extends State<PostAuthOnboarding> {
       showWelcome: false,
       showCurrency: true,
       showAccounts: true,
+      showCategories: true,
       showExplanatory: false,
       onFinish: () async {
         final uid = AuthService().currentUser?.uid;

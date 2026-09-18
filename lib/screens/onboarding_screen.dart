@@ -4,12 +4,17 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/account.dart';
+import '../models/category.dart';
 import '../services/account_service.dart';
 import '../services/auth_service.dart';
+import '../services/category_service.dart';
+import '../services/category_visibility_service.dart';
 import '../theme/app_theme.dart';
+import '../utils/category_icons.dart';
 import '../utils/currency_formatter.dart';
 import '../widgets/currency_picker.dart';
 import 'accounts_screen.dart';
+import 'categories_screen.dart';
 
 class _OnboardingSlide {
   final IconData icon;
@@ -68,7 +73,7 @@ const _explanatorySlides = [
   ),
 ];
 
-enum _StepKind { welcome, currency, accounts, explanatory }
+enum _StepKind { welcome, currency, accounts, categories, explanatory }
 
 class _Step {
   final _StepKind kind;
@@ -84,6 +89,7 @@ class OnboardingScreen extends StatefulWidget {
   final bool showWelcome;
   final bool showCurrency;
   final bool showAccounts;
+  final bool showCategories;
   final bool showExplanatory;
 
   const OnboardingScreen({
@@ -92,6 +98,7 @@ class OnboardingScreen extends StatefulWidget {
     this.showWelcome = true,
     this.showCurrency = false,
     this.showAccounts = false,
+    this.showCategories = false,
     this.showExplanatory = true,
   });
 
@@ -102,12 +109,17 @@ class OnboardingScreen extends StatefulWidget {
 class _OnboardingScreenState extends State<OnboardingScreen> {
   final _controller = PageController();
   final _accountService = AccountService();
+  final _categoryService = CategoryService();
+  final _categoryVisibilityService = CategoryVisibilityService();
   StreamSubscription<List<AccountModel>>? _accountsSub;
+  StreamSubscription<List<CategoryModel>>? _customCategoriesSub;
+  StreamSubscription<Set<String>>? _disabledCategoriesSub;
 
   late final List<_Step> _steps = [
     if (widget.showWelcome) const _Step(_StepKind.welcome),
     if (widget.showCurrency) const _Step(_StepKind.currency),
     if (widget.showAccounts) const _Step(_StepKind.accounts),
+    if (widget.showCategories) const _Step(_StepKind.categories),
     if (widget.showExplanatory)
       ..._explanatorySlides.map((s) => _Step(_StepKind.explanatory, s)),
   ];
@@ -115,6 +127,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   int _page = 0;
   Currency? _selectedCurrency;
   List<AccountModel> _accounts = [];
+  bool _accountsLoaded = false;
+  bool _autoOpenedAccountSheet = false;
+  List<CategoryModel> _customCategories = [];
+  Set<String> _disabledCategories = {};
   bool _saving = false;
 
   bool get _isLast => _page == _steps.length - 1;
@@ -139,7 +155,23 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     if (widget.showAccounts) {
       final userId = FirebaseAuth.instance.currentUser?.uid ?? '';
       _accountsSub = _accountService.getAccounts(userId).listen((accounts) {
-        if (mounted) setState(() => _accounts = accounts);
+        if (!mounted) return;
+        setState(() {
+          _accounts = accounts;
+          _accountsLoaded = true;
+        });
+        _maybeAutoOpenAccountSheet();
+      });
+    }
+    if (widget.showCategories) {
+      final userId = FirebaseAuth.instance.currentUser?.uid ?? '';
+      _customCategoriesSub =
+          _categoryService.getCategories(userId).listen((categories) {
+        if (mounted) setState(() => _customCategories = categories);
+      });
+      _disabledCategoriesSub =
+          _categoryVisibilityService.getDisabled(userId).listen((disabled) {
+        if (mounted) setState(() => _disabledCategories = disabled);
       });
     }
   }
@@ -147,8 +179,27 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   @override
   void dispose() {
     _accountsSub?.cancel();
+    _customCategoriesSub?.cancel();
+    _disabledCategoriesSub?.cancel();
     _controller.dispose();
     super.dispose();
+  }
+
+  /// Abre el formulario de "Agregar bolsillo" automáticamente la primera
+  /// vez que se llega a este paso sin ningún bolsillo creado — evita que
+  /// el usuario tenga que tocar el botón para el primero. Espera a que
+  /// llegue el primer snapshot real de Firestore ([_accountsLoaded]) antes
+  /// de decidir, para no abrirlo de más si la cuenta ya tenía bolsillos
+  /// (p. ej. al repetir la configuración inicial desde una cuenta existente).
+  void _maybeAutoOpenAccountSheet() {
+    if (_autoOpenedAccountSheet) return;
+    if (!_accountsLoaded || _accounts.isNotEmpty) return;
+    if (_steps.isEmpty || _steps[_page].kind != _StepKind.accounts) return;
+    _autoOpenedAccountSheet = true;
+    final userId = FirebaseAuth.instance.currentUser?.uid ?? '';
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) showAddAccountSheet(context, userId: userId);
+    });
   }
 
   Future<void> _complete() async {
@@ -224,7 +275,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                           controller: _controller,
                           physics: const NeverScrollableScrollPhysics(),
                           itemCount: _steps.length,
-                          onPageChanged: (i) => setState(() => _page = i),
+                          onPageChanged: (i) {
+                            setState(() => _page = i);
+                            _maybeAutoOpenAccountSheet();
+                          },
                           itemBuilder: (context, i) => SingleChildScrollView(
                             padding: const EdgeInsets.fromLTRB(32, 12, 32, 12),
                             child: _buildStepContent(_steps[i]),
@@ -308,6 +362,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         return _buildCurrencyStep();
       case _StepKind.accounts:
         return _buildAccountsStep();
+      case _StepKind.categories:
+        return _buildCategoriesStep();
       case _StepKind.explanatory:
         return _buildSlide(step.slide!);
     }
@@ -471,6 +527,187 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildCategoriesStep() {
+    final userId = FirebaseAuth.instance.currentUser?.uid ?? '';
+    final defaultNames = kDefaultCategoryIcons.keys.toList();
+    final existingNames = {
+      ...defaultNames,
+      ..._customCategories.map((c) => c.name),
+    };
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        _stepIcon(Icons.category_rounded),
+        const SizedBox(height: 28),
+        Text(
+          '¿Qué categorías usas?',
+          textAlign: TextAlign.center,
+          style: GoogleFonts.plusJakartaSans(
+            fontSize: 25,
+            fontWeight: FontWeight.w700,
+            color: Colors.white,
+            letterSpacing: -0.3,
+          ),
+        ),
+        const SizedBox(height: 12),
+        Text(
+          'Dejamos las más comunes activadas. Toca una para desactivarla, '
+          'o agrega las tuyas.',
+          textAlign: TextAlign.center,
+          style: GoogleFonts.beVietnamPro(
+            fontSize: 14.5,
+            color: AppTheme.onPrimaryContainer,
+            height: 1.6,
+          ),
+        ),
+        const SizedBox(height: 28),
+        GridView.count(
+          crossAxisCount: 3,
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          mainAxisSpacing: 20,
+          crossAxisSpacing: 8,
+          childAspectRatio: 0.85,
+          children: [
+            for (final name in defaultNames)
+              _categoryTile(
+                icon: kDefaultCategoryIcons[name]!,
+                label: name,
+                selected: !_disabledCategories.contains(name),
+                onTap: () => _toggleDefaultCategory(userId, name),
+              ),
+            for (final c in _customCategories)
+              _categoryTile(icon: c.icon, label: c.name, selected: true),
+            _addCategoryTile(
+              () => showAddCategorySheet(
+                context,
+                userId: userId,
+                existingNames: existingNames,
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  /// Activa/desactiva una categoría predeterminada. Actualización local
+  /// optimista (no espera el round-trip de Firestore) + persistencia real
+  /// vía [CategoryVisibilityService], igual que en Mis categorías.
+  void _toggleDefaultCategory(String userId, String name) {
+    final wasEnabled = !_disabledCategories.contains(name);
+    setState(() {
+      final next = {..._disabledCategories};
+      wasEnabled ? next.add(name) : next.remove(name);
+      _disabledCategories = next;
+    });
+    _categoryVisibilityService.setDisabled(
+      userId: userId,
+      category: name,
+      disabled: wasEnabled,
+    );
+  }
+
+  Widget _categoryTile({
+    required IconData icon,
+    required String label,
+    required bool selected,
+    VoidCallback? onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(16),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Stack(
+            clipBehavior: Clip.none,
+            children: [
+              Container(
+                width: 56,
+                height: 56,
+                decoration: BoxDecoration(
+                  color: selected
+                      ? AppTheme.secondaryFixed.withOpacity(0.18)
+                      : Colors.white.withOpacity(0.05),
+                  shape: BoxShape.circle,
+                  border: selected
+                      ? null
+                      : Border.all(color: Colors.white.withOpacity(0.18)),
+                ),
+                child: Icon(
+                  icon,
+                  size: 24,
+                  color: selected
+                      ? AppTheme.secondaryFixed
+                      : Colors.white.withOpacity(0.35),
+                ),
+              ),
+              if (selected)
+                Positioned(
+                  right: -2,
+                  top: -2,
+                  child: Container(
+                    width: 18,
+                    height: 18,
+                    decoration: BoxDecoration(
+                      color: AppTheme.successFixed,
+                      shape: BoxShape.circle,
+                      border: Border.all(color: AppTheme.navyFixed, width: 2),
+                    ),
+                    child:
+                        const Icon(Icons.check_rounded, color: Colors.white, size: 12),
+                  ),
+                ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            label,
+            textAlign: TextAlign.center,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: GoogleFonts.beVietnamPro(
+              color: selected ? Colors.white : Colors.white.withOpacity(0.45),
+              fontSize: 11.5,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _addCategoryTile(VoidCallback onTap) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(16),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 56,
+            height: 56,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(color: Colors.white.withOpacity(0.35)),
+            ),
+            child: Icon(Icons.add_rounded, color: Colors.white70, size: 24),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Agregar',
+            style: GoogleFonts.beVietnamPro(
+              color: Colors.white70,
+              fontSize: 11.5,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
     );
   }
 

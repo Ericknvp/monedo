@@ -9,10 +9,12 @@ const Map<String, IconData> kDefaultCategoryIcons = {
   'Educación': Icons.school_rounded,
   'Ropa': Icons.checkroom_rounded,
   'Hogar': Icons.home_rounded,
+  'Niños': Icons.child_care_rounded,
+  'Mascotas': Icons.pets_rounded,
+  'Gasolina': Icons.local_gas_station_rounded,
   'Trabajo': Icons.work_rounded,
   'Inversión': Icons.trending_up_rounded,
   'Ahorro': Icons.savings_rounded,
-  'Ocio': Icons.celebration_rounded,
   'Otros': Icons.attach_money_rounded,
   'Transferencia': Icons.swap_horiz_rounded,
 };
