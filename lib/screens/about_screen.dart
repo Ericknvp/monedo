@@ -361,7 +361,6 @@ class AboutScreen extends StatelessWidget {
                                   showCurrency: true,
                                   showAccounts: true,
                                   showCategories: true,
-                                  showExplanatory: false,
                                   onFinish: () => Navigator.pop(routeContext),
                                 ),
                               ),

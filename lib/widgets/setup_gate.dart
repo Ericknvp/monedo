@@ -67,7 +67,6 @@ class _SetupGateState extends State<SetupGate> {
         showWelcome: false,
         showCurrency: _needsCurrency!,
         showAccounts: _needsAccounts!,
-        showExplanatory: false,
         onFinish: () => setState(() {
           _needsCurrency = false;
           _needsAccounts = false;

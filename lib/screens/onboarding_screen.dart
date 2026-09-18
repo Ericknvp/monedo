@@ -16,81 +16,29 @@ import '../widgets/currency_picker.dart';
 import 'accounts_screen.dart';
 import 'categories_screen.dart';
 
-class _OnboardingSlide {
-  final IconData icon;
-  final String title;
-  final String description;
-  final List<String> steps;
 
-  const _OnboardingSlide({
-    required this.icon,
-    required this.title,
-    required this.description,
-    this.steps = const [],
-  });
-}
-
-const _explanatorySlides = [
-  _OnboardingSlide(
-    icon: Icons.insights_rounded,
-    title: 'Todo tu dinero,\nen un solo lugar',
-    description:
-        'Apenas abres Monedo ves el resumen completo de tus finanzas personales.',
-    steps: [
-      'Balance total, ingresos y gastos del mes',
-      'Accede a transacciones, metas y estadísticas desde un solo menú',
-    ],
-  ),
-  _OnboardingSlide(
-    icon: Icons.receipt_long_rounded,
-    title: 'Registra ingresos\ny gastos al instante',
-    description: 'Cada movimiento queda registrado en segundos.',
-    steps: [
-      'Toca el botón + para agregar un movimiento',
-      'Elige el bolsillo, la categoría y el monto',
-      'El saldo de tu bolsillo se actualiza al instante',
-    ],
-  ),
-  _OnboardingSlide(
-    icon: Icons.bar_chart_rounded,
-    title: 'Estadísticas claras\nde tus finanzas',
-    description: 'Entiende en qué se va tu dinero cada mes.',
-    steps: [
-      'Filtra por mes para ver tu evolución',
-      'Compara ingresos contra gastos por categoría',
-    ],
-  ),
-  _OnboardingSlide(
-    icon: Icons.savings_rounded,
-    title: 'Cumple tus metas\nde ahorro',
-    steps: [
-      'Toca "Nueva meta" y ponle un nombre',
-      'Define el monto objetivo que quieres ahorrar',
-      'Agrega abonos cuando quieras y sigue tu progreso en tiempo real',
-    ],
-    description:
-        'Define objetivos, sigue tu progreso y celebra cada avance en el camino.',
-  ),
-];
-
-enum _StepKind { welcome, currency, accounts, categories, explanatory }
+enum _StepKind { welcome, currency, accounts, categories }
 
 class _Step {
   final _StepKind kind;
-  final _OnboardingSlide? slide;
-  const _Step(this.kind, [this.slide]);
+  const _Step(this.kind);
 }
 
 /// Asistente de configuración inicial. Según los flags, muestra un
 /// recorrido completo (cuenta nueva) o solo los pasos que falten
 /// (cuenta existente sin moneda y/o sin bolsillos configurados).
+///
+/// [showWelcome] también controla si se marca 'has_seen_onboarding' al
+/// terminar (ver [_complete]): solo lo activa [OnboardingGate] antes de
+/// registrarse/iniciar sesión (un único slide de bienvenida, sin repetir
+/// el mismo argumento de venta que ya hizo la landing) — todos los demás
+/// llamadores (cuenta ya creada, herramientas de prueba) lo pasan en false.
 class OnboardingScreen extends StatefulWidget {
   final VoidCallback onFinish;
   final bool showWelcome;
   final bool showCurrency;
   final bool showAccounts;
   final bool showCategories;
-  final bool showExplanatory;
 
   const OnboardingScreen({
     super.key,
@@ -99,7 +47,6 @@ class OnboardingScreen extends StatefulWidget {
     this.showCurrency = false,
     this.showAccounts = false,
     this.showCategories = false,
-    this.showExplanatory = true,
   });
 
   @override
@@ -120,8 +67,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     if (widget.showCurrency) const _Step(_StepKind.currency),
     if (widget.showAccounts) const _Step(_StepKind.accounts),
     if (widget.showCategories) const _Step(_StepKind.categories),
-    if (widget.showExplanatory)
-      ..._explanatorySlides.map((s) => _Step(_StepKind.explanatory, s)),
   ];
 
   int _page = 0;
@@ -145,9 +90,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         return true;
     }
   }
-
-  bool get _showSkip =>
-      _steps[_page].kind == _StepKind.explanatory && !_isLast;
 
   @override
   void initState() {
@@ -203,7 +145,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   }
 
   Future<void> _complete() async {
-    if (widget.showExplanatory) {
+    if (widget.showWelcome) {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setBool('has_seen_onboarding', true);
     }
@@ -251,25 +193,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   constraints: const BoxConstraints(maxWidth: 460),
                   child: Column(
                     children: [
-                      Align(
-                        alignment: Alignment.topRight,
-                        child: Padding(
-                          padding: const EdgeInsets.fromLTRB(24, 12, 24, 0),
-                          child: TextButton(
-                            onPressed: _showSkip ? _complete : null,
-                            style: TextButton.styleFrom(
-                              foregroundColor: Colors.white70,
-                            ),
-                            child: Text(
-                              _showSkip ? 'Saltar' : '',
-                              style: GoogleFonts.beVietnamPro(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
+                      const SizedBox(height: 12),
                       Expanded(
                         child: PageView.builder(
                           controller: _controller,
@@ -364,8 +288,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         return _buildAccountsStep();
       case _StepKind.categories:
         return _buildCategoriesStep();
-      case _StepKind.explanatory:
-        return _buildSlide(step.slide!);
     }
   }
 
@@ -720,98 +642,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         shape: BoxShape.circle,
       ),
       child: Icon(icon, color: AppTheme.secondaryFixed, size: 38),
-    );
-  }
-
-  Widget _buildSlide(_OnboardingSlide slide) {
-    return Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          _stepIcon(slide.icon),
-          const SizedBox(height: 28),
-          Text(
-            slide.title,
-            textAlign: TextAlign.center,
-            style: GoogleFonts.plusJakartaSans(
-              fontSize: 25,
-              fontWeight: FontWeight.w700,
-              color: Colors.white,
-              height: 1.25,
-              letterSpacing: -0.3,
-            ),
-          ),
-          const SizedBox(height: 12),
-          Text(
-            slide.description,
-            textAlign: TextAlign.center,
-            style: GoogleFonts.beVietnamPro(
-              fontSize: 14.5,
-              color: AppTheme.onPrimaryContainer,
-              height: 1.6,
-            ),
-          ),
-          if (slide.steps.isNotEmpty) ...[
-            const SizedBox(height: 24),
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.fromLTRB(18, 20, 18, 20),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(18),
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  stops: const [0.0, 0.5, 1.0],
-                  colors: [
-                    Colors.white.withOpacity(0),
-                    Colors.white.withOpacity(0.07),
-                    Colors.white.withOpacity(0),
-                  ],
-                ),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  for (int i = 0; i < slide.steps.length; i++) ...[
-                    if (i > 0) const SizedBox(height: 12),
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Container(
-                          width: 22,
-                          height: 22,
-                          alignment: Alignment.center,
-                          decoration: BoxDecoration(
-                            color: AppTheme.secondaryFixed.withOpacity(0.18),
-                            shape: BoxShape.circle,
-                          ),
-                          child: Text(
-                            '${i + 1}',
-                            style: GoogleFonts.plusJakartaSans(
-                              fontSize: 11,
-                              fontWeight: FontWeight.w700,
-                              color: AppTheme.secondaryFixed,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Text(
-                            slide.steps[i],
-                            style: GoogleFonts.beVietnamPro(
-                              fontSize: 13.5,
-                              color: Colors.white.withOpacity(0.9),
-                              height: 1.4,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ],
-              ),
-            ),
-          ],
-        ],
     );
   }
 

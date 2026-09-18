@@ -149,6 +149,21 @@ class _RegisterScreenState extends State<RegisterScreen> {
             bottom: -80, left: -80,
             child: _blob(450, AppTheme.successFixed, 0.15),
           ),
+          // Marca real (la misma silueta del logo), grande y tenue, en vez
+          // de una cifra de usuarios inventada: llena el espacio sin
+          // afirmar algo que no es cierto.
+          Positioned(
+            bottom: -70, right: -70,
+            child: Opacity(
+              opacity: 0.12,
+              child: Image.asset(
+                'assets/images/logomonedo_new.png',
+                width: 420,
+                height: 420,
+                fit: BoxFit.contain,
+              ),
+            ),
+          ),
           Padding(
             padding: const EdgeInsets.all(60),
             child: Column(
@@ -172,24 +187,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     letterSpacing: -0.84,
                   ),
                 ),
-                const SizedBox(height: 16),
-                Text(
-                  'Únete a miles de personas que ya\ntienen el control de sus finanzas.',
-                  style: GoogleFonts.beVietnamPro(
-                    fontSize: 16,
-                    color: AppTheme.secondaryFixed.withOpacity(0.85),
-                    height: 1.6,
-                  ),
-                ),
-                const SizedBox(height: 48),
-                _buildFeatureItem(Icons.receipt_long_rounded,
-                    'Registra ingresos y gastos'),
-                const SizedBox(height: 16),
-                _buildFeatureItem(Icons.bar_chart_rounded,
-                    'Visualiza estadísticas por mes'),
-                const SizedBox(height: 16),
-                _buildFeatureItem(Icons.savings_rounded,
-                    'Crea y sigue tus metas de ahorro'),
+                const SizedBox(height: 24),
+                _buildFreeBadge(),
               ],
             ),
           ),
@@ -209,26 +208,31 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
   }
 
-  Widget _buildFeatureItem(IconData icon, String text) {
-    return Row(
-      children: [
-        Container(
-          padding: const EdgeInsets.all(10),
-          decoration: BoxDecoration(
-            color: AppTheme.secondaryFixed.withOpacity(0.15),
-            borderRadius: BorderRadius.circular(10),
+  // Mismo dato real que ya usa la landing ("100% gratuito · Sin tarjeta ·
+  // Sin sorpresas"), no una cifra de usuarios inventada.
+  Widget _buildFreeBadge() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 9),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.08),
+        borderRadius: BorderRadius.circular(100),
+        border: Border.all(color: Colors.white.withOpacity(0.15)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.verified_rounded, color: AppTheme.secondaryFixed, size: 16),
+          const SizedBox(width: 8),
+          Text(
+            '100% gratuito · Sin tarjeta · Sin sorpresas',
+            style: GoogleFonts.beVietnamPro(
+              color: Colors.white,
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+            ),
           ),
-          child: Icon(icon, color: AppTheme.secondaryFixed, size: 20),
-        ),
-        const SizedBox(width: 14),
-        Text(
-          text,
-          style: GoogleFonts.beVietnamPro(
-            color: Colors.white,
-            fontSize: 15,
-          ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -251,16 +255,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   letterSpacing: -0.76,
                 ),
               ),
-              const SizedBox(height: 8),
-              Text(
-                'Comienza tu camino hacia la claridad financiera.',
-                style: GoogleFonts.beVietnamPro(
-                  fontSize: 16,
-                  color: AppTheme.onSurfaceVariant,
-                  height: 1.5,
-                ),
-              ),
-              const SizedBox(height: 40),
+              const SizedBox(height: 32),
               _buildFormFields(),
             ],
           ),
@@ -693,15 +688,14 @@ class _PostAuthOnboardingState extends State<PostAuthOnboarding> {
   @override
   Widget build(BuildContext context) {
     if (_done) return const DashboardScreen();
-    // La bienvenida y los slides explicativos ya se muestran antes de
-    // registrarse (OnboardingGate delante de RegisterScreen). Aquí, con la
-    // cuenta recién creada, solo falta moneda y bolsillos.
+    // La bienvenida ya se muestra antes de registrarse (OnboardingGate
+    // delante de RegisterScreen). Aquí, con la cuenta recién creada, solo
+    // falta moneda y bolsillos.
     return OnboardingScreen(
       showWelcome: false,
       showCurrency: true,
       showAccounts: true,
       showCategories: true,
-      showExplanatory: false,
       onFinish: () async {
         final uid = AuthService().currentUser?.uid;
         if (uid != null) await OnboardingTour.markNewAccount(uid);

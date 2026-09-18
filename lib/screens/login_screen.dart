@@ -130,6 +130,21 @@ class _LoginScreenState extends State<LoginScreen> {
             bottom: -160, left: 60,
             child: _blob(600, AppTheme.successFixed, 0.15),
           ),
+          // Marca real (la misma silueta del logo), grande y tenue, en vez
+          // de una tarjeta con cifras inventadas: llena el espacio sin
+          // fingir ser una captura del producto.
+          Positioned(
+            bottom: -70, right: -70,
+            child: Opacity(
+              opacity: 0.12,
+              child: Image.asset(
+                'assets/images/logomonedo_new.png',
+                width: 420,
+                height: 420,
+                fit: BoxFit.contain,
+              ),
+            ),
+          ),
           Padding(
             padding: const EdgeInsets.all(60),
             child: Column(
@@ -153,17 +168,8 @@ class _LoginScreenState extends State<LoginScreen> {
                     letterSpacing: -0.84,
                   ),
                 ),
-                const SizedBox(height: 16),
-                Text(
-                  'Registra, analiza y controla tus\nfinanzas personales en un solo lugar.',
-                  style: GoogleFonts.beVietnamPro(
-                    fontSize: 16,
-                    color: AppTheme.secondaryFixed.withOpacity(0.85),
-                    height: 1.6,
-                  ),
-                ),
-                const SizedBox(height: 48),
-                _buildGlassCard(),
+                const SizedBox(height: 24),
+                _buildFreeBadge(),
               ],
             ),
           ),
@@ -183,69 +189,27 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  Widget _buildGlassCard() {
+  // Mismo dato real que ya usa la landing ("100% gratuito · Sin tarjeta ·
+  // Sin sorpresas"), no una cifra de usuarios inventada.
+  Widget _buildFreeBadge() {
     return Container(
-      padding: const EdgeInsets.all(28),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 9),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: Colors.white.withOpacity(0.1)),
+        color: Colors.white.withOpacity(0.08),
+        borderRadius: BorderRadius.circular(100),
+        border: Border.all(color: Colors.white.withOpacity(0.15)),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Row(
-            children: [
-              Container(
-                width: 44,
-                height: 44,
-                decoration: BoxDecoration(
-                  color: AppTheme.secondaryFixed.withOpacity(0.2),
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(Icons.insights_rounded,
-                    color: AppTheme.secondaryFixed, size: 22),
-              ),
-              const SizedBox(width: 14),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Resumen personal',
-                    style: GoogleFonts.beVietnamPro(
-                      color: Colors.white,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  Text(
-                    'Actualizado ahora',
-                    style: GoogleFonts.beVietnamPro(
-                      color: AppTheme.onPrimaryContainer,
-                      fontSize: 12,
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(100),
-            child: LinearProgressIndicator(
-              value: 0.75,
-              backgroundColor: Colors.white.withOpacity(0.1),
-              valueColor: const AlwaysStoppedAnimation<Color>(
-                  AppTheme.secondaryFixed),
-              minHeight: 8,
-            ),
-          ),
-          const SizedBox(height: 10),
+          Icon(Icons.verified_rounded, color: AppTheme.secondaryFixed, size: 16),
+          const SizedBox(width: 8),
           Text(
-            '¡Ahorraste 15% más que el mes pasado!',
+            '100% gratuito · Sin tarjeta · Sin sorpresas',
             style: GoogleFonts.beVietnamPro(
-              color: AppTheme.onPrimaryContainer,
+              color: Colors.white,
               fontSize: 13,
+              fontWeight: FontWeight.w600,
             ),
           ),
         ],
