@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/services.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../services/auth_service.dart';
+import '../services/notification_service.dart';
 import '../services/update_service.dart';
 import '../theme/app_theme.dart';
 import '../utils/onboarding_tour.dart';
@@ -374,6 +376,26 @@ class AboutScreen extends StatelessWidget {
                             ),
                           ),
                         ),
+                        if (!kIsWeb) ...[
+                          const SizedBox(height: 10),
+                          SizedBox(
+                            width: double.infinity,
+                            child: OutlinedButton.icon(
+                              onPressed: () => _pickTestNotification(context),
+                              icon: const Icon(
+                                  Icons.notifications_active_outlined,
+                                  size: 18),
+                              label: const Text('Probar notificación'),
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: AppTheme.secondary,
+                                side: BorderSide(color: AppTheme.secondary),
+                                shape: const StadiumBorder(),
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 14),
+                              ),
+                            ),
+                          ),
+                        ],
                       ],
                     ),
                   );
@@ -514,6 +536,100 @@ class AboutScreen extends StatelessWidget {
         MaterialPageRoute(builder: (_) => const LoginScreen()),
         (route) => false,
       );
+    }
+  }
+
+  /// Deja elegir cuál de los 4 tipos de notificación disparar de inmediato,
+  /// con contenido de ejemplo — solo para verlas en el celular sin esperar
+  /// a que se cumpla la condición real de cada una.
+  Future<void> _pickTestNotification(BuildContext context) async {
+    final samples = <(IconData, String, String, String)>[
+      (
+        Icons.event_note_rounded,
+        'Recordatorio diario',
+        'No olvides tus movimientos de hoy',
+        '¿Ya registraste tus gastos o ingresos de hoy en Monedo?',
+      ),
+      (
+        Icons.autorenew_rounded,
+        'Movimiento recurrente',
+        'Gasto recurrente registrado',
+        '"Renta" (\$500.00) se registró automáticamente hoy.',
+      ),
+      (
+        Icons.pie_chart_rounded,
+        'Alerta de presupuesto',
+        'Vas al 80% de tu presupuesto de Alimentación',
+        '\$400.00 de \$500.00 este mes.',
+      ),
+      (
+        Icons.savings_rounded,
+        'Meta de ahorro alcanzada',
+        'Meta cumplida',
+        'Completaste "Viaje a la playa": \$1,000.00.',
+      ),
+    ];
+
+    final choice = await showModalBottomSheet<int>(
+      context: context,
+      backgroundColor: AppTheme.surfaceContainerLowest,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(24, 20, 24, 8),
+              child: Text(
+                'Elige qué notificación probar',
+                style: GoogleFonts.plusJakartaSans(
+                  color: AppTheme.primary,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+            for (var i = 0; i < samples.length; i++)
+              ListTile(
+                leading: Icon(samples[i].$1, color: AppTheme.secondary),
+                title: Text(
+                  samples[i].$2,
+                  style: GoogleFonts.beVietnamPro(
+                    color: AppTheme.primary,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                onTap: () => Navigator.pop(ctx, i),
+              ),
+            const SizedBox(height: 8),
+          ],
+        ),
+      ),
+    );
+    if (choice == null) return;
+
+    final sample = samples[choice];
+    try {
+      await NotificationService().showNow(
+        key: 'test_notification_$choice',
+        title: sample.$3,
+        body: sample.$4,
+      );
+    } catch (e) {
+      // TODO: diagnóstico temporal — quitar el detalle técnico una vez
+      // identificada la causa real de por qué no llegan las notificaciones.
+      if (context.mounted) {
+        showAppToast(
+          context,
+          message: 'No se pudo mostrar la notificación:\n$e',
+          icon: Icons.error_outline_rounded,
+          accentColor: AppTheme.errorRed,
+        );
+      }
     }
   }
 

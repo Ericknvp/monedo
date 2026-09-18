@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../services/auth_service.dart';
+import '../services/expense_reminder_service.dart';
+import '../services/notification_service.dart';
 import '../theme/app_theme.dart';
 import '../utils/currency_formatter.dart';
 import '../screens/categories_screen.dart';
@@ -43,10 +47,47 @@ class _PreferencesSectionState extends State<PreferencesSection> {
   String? _username;
   bool _loadingUsername = true;
 
+  bool _reminderEnabled = false;
+  TimeOfDay _reminderTime = ExpenseReminderService.defaultTime;
+  bool _loadingReminder = true;
+
   @override
   void initState() {
     super.initState();
     _loadUsername();
+    if (!kIsWeb) _loadReminderPreference();
+  }
+
+  Future<void> _loadReminderPreference() async {
+    final service = ExpenseReminderService();
+    final enabled = await service.isEnabled();
+    final time = await service.getTime();
+    if (!mounted) return;
+    setState(() {
+      _reminderEnabled = enabled;
+      _reminderTime = time;
+      _loadingReminder = false;
+    });
+  }
+
+  Future<void> _toggleReminder(bool value) async {
+    if (value) await NotificationService().requestPermission();
+    setState(() => _reminderEnabled = value);
+    await ExpenseReminderService()
+        .setPreference(enabled: value, time: _reminderTime);
+    final userId = FirebaseAuth.instance.currentUser?.uid ?? '';
+    await ExpenseReminderService().evaluate(userId);
+  }
+
+  Future<void> _pickReminderTime() async {
+    final picked =
+        await showTimePicker(context: context, initialTime: _reminderTime);
+    if (picked == null || !mounted) return;
+    setState(() => _reminderTime = picked);
+    await ExpenseReminderService()
+        .setPreference(enabled: _reminderEnabled, time: picked);
+    final userId = FirebaseAuth.instance.currentUser?.uid ?? '';
+    await ExpenseReminderService().evaluate(userId);
   }
 
   Future<void> _loadUsername() async {
@@ -225,6 +266,10 @@ class _PreferencesSectionState extends State<PreferencesSection> {
         ],
         const SizedBox(height: 20),
         _appearanceSection(),
+        if (!kIsWeb) ...[
+          const SizedBox(height: 20),
+          _reminderSection(),
+        ],
         const SizedBox(height: 20),
         IgnorePointer(
           ignoring: _savingCurrency,
@@ -366,6 +411,70 @@ class _PreferencesSectionState extends State<PreferencesSection> {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _reminderSection() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+      decoration: BoxDecoration(
+        color: AppTheme.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppTheme.outlineVariant),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.notifications_outlined,
+                  color: AppTheme.onSurfaceVariant, size: 20),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Text(
+                  'Recordarme registrar mis gastos',
+                  style: GoogleFonts.beVietnamPro(
+                    color: AppTheme.primary,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+              Switch(
+                value: _reminderEnabled,
+                onChanged: _loadingReminder ? null : _toggleReminder,
+                activeThumbColor: AppTheme.secondary,
+              ),
+            ],
+          ),
+          if (_reminderEnabled) ...[
+            const SizedBox(height: 10),
+            InkWell(
+              borderRadius: BorderRadius.circular(12),
+              onTap: _pickReminderTime,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.schedule_rounded,
+                        size: 16, color: AppTheme.secondary),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Todos los días a las ${_reminderTime.format(context)}',
+                      style: GoogleFonts.beVietnamPro(
+                        color: AppTheme.secondary,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ],
       ),
     );
   }

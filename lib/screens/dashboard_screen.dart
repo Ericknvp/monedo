@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -9,6 +10,7 @@ import '../services/category_service.dart';
 import '../services/category_color_service.dart';
 import '../services/category_visibility_service.dart';
 import '../services/account_service.dart';
+import '../services/expense_reminder_service.dart';
 import '../services/goal_service.dart';
 import '../models/transaction.dart';
 import '../models/user_model.dart';
@@ -124,6 +126,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     _loadUser();
     final uid = FirebaseAuth.instance.currentUser?.uid ?? '';
     _chartFuture = _loadChartData(uid);
+    if (!kIsWeb) ExpenseReminderService().evaluate(uid);
     _categorySub = _categoryService.getCategories(uid).listen((categories) {
       CategoryIconRegistry.customIcons.value = {
         for (final c in categories) c.name: c.icon,

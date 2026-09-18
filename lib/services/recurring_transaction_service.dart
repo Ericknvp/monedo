@@ -1,6 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import '../models/recurring_transaction.dart';
 import '../models/transaction.dart';
+import '../utils/currency_formatter.dart';
+import 'budget_alert_service.dart';
+import 'notification_service.dart';
 import 'transaction_service.dart';
 
 /// Reglas de movimientos recurrentes (salario, renta, suscripciones) y la
@@ -10,6 +14,8 @@ import 'transaction_service.dart';
 class RecurringTransactionService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final TransactionService _txService = TransactionService();
+  final BudgetAlertService _budgetAlertService = BudgetAlertService();
+  final NotificationService _notifications = NotificationService();
 
   // Tope de ocurrencias generadas por regla en una sola corrida: evita que
   // un bug de fechas (o una regla diaria olvidada durante años) cuelgue la
@@ -125,6 +131,32 @@ class RecurringTransactionService {
         recurringId: rule.id,
       ));
       lastGenerated = occ;
+
+      // Solo se avisa la ocurrencia de hoy: si la app estuvo cerrada varios
+      // días y se generan varias de golpe, no tiene sentido notificar cada
+      // una del pasado.
+      if (occ == today && !kIsWeb) {
+        if (!rule.isIncome) {
+          await _budgetAlertService.checkAfterExpense(
+            userId: rule.userId,
+            category: rule.category,
+            date: occ,
+          );
+        }
+        try {
+          await _notifications.showNow(
+            key: 'recurring_generated_${rule.id}_${occ.toIso8601String()}',
+            title: rule.isIncome
+                ? 'Ingreso recurrente registrado'
+                : 'Gasto recurrente registrado',
+            body: '"${rule.title}" (${CurrencyFormatter.format(rule.amount)}) '
+                'se registró automáticamente hoy.',
+          );
+        } catch (_) {
+          // No se pudo mostrar el aviso: no crítico, el movimiento ya
+          // se generó igual.
+        }
+      }
 
       if (k == _maxOccurrencesPerRun - 1) cappedOut = true;
     }

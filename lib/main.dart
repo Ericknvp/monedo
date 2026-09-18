@@ -17,6 +17,7 @@ import 'screens/register_screen.dart';
 import 'screens/reset_password_screen.dart';
 import 'screens/dashboard_screen.dart';
 import 'screens/onboarding_screen.dart';
+import 'services/notification_service.dart';
 import 'widgets/setup_gate.dart';
 import 'widgets/branded_loading_screen.dart';
 import 'utils/currency_formatter.dart';
@@ -37,6 +38,7 @@ void main() async {
 
   await AppTheme.initThemeMode();
   await BalanceVisibility.init();
+  await NotificationService().initSafely();
 
   runApp(const MonedoApp());
 }

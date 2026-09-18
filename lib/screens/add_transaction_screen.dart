@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../services/transaction_service.dart';
 import '../services/account_service.dart';
+import '../services/budget_alert_service.dart';
+import '../services/expense_reminder_service.dart';
 import '../services/recurring_transaction_service.dart';
 import '../models/transaction.dart';
 import '../models/account.dart';
@@ -267,7 +270,12 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
         endDate: _noEndDate ? null : _endDate,
       );
       final savedRule = await _recurringService.addRule(rule);
+      // generateForRule ya dispara el aviso de presupuesto y la
+      // notificación de "movimiento recurrente registrado" internamente.
       await _recurringService.generateForRule(savedRule);
+      if (!kIsWeb) {
+        await ExpenseReminderService().onTransactionSaved(_selectedDate);
+      }
     } else {
       final tx = TransactionModel(
         id: widget.transaction?.id ?? '',
@@ -286,6 +294,16 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
         await _txService.updateTransaction(widget.transaction!, tx);
       } else {
         await _txService.addTransaction(tx);
+      }
+      if (!kIsWeb) {
+        await ExpenseReminderService().onTransactionSaved(tx.date);
+        if (!_isIncome) {
+          await BudgetAlertService().checkAfterExpense(
+            userId: userId,
+            category: tx.category,
+            date: tx.date,
+          );
+        }
       }
     }
   }

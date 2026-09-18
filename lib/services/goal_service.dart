@@ -3,11 +3,13 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../models/goal.dart';
 import '../models/transaction.dart';
+import 'goal_milestone_service.dart';
 import 'transaction_service.dart';
 
 class GoalService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final TransactionService _transactionService = TransactionService();
+  final GoalMilestoneService _milestoneService = GoalMilestoneService();
 
   CollectionReference get _goals => _firestore.collection('goals');
 
@@ -55,6 +57,7 @@ class GoalService {
       goalId: goal.id,
     );
     await _transactionService.addTransaction(transaction);
+    await _milestoneService.checkMilestone(goal: goal, newSaved: newSaved);
   }
 
   // ---- Ajusta el monto ahorrado de una meta de forma atómica ----

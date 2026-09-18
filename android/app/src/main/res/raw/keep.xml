@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Sin ninguna referencia estática (XML/Kotlin) a @drawable/ic_notification,
+  el optimizador de recursos de la build release lo elimina del APK: solo
+  se referencia como texto ('ic_notification') desde Dart al inicializar
+  flutter_local_notifications, invisible para ese análisis. tools:keep le
+  dice al shrinker que lo conserve siempre.
+-->
+<resources xmlns:tools="http://schemas.android.com/tools"
+    tools:keep="@drawable/ic_notification" />
