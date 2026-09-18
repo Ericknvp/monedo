@@ -12,7 +12,7 @@ import '../widgets/app_toast.dart';
 import 'login_screen.dart';
 import 'onboarding_screen.dart';
 
-const _kSupportEmail = 'narvaezvegaerick@gmail.com';
+const _kSupportEmail = 'appmonedo@gmail.com';
 
 /// Cuenta del equipo usada para probar la app: las herramientas de prueba
 /// de esta pantalla (repetir tour, repetir configuración inicial) solo se
@@ -566,18 +566,17 @@ class AboutScreen extends StatelessWidget {
     }
   }
 
-  void _reportProblem(String userId) {
-    final uri = Uri(
-      scheme: 'mailto',
-      path: _kSupportEmail,
-      queryParameters: {
-        'subject': 'Reporte de problema - Monedo',
-        'body': 'Describe aquí el problema que tuviste:\n\n\n'
-            '—\n'
-            'ID de usuario: $userId',
-      },
+  Future<void> _reportProblem(String userId) async {
+    final userData = await AuthService().getCurrentUserData();
+    // Uri(queryParameters: ...) codifica espacios como "+" (form-encoding),
+    // que Gmail muestra literal en vez de espacio. mailto (RFC 6068) espera
+    // %20, así que se codifica a mano con Uri.encodeComponent.
+    final subject = Uri.encodeComponent('Cuéntanos tu situación');
+    final body = Uri.encodeComponent(
+      'Usuario: ${userData?.username ?? ""}\n'
+      'ID de usuario: $userId',
     );
-    openExternalUrl(uri.toString());
+    openExternalUrl('mailto:$_kSupportEmail?subject=$subject&body=$body');
   }
 
   Widget _buildUpdateBanner() {
