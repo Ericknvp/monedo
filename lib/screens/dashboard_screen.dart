@@ -42,6 +42,14 @@ import 'accounts_screen.dart';
 import 'categories_screen.dart';
 import 'budgets_screen.dart';
 
+const _greetingMonths = [
+  'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
+  'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre',
+];
+
+String _formatGreetingDate(DateTime d) =>
+    '${d.day} de ${_greetingMonths[d.month - 1]}';
+
 class _MonthData {
   final DateTime month;
   final double income;
@@ -1388,12 +1396,33 @@ class _DashboardScreenState extends State<DashboardScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    _currentUser != null
-                        ? 'Hola, @${_currentUser!.username}'
-                        : 'Hola, Usuario',
-                    style: GoogleFonts.beVietnamPro(
-                        color: AppTheme.onSurfaceVariant, fontSize: 15),
+                  Row(
+                    children: [
+                      Flexible(
+                        child: Text(
+                          _currentUser != null
+                              ? '@${_currentUser!.username}'
+                              : 'Usuario',
+                          overflow: TextOverflow.ellipsis,
+                          style: GoogleFonts.beVietnamPro(
+                              color: AppTheme.onSurfaceVariant,
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        '·',
+                        style: GoogleFonts.beVietnamPro(
+                            color: AppTheme.onSurfaceVariant, fontSize: 15),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        _formatGreetingDate(now),
+                        style: GoogleFonts.beVietnamPro(
+                            color: AppTheme.onSurfaceVariant, fontSize: 15),
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 4),
                   Text(
