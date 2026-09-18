@@ -392,7 +392,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         ),
         const SizedBox(height: 12),
         Text(
-          'Tu dinero, por fin tiene sentido.\nConfiguremos todo en un par de pasos.',
+          'Tu dinero, por fin tiene sentido.',
           textAlign: TextAlign.center,
           style: GoogleFonts.beVietnamPro(
             fontSize: 14.5,
