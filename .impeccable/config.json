@@ -56,6 +56,15 @@
         ],
         "createdAt": "2026-09-15T00:07:17.019Z",
         "reason": "Unico marquee de la pagina, con pausa on-hover; usado como alternativa a una lista larga de funciones, patron sancionado por el taste-skill (max uno por pagina)."
+      },
+      {
+        "rule": "dark-glow",
+        "value": "*",
+        "files": [
+          "web/landing.html"
+        ],
+        "createdAt": "2026-09-18T20:39:16.242Z",
+        "reason": "Claude reviewed: card-hover/nav-scrolled shadows use rgba(0,31,45,0.08), 8% opacity, real offset+blur, on light surfaces - purposeful subtle elevation, not a chromatic glow halo on a dark page."
       }
     ]
   }

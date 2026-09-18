@@ -71,7 +71,7 @@
       mask-image: radial-gradient(ellipse 65% 60% at var(--dot-x, 50%) var(--dot-y, 50%), #000 30%, transparent 85%);
     }
     @media (prefers-reduced-motion: reduce) {
-      .float-icon, .marquee-track { animation: none !important; }
+      .float-icon { animation: none !important; }
     }
     .float-icon {
       animation: float-icon 5s ease-in-out infinite;
@@ -82,21 +82,6 @@
     @keyframes float-icon {
       0%, 100% { transform: translateY(0) rotate(0deg); }
       50%      { transform: translateY(-14px) rotate(-4deg); }
-    }
-    .marquee-wrap {
-      overflow: hidden;
-      -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
-      mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
-    }
-    .marquee-track {
-      display: flex;
-      width: max-content;
-      animation: marquee 26s linear infinite;
-    }
-    .marquee-track:hover { animation-play-state: paused; }
-    @keyframes marquee {
-      from { transform: translateX(0); }
-      to   { transform: translateX(-50%); }
     }
     .card-hover {
       transition: transform 0.22s var(--ease-out), box-shadow 0.22s var(--ease-out);
@@ -172,17 +157,7 @@
     #caracteristicas .grid > .reveal:nth-child(4) { transition-delay: 90ms; }
     #caracteristicas .grid > .reveal:nth-child(5) { transition-delay: 200ms; }
     #caracteristicas .grid > .reveal:nth-child(6) { transition-delay: 260ms; }
-    .gradient-text-shimmer {
-      background: linear-gradient(100deg, #00503a, #006c4b 45%, #34d399 60%, #006c4b 75%);
-      background-size: 300% auto;
-      -webkit-background-clip: text;
-      background-clip: text;
-      color: transparent;
-      animation: shimmer-text 1.8s var(--ease-out) 0.3s 1 both;
-    }
-    @keyframes shimmer-text {
-      to { background-position: -300% center; }
-    }
+    #caracteristicas .grid > .reveal:nth-child(7) { transition-delay: 320ms; }
     .card-hover {
       transform-style: preserve-3d;
       perspective: 800px;
@@ -204,13 +179,6 @@
     }
     .nav-link:hover::after {
       right: 0;
-    }
-    .marquee-track > div > span {
-      transition: transform 0.25s ease, opacity 0.25s ease;
-    }
-    .marquee-track > div > span:hover {
-      transform: scale(1.08);
-      opacity: 1 !important;
     }
     .trust-item {
       opacity: 0;
@@ -291,7 +259,6 @@
     }
     @media (prefers-reduced-motion: reduce) {
       .timeline-fill { transition: none !important; }
-      .gradient-text-shimmer { animation: none !important; }
     }
 
     /* ── Cuadrícula de puntos del hero, con repulsión tipo gravedad al pasar el mouse ── */
@@ -537,7 +504,7 @@
       </div>
       <h1 class="font-display text-4xl md:text-[56px] font-extrabold text-primary leading-[1.1] tracking-tight">
         Controla tus gastos<br/>
-        <span class="gradient-text-shimmer">gratis, para siempre.</span>
+        <span class="text-secondary">gratis, para siempre.</span>
       </h1>
       <p class="text-on-surface-variant text-lg md:text-xl leading-relaxed max-w-2xl mx-auto">
         Organiza tus bolsillos, registra tus movimientos y alcanza tus metas de ahorro. Todo en un solo lugar, guardado en la nube, sin costo.
@@ -581,41 +548,6 @@
     <div class="trust-item flex items-center gap-2">
       <span class="material-symbols-outlined text-secondary text-[18px]" style="font-variation-settings:'FILL' 1;">check_circle</span>
       Open source
-    </div>
-  </div>
-</div>
-
-<!-- ═══════════ MARQUEE ═══════════ -->
-
-<div class="marquee-wrap bg-primary py-4">
-  <div class="marquee-track">
-    <div class="flex items-center gap-10 pr-10 text-secondary-fixed/90 font-display font-bold text-sm uppercase tracking-wide whitespace-nowrap">
-      <span class="flex items-center gap-2"><span class="material-symbols-outlined text-[18px]">account_balance_wallet</span>Bolsillos y transferencias</span>
-      <span class="opacity-30">·</span>
-      <span class="flex items-center gap-2"><span class="material-symbols-outlined text-[18px]">currency_exchange</span>Multi-moneda</span>
-      <span class="opacity-30">·</span>
-      <span class="flex items-center gap-2"><span class="material-symbols-outlined text-[18px]">analytics</span>Estadísticas mensuales</span>
-      <span class="opacity-30">·</span>
-      <span class="flex items-center gap-2"><span class="material-symbols-outlined text-[18px]">savings</span>Metas de ahorro</span>
-      <span class="opacity-30">·</span>
-      <span class="flex items-center gap-2"><span class="material-symbols-outlined text-[18px]">ios_share</span>Exportar a Excel y PDF</span>
-      <span class="opacity-30">·</span>
-      <span class="flex items-center gap-2"><span class="material-symbols-outlined text-[18px]">category</span>Categorías personalizadas</span>
-      <span class="opacity-30">·</span>
-    </div>
-    <div class="flex items-center gap-10 pr-10 text-secondary-fixed/90 font-display font-bold text-sm uppercase tracking-wide whitespace-nowrap" aria-hidden="true">
-      <span class="flex items-center gap-2"><span class="material-symbols-outlined text-[18px]">account_balance_wallet</span>Bolsillos y transferencias</span>
-      <span class="opacity-30">·</span>
-      <span class="flex items-center gap-2"><span class="material-symbols-outlined text-[18px]">currency_exchange</span>Multi-moneda</span>
-      <span class="opacity-30">·</span>
-      <span class="flex items-center gap-2"><span class="material-symbols-outlined text-[18px]">analytics</span>Estadísticas mensuales</span>
-      <span class="opacity-30">·</span>
-      <span class="flex items-center gap-2"><span class="material-symbols-outlined text-[18px]">savings</span>Metas de ahorro</span>
-      <span class="opacity-30">·</span>
-      <span class="flex items-center gap-2"><span class="material-symbols-outlined text-[18px]">ios_share</span>Exportar a Excel y PDF</span>
-      <span class="opacity-30">·</span>
-      <span class="flex items-center gap-2"><span class="material-symbols-outlined text-[18px]">category</span>Categorías personalizadas</span>
-      <span class="opacity-30">·</span>
     </div>
   </div>
 </div>
@@ -665,6 +597,43 @@
       </div>
     </div>
 
+    <!-- Destacada: Presupuestos por Categoría -->
+    <div class="card-hover md:col-span-2 bg-primary-container/14 p-9 rounded-[28px] border border-primary-container reveal flex flex-col lg:flex-row lg:items-center gap-8">
+      <div class="flex-1 flex flex-col gap-5">
+        <div class="feature-icon-wrap w-14 h-14 bg-surface-container-lowest rounded-2xl flex items-center justify-center">
+          <span class="material-symbols-outlined text-on-primary-container text-[28px]" style="font-variation-settings:'FILL' 1;">pie_chart</span>
+        </div>
+        <div>
+          <h3 class="font-display text-xl font-bold text-primary mb-2">Presupuestos por Categoría</h3>
+          <p class="text-on-surface-variant text-sm leading-relaxed max-w-sm">
+            Fija un límite mensual a las categorías que quieras y Monedo te avisa cuando te acerques o lo superes.
+          </p>
+        </div>
+      </div>
+      <div class="flex-1 w-full bg-surface-container-lowest/70 rounded-2xl p-5 border border-primary-container/50 space-y-4">
+        <div class="space-y-1.5">
+          <div class="flex justify-between text-xs font-semibold">
+            <span class="text-primary">Alimentación</span>
+            <span style="color:#B45309;">82%</span>
+          </div>
+          <div class="h-2.5 w-full bg-surface-container rounded-full overflow-hidden">
+            <div class="progress-grow h-full rounded-full" style="width:82%;background-color:#F59E0B;"></div>
+          </div>
+          <p class="text-[11px] text-on-surface-variant">$410 de $500</p>
+        </div>
+        <div class="space-y-1.5">
+          <div class="flex justify-between text-xs font-semibold">
+            <span class="text-primary">Transporte</span>
+            <span class="text-secondary">45%</span>
+          </div>
+          <div class="h-2.5 w-full bg-surface-container rounded-full overflow-hidden">
+            <div class="progress-grow h-full bg-secondary rounded-full" style="width:45%;"></div>
+          </div>
+          <p class="text-[11px] text-on-surface-variant">$135 de $300</p>
+        </div>
+      </div>
+    </div>
+
     <!-- Ingresos y Gastos -->
     <div class="card-hover bg-surface-container-lowest p-8 rounded-2xl border border-outline-variant/40 flex flex-col gap-5 reveal">
       <div class="feature-icon-wrap w-14 h-14 bg-primary-container rounded-2xl flex items-center justify-center">
@@ -688,26 +657,6 @@
         <p class="text-on-surface-variant text-sm leading-relaxed">
           Elige entre varias monedas (COP, USD, EUR y más) y Monedo formatea todas tus cifras automáticamente.
         </p>
-      </div>
-    </div>
-
-    <!-- Estadísticas Mensuales -->
-    <div class="card-hover bg-surface-container-lowest p-8 rounded-2xl border border-outline-variant/40 flex flex-col gap-5 reveal">
-      <div class="feature-icon-wrap w-14 h-14 bg-primary-container rounded-2xl flex items-center justify-center">
-        <span class="material-symbols-outlined text-on-primary-container text-[28px]">analytics</span>
-      </div>
-      <div>
-        <h3 class="font-display text-lg font-bold text-primary mb-2">Estadísticas Mensuales</h3>
-        <p class="text-on-surface-variant text-sm leading-relaxed">
-          Gráficas claras de tus gastos e ingresos por mes, sin tablas complicadas.
-        </p>
-      </div>
-      <div class="flex items-end gap-1.5 h-10 mt-auto">
-        <div class="bar-grow bg-primary-container/70 rounded-sm flex-1" style="height:55%;"></div>
-        <div class="bar-grow bg-primary-container/70 rounded-sm flex-1" style="height:80%;"></div>
-        <div class="bar-grow bg-secondary rounded-sm flex-1" style="height:65%;"></div>
-        <div class="bar-grow bg-primary-container/70 rounded-sm flex-1" style="height:95%;"></div>
-        <div class="bar-grow bg-secondary rounded-sm flex-1" style="height:70%;"></div>
       </div>
     </div>
 
@@ -736,16 +685,62 @@
       </div>
     </div>
 
-    <!-- Exportar tus datos -->
-    <div class="card-hover bg-surface-container-lowest p-8 rounded-2xl border border-outline-variant/40 flex flex-col gap-5 reveal">
-      <div class="feature-icon-wrap w-14 h-14 bg-secondary-container rounded-2xl flex items-center justify-center">
-        <span class="material-symbols-outlined text-on-secondary-container text-[28px]">ios_share</span>
+    <!-- Destacada: Estadísticas Mensuales -->
+    <div class="card-hover md:col-span-2 bg-secondary-container/20 p-9 rounded-[28px] border border-secondary-container reveal flex flex-col lg:flex-row lg:items-center gap-8">
+      <div class="flex-1 flex flex-col gap-5">
+        <div class="feature-icon-wrap w-14 h-14 bg-surface-container-lowest rounded-2xl flex items-center justify-center">
+          <span class="material-symbols-outlined text-secondary text-[28px]">analytics</span>
+        </div>
+        <div>
+          <h3 class="font-display text-xl font-bold text-primary mb-2">Estadísticas Mensuales</h3>
+          <p class="text-on-surface-variant text-sm leading-relaxed max-w-sm">
+            Gráficas claras de tus gastos e ingresos por mes, sin tablas complicadas.
+          </p>
+        </div>
       </div>
-      <div>
-        <h3 class="font-display text-lg font-bold text-primary mb-2">Exportar tus datos</h3>
-        <p class="text-on-surface-variant text-sm leading-relaxed">
-          Descarga tus movimientos en Excel o PDF cuando quieras, listos para analizar o compartir.
-        </p>
+      <div class="flex-1 w-full bg-surface-container-lowest/70 rounded-2xl p-5 border border-secondary-container/60">
+        <div class="flex items-end gap-2 h-24">
+          <div class="bar-grow bg-primary-container/70 rounded-sm flex-1" style="height:55%;"></div>
+          <div class="bar-grow bg-primary-container/70 rounded-sm flex-1" style="height:80%;"></div>
+          <div class="bar-grow bg-secondary rounded-sm flex-1" style="height:65%;"></div>
+          <div class="bar-grow bg-primary-container/70 rounded-sm flex-1" style="height:95%;"></div>
+          <div class="bar-grow bg-secondary rounded-sm flex-1" style="height:70%;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Destacada: Exportar tus datos -->
+    <div class="card-hover md:col-span-2 bg-primary-container/14 p-9 rounded-[28px] border border-primary-container reveal flex flex-col lg:flex-row lg:items-center gap-8">
+      <div class="flex-1 flex flex-col gap-5">
+        <div class="feature-icon-wrap w-14 h-14 bg-surface-container-lowest rounded-2xl flex items-center justify-center">
+          <span class="material-symbols-outlined text-on-primary-container text-[28px]">ios_share</span>
+        </div>
+        <div>
+          <h3 class="font-display text-xl font-bold text-primary mb-2">Exportar tus datos</h3>
+          <p class="text-on-surface-variant text-sm leading-relaxed max-w-sm">
+            Descarga tus movimientos en Excel o PDF cuando quieras, listos para analizar o compartir.
+          </p>
+        </div>
+      </div>
+      <div class="flex-1 w-full bg-surface-container-lowest/70 rounded-2xl p-4 border border-primary-container/50 space-y-2">
+        <div class="flex items-center justify-between p-2.5 bg-surface-container rounded-xl">
+          <div class="flex items-center gap-2.5">
+            <div class="w-8 h-8 bg-secondary-container rounded-lg flex items-center justify-center">
+              <span class="material-symbols-outlined text-on-secondary-container text-[16px]">table_chart</span>
+            </div>
+            <p class="text-xs font-semibold text-primary">movimientos.xlsx</p>
+          </div>
+          <span class="material-symbols-outlined text-on-surface-variant text-[16px]">download</span>
+        </div>
+        <div class="flex items-center justify-between p-2.5 bg-surface-container rounded-xl">
+          <div class="flex items-center gap-2.5">
+            <div class="w-8 h-8 bg-primary-container rounded-lg flex items-center justify-center">
+              <span class="material-symbols-outlined text-on-primary-container text-[16px]">picture_as_pdf</span>
+            </div>
+            <p class="text-xs font-semibold text-primary">reporte.pdf</p>
+          </div>
+          <span class="material-symbols-outlined text-on-surface-variant text-[16px]">download</span>
+        </div>
       </div>
     </div>
   </div>
@@ -755,16 +750,13 @@
 <section id="proximamente" class="py-24 px-6 md:px-10 relative overflow-hidden">
   <div class="max-w-6xl mx-auto reveal">
     <div class="relative overflow-hidden bg-primary rounded-[32px] px-8 py-16 md:px-16 md:py-20 text-center">
-      <div class="dot-pattern text-white/25" style="--dot-x:15%; --dot-y:10%;"></div>
-      <div class="dot-pattern text-secondary-fixed/25" style="--dot-x:85%; --dot-y:95%;"></div>
-
       <div class="relative z-10 max-w-2xl mx-auto">
-        <div class="badge-pulse inline-flex items-center gap-2 bg-white/8 border border-white/15 px-5 py-2 rounded-full text-secondary-fixed font-bold text-xs tracking-wide uppercase mb-8">
-          <span class="material-symbols-outlined text-[16px]" style="font-variation-settings:'FILL' 1;">auto_awesome</span>
-          Próximamente
-        </div>
         <h2 class="font-display text-3xl md:text-[44px] font-extrabold text-white mb-6 leading-tight tracking-tight">
-          Recomendaciones inteligentes<br class="hidden md:block"/> con <span class="text-secondary-fixed">IA</span>
+          <span class="badge-pulse inline-flex items-center gap-2 align-middle bg-white/8 border border-white/15 px-4 py-1.5 rounded-full text-secondary-fixed text-sm tracking-wide uppercase mr-3 mb-2">
+            <span class="material-symbols-outlined text-[15px]" style="font-variation-settings:'FILL' 1;">auto_awesome</span>
+            Próximamente
+          </span>
+          Recomendaciones inteligentes con <span class="text-secondary-fixed">IA</span>
         </h2>
         <p class="text-white/70 text-base md:text-lg leading-relaxed mb-12 max-w-xl mx-auto">
           Monedo aprenderá de tus hábitos financieros para sugerirte, de forma personalizada, en qué optimizar tus gastos y cómo alcanzar tus metas de ahorro más rápido.
@@ -846,8 +838,7 @@
           </div>
         </div>
         <div class="order-1 md:order-2 bg-surface-container-lowest rounded-2xl p-8 border border-outline-variant/30">
-          <span class="inline-block px-3 py-1 bg-primary-container text-on-primary-container rounded-full text-xs font-bold mb-5">PASO 01</span>
-          <h3 class="font-display text-xl font-bold text-primary mb-3">Organiza tu dinero en bolsillos</h3>
+          <h3 class="font-display text-xl font-bold text-primary mb-3"><span class="text-outline-variant tabular-nums mr-2">01</span>Organiza tu dinero en bolsillos</h3>
           <p class="text-on-surface-variant text-sm leading-relaxed mb-5">
             Crea un bolsillo por cada lugar donde tienes dinero: efectivo, banco, billeteras digitales. Ve cuánto hay en cada uno y transfiere entre ellos cuando lo necesites.
           </p>
@@ -861,8 +852,7 @@
       <!-- Paso 2 -->
       <div class="step-item grid md:grid-cols-2 gap-10 items-center step-split">
         <div class="bg-surface-container-lowest rounded-2xl p-8 border border-outline-variant/30">
-          <span class="inline-block px-3 py-1 bg-secondary-container text-on-secondary-container rounded-full text-xs font-bold mb-5">PASO 02</span>
-          <h3 class="font-display text-xl font-bold text-primary mb-3">Registra tus movimientos</h3>
+          <h3 class="font-display text-xl font-bold text-primary mb-3"><span class="text-outline-variant tabular-nums mr-2">02</span>Registra tus movimientos</h3>
           <p class="text-on-surface-variant text-sm leading-relaxed mb-5">
             Agrega ingresos y gastos fácilmente. Elige el bolsillo, la categoría, el monto y la fecha. Tus movimientos quedan guardados en la nube para verlos desde cualquier dispositivo.
           </p>
@@ -950,8 +940,7 @@
           </div>
         </div>
         <div class="order-1 md:order-2 bg-surface-container-lowest rounded-2xl p-8 border border-outline-variant/30">
-          <span class="inline-block px-3 py-1 bg-primary-container text-on-primary-container rounded-full text-xs font-bold mb-5">PASO 03</span>
-          <h3 class="font-display text-xl font-bold text-primary mb-3">Personaliza tus categorías</h3>
+          <h3 class="font-display text-xl font-bold text-primary mb-3"><span class="text-outline-variant tabular-nums mr-2">03</span>Personaliza tus categorías</h3>
           <p class="text-on-surface-variant text-sm leading-relaxed mb-5">
             Crea tus propias categorías. Así identificas de un vistazo en qué se te va el dinero, sin confundirlas entre sí.
           </p>
@@ -962,8 +951,7 @@
       <div class="step-item reveal">
         <div class="bg-surface-container-lowest rounded-2xl border border-outline-variant/30 md:grid md:grid-cols-[minmax(0,280px)_1fr] md:items-center overflow-hidden">
         <div class="p-8 md:pr-0">
-          <span class="inline-block px-3 py-1 bg-primary-container text-on-primary-container rounded-full text-xs font-bold mb-5">PASO 04</span>
-          <h3 class="font-display text-xl font-bold text-primary mb-3">Visualiza tus estadísticas</h3>
+          <h3 class="font-display text-xl font-bold text-primary mb-3"><span class="text-outline-variant tabular-nums mr-2">04</span>Visualiza tus estadísticas</h3>
           <p class="text-on-surface-variant text-sm leading-relaxed mb-5">
             Cada mes, ve exactamente en qué gastaste más y cuánto ingresaste. Gráficas simples que te dan una imagen clara de tu situación financiera.
           </p>
@@ -1048,8 +1036,7 @@
       <!-- Paso 5 -->
       <div class="step-item grid md:grid-cols-2 gap-10 items-center step-split">
         <div class="bg-surface-container-lowest rounded-2xl p-8 border border-outline-variant/30">
-          <span class="inline-block px-3 py-1 bg-secondary-container text-on-secondary-container rounded-full text-xs font-bold mb-5">PASO 05</span>
-          <h3 class="font-display text-xl font-bold text-primary mb-3">Crea y sigue tus metas</h3>
+          <h3 class="font-display text-xl font-bold text-primary mb-3"><span class="text-outline-variant tabular-nums mr-2">05</span>Crea y sigue tus metas</h3>
           <p class="text-on-surface-variant text-sm leading-relaxed mb-5">
             Ponle nombre y monto objetivo a cada meta. Aporta desde cualquiera de tus bolsillos y ve tu progreso en tiempo real. Ya sea un fondo de emergencia, un viaje o cualquier cosa que quieras lograr.
           </p>
@@ -1115,8 +1102,7 @@
           </div>
         </div>
         <div class="order-1 md:order-2 bg-surface-container-lowest rounded-2xl p-8 border border-outline-variant/30">
-          <span class="inline-block px-3 py-1 bg-primary-container text-on-primary-container rounded-full text-xs font-bold mb-5">PASO 06</span>
-          <h3 class="font-display text-xl font-bold text-primary mb-3">Exporta tus datos cuando quieras</h3>
+          <h3 class="font-display text-xl font-bold text-primary mb-3"><span class="text-outline-variant tabular-nums mr-2">06</span>Exporta tus datos cuando quieras</h3>
           <p class="text-on-surface-variant text-sm leading-relaxed mb-5">
             Descarga tus movimientos en Excel o PDF, listos para compartir, imprimir o analizar.
           </p>
@@ -1134,14 +1120,9 @@
 <section id="descargar" class="py-24 px-6 md:px-10">
   <div class="max-w-5xl mx-auto reveal">
     <div class="relative overflow-hidden bg-surface-container-lowest border border-outline-variant/40 rounded-[32px] px-8 py-14 md:px-16 md:py-16 flex flex-col md:flex-row items-center gap-10">
-      <div class="dot-pattern text-secondary/20" style="--dot-x:88%; --dot-y:5%;"></div>
       <div class="relative z-10 flex-1 text-center md:text-left">
-        <div class="inline-flex items-center gap-2 bg-secondary-container/60 px-4 py-1.5 rounded-full text-on-secondary-container text-xs font-bold uppercase tracking-wide mb-5">
-          <span class="material-symbols-outlined text-[16px]">android</span>
-          App nativa para Android
-        </div>
         <h2 class="font-display text-3xl md:text-4xl font-extrabold text-primary mb-4 leading-tight">
-          Llévate Monedo<br class="hidden md:block"/> en tu bolsillo
+          Instala Monedo<br class="hidden md:block"/> en tu Android
         </h2>
         <p class="text-on-surface-variant text-base leading-relaxed mb-8 max-w-md mx-auto md:mx-0">
           Descarga el APK e instálalo directamente en tu Android. Entra con el mismo usuario que ya tienes.
@@ -1167,12 +1148,9 @@
 <!-- ═══════════ 100% GRATIS ═══════════ -->
 <section id="gratis" class="py-28 px-6 md:px-10 relative overflow-hidden">
   <div class="max-w-3xl mx-auto text-center relative z-10 reveal">
-    <div class="inline-flex items-center gap-2 bg-secondary-container px-5 py-2 rounded-full text-on-secondary-container font-bold text-sm mb-8">
-      <span class="material-symbols-outlined text-[18px]" style="font-variation-settings:'FILL' 1;">favorite</span>
-      Sin planes. Sin pagos. Sin trampa.
-    </div>
     <h2 class="font-display text-4xl md:text-5xl font-extrabold text-primary mb-6 leading-tight">
-      Monedo es <span class="text-secondary">100% gratuito</span>.
+      Monedo es <span class="text-secondary">100% gratuito</span>.<br class="hidden sm:block"/>
+      <span class="text-2xl md:text-3xl text-on-surface-variant font-semibold">Sin planes. Sin pagos. Sin trampa.</span>
     </h2>
     <p class="text-on-surface-variant text-lg leading-relaxed mb-10 max-w-xl mx-auto">
       No hay plan "premium". Monedo fue creado para que cualquier persona pueda tomar control de sus finanzas sin gastar un peso.
@@ -1199,7 +1177,7 @@
           <span class="font-display font-bold text-2xl">Monedo</span>
         </div>
         <p class="text-on-primary/55 text-sm leading-relaxed">
-          App de finanzas personales. Registra, visualiza y controla tu dinero desde cualquier dispositivo.
+          App de finanzas personales, hecha y mantenida por una sola persona.
         </p>
         <div class="inline-flex items-center gap-2 px-3.5 py-2 bg-secondary/15 border border-secondary/30 rounded-full text-secondary-fixed text-xs font-bold">
           <span class="material-symbols-outlined text-[15px]" style="font-variation-settings:'FILL' 1;">verified</span>
