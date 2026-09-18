@@ -34,6 +34,9 @@ migrate_working_dir/
 /coverage/
 *.apk
 
+# Temporary images (not project source)
+/tempImages/
+
 # Symbolication related
 app.*.symbols
 
