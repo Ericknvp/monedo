@@ -341,6 +341,118 @@ class AccountPickerField extends StatelessWidget {
   }
 }
 
+/// Tamaño de una tarjeta/chip de categoría fuera del árbol de widgets, para
+/// poder posicionarla nosotros mismos (ver [_AnimatedCategoryWrap]) en vez
+/// de dejar que un `Wrap` la mida. Debe reflejar exactamente las medidas de
+/// `tile`/`compactTile` en [CategoryPickerField._CategoryPickerFieldState].
+Size _categoryTileSize(String label, {required bool compact}) {
+  final painter = TextPainter(
+    text: TextSpan(
+      text: label,
+      style: GoogleFonts.beVietnamPro(
+        fontSize: compact ? 12 : 11,
+        fontWeight: FontWeight.w700,
+      ),
+    ),
+    maxLines: 1,
+    textDirection: TextDirection.ltr,
+  )..layout();
+  // +2 de holgura: la medida de TextPainter no siempre coincide al pixel
+  // con la línea real que pinta el widget Text (hinting/redondeo de fuente),
+  // y aquí el alto es una restricción dura (AnimatedPositioned la fija).
+  const heightSlack = 2.0;
+  if (compact) {
+    const iconWidth = 22.0;
+    const iconTextGap = 7.0;
+    const horizontalPadding = 6.0 + 11.0;
+    const verticalPadding = 6.0 + 6.0;
+    return Size(
+      horizontalPadding + iconWidth + iconTextGap + painter.width,
+      verticalPadding +
+          heightSlack +
+          (painter.height > iconWidth ? painter.height : iconWidth),
+    );
+  }
+  const tileWidth = 68.0;
+  const iconBoxHeight = 52.0;
+  const iconTextGap = 6.0;
+  return Size(
+      tileWidth, iconBoxHeight + iconTextGap + heightSlack + painter.height);
+}
+
+/// Una tarjeta de categoría ya construida, con el tamaño que ocupará y una
+/// key estable (el nombre de la categoría) para que [_AnimatedCategoryWrap]
+/// pueda animar su posición al reordenar en vez de saltar de golpe.
+class _CategoryWrapItem {
+  const _CategoryWrapItem({
+    required this.key,
+    required this.size,
+    required this.child,
+  });
+
+  final Key key;
+  final Size size;
+  final Widget child;
+}
+
+/// Reimplementa el flujo de un `Wrap` a mano (misma lógica: rellena cada
+/// fila de izquierda a derecha y salta a la siguiente cuando no cabe) pero
+/// posicionando cada tarjeta con [AnimatedPositioned], para que al cambiar
+/// el orden (la categoría elegida siempre pasa a ser la primera) la tarjeta
+/// se deslice hasta su nuevo lugar en vez de reaparecer de golpe ahí. Cada
+/// tarjeta conserva su [Key] entre reconstrucciones (ver [_CategoryWrapItem])
+/// para que Flutter anime el mismo elemento en vez de recrearlo.
+class _AnimatedCategoryWrap extends StatelessWidget {
+  const _AnimatedCategoryWrap({
+    required this.spacing,
+    required this.runSpacing,
+    required this.items,
+  });
+
+  final double spacing;
+  final double runSpacing;
+  final List<_CategoryWrapItem> items;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final maxWidth = constraints.maxWidth;
+        double x = 0, y = 0, rowHeight = 0;
+        final positioned = <Widget>[];
+        for (final item in items) {
+          final size = item.size;
+          if (x > 0 && x + size.width > maxWidth) {
+            x = 0;
+            y += rowHeight + runSpacing;
+            rowHeight = 0;
+          }
+          positioned.add(
+            AnimatedPositioned(
+              key: item.key,
+              duration: const Duration(milliseconds: 320),
+              curve: Curves.easeOutCubic,
+              left: x,
+              top: y,
+              width: size.width,
+              height: size.height,
+              child: item.child,
+            ),
+          );
+          x += size.width + spacing;
+          if (size.height > rowHeight) rowHeight = size.height;
+        }
+        final totalHeight = items.isEmpty ? 0.0 : y + rowHeight;
+        return SizedBox(
+          width: maxWidth,
+          height: totalHeight,
+          child: Stack(clipBehavior: Clip.none, children: positioned),
+        );
+      },
+    );
+  }
+}
+
 /// Selector de categoría en grilla (tarjetas 52px con ícono + nombre en
 /// móvil, chips compactos en fila en escritorio), con "mostrar más" cuando
 /// hay muchas categorías — mismo componente que usa el formulario de
@@ -546,44 +658,55 @@ class _CategoryPickerFieldState extends State<CategoryPickerField> {
                   duration: const Duration(milliseconds: 260),
                   curve: Curves.easeOutCubic,
                   alignment: Alignment.topLeft,
-                  child: Wrap(
+                  child: _AnimatedCategoryWrap(
                     spacing: compact ? 8 : 12,
                     runSpacing: compact ? 8 : 14,
-                    children: [
+                    items: [
                       for (final name in visibleNames)
-                        tile(
-                          // En compacto el fondo del ícono siempre es un
-                          // color sólido, así que el ícono va blanco encima
-                          // sin importar la selección; en la tarjeta grande
-                          // el fondo es translúcido cuando no está elegida.
-                          icon: Icon(
-                            CategoryIconRegistry.iconFor(name),
-                            color: (widget.selectedCategory == name || compact)
-                                ? Colors.white
-                                : CategoryColors.forCategory(name),
-                            size: compact ? 13 : 22,
+                        _CategoryWrapItem(
+                          key: ValueKey(name),
+                          size: _categoryTileSize(name, compact: compact),
+                          child: tile(
+                            // En compacto el fondo del ícono siempre es un
+                            // color sólido, así que el ícono va blanco encima
+                            // sin importar la selección; en la tarjeta grande
+                            // el fondo es translúcido cuando no está elegida.
+                            icon: Icon(
+                              CategoryIconRegistry.iconFor(name),
+                              color: (widget.selectedCategory == name || compact)
+                                  ? Colors.white
+                                  : CategoryColors.forCategory(name),
+                              size: compact ? 13 : 22,
+                            ),
+                            label: name,
+                            isSelected: widget.selectedCategory == name,
+                            color: CategoryColors.forCategory(name),
+                            onTap: () => widget.onChanged(name),
                           ),
-                          label: name,
-                          isSelected: widget.selectedCategory == name,
-                          color: CategoryColors.forCategory(name),
-                          onTap: () => widget.onChanged(name),
                         ),
                       if (hasMore)
-                        tile(
-                          icon: AnimatedRotation(
-                            duration: const Duration(milliseconds: 260),
-                            curve: Curves.easeOutCubic,
-                            turns: _showAll ? 0.5 : 0,
-                            child: Icon(Icons.expand_more_rounded,
-                                color: compact
-                                    ? Colors.white
-                                    : AppTheme.onSurfaceVariant,
-                                size: compact ? 13 : 22),
+                        _CategoryWrapItem(
+                          key: const ValueKey('__toggle_ver_todas__'),
+                          size: _categoryTileSize(
+                            _showAll ? 'Ver menos' : 'Ver todas',
+                            compact: compact,
                           ),
-                          label: _showAll ? 'Ver menos' : 'Ver todas',
-                          isSelected: false,
-                          color: AppTheme.outline,
-                          onTap: () => setState(() => _showAll = !_showAll),
+                          child: tile(
+                            icon: AnimatedRotation(
+                              duration: const Duration(milliseconds: 260),
+                              curve: Curves.easeOutCubic,
+                              turns: _showAll ? 0.5 : 0,
+                              child: Icon(Icons.expand_more_rounded,
+                                  color: compact
+                                      ? Colors.white
+                                      : AppTheme.onSurfaceVariant,
+                                  size: compact ? 13 : 22),
+                            ),
+                            label: _showAll ? 'Ver menos' : 'Ver todas',
+                            isSelected: false,
+                            color: AppTheme.outline,
+                            onTap: () => setState(() => _showAll = !_showAll),
+                          ),
                         ),
                     ],
                   ),
