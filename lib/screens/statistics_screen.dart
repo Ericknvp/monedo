@@ -1752,7 +1752,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
         icon = Icons.trending_down_rounded;
         color = AppTheme.secondary;
         message =
-            'Gastaste ${change.abs().toStringAsFixed(0)}% menos que la semana pasada. ¡Bien!';
+            'Gastaste ${change.abs().toStringAsFixed(0)}% menos que la semana pasada.';
       } else {
         icon = Icons.trending_flat_rounded;
         color = AppTheme.onSurfaceVariant;
