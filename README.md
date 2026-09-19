@@ -66,9 +66,25 @@ Tipografía: **Plus Jakarta Sans** (encabezados y cuerpo) / **Be Vietnam Pro** (
 
 ## Descargar APK última versión.
 
-[Descargar Monedo v2.4.3](https://github.com/Ericknvp/monedo/releases/tag/v2.4.3)
+[Descargar Monedo v2.5.0](https://github.com/Ericknvp/monedo/releases/tag/v2.5.0)
 
 ## Changelog
+
+### v2.5.0 — Septiembre 2026
+
+- Rediseño completo de UI/UX en toda la app, en el login/registro y en la landing page
+- Modo oscuro
+- Gastos e ingresos recurrentes, con botón para activar/desactivar la recurrencia de forma más intuitiva
+- Notificaciones locales: recordatorio diario, alertas de presupuesto, metas alcanzadas y movimientos recurrentes
+- Transferencias entre bolsillos, con opción de deshacer
+- Botón de deshacer al eliminar movimientos, cuentas, categorías o metas (3 segundos en movimientos, 4 en el resto)
+- Botón para ocultar el saldo total
+- Mensajes explicativos (tour guiado) y selección de categorías al crear una cuenta
+- "Cuentas" ahora se llama "Bolsillos" en toda la app
+- Mejores filtros y promedio del día que más se gasta en Estadísticas
+- Corregido: en la versión web, las cuentas nuevas a veces no completaban el onboarding (no salía la selección de categorías ni el tour)
+- Corregido: no se podían duplicar aportes a una meta al tocar varias veces "Ahorrar"
+- Sección "Sobre el creador" actualizada con contacto de Instagram
 
 ### v2.4.3 — Septiembre 2026
 
