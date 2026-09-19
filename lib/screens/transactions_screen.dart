@@ -170,6 +170,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
         context,
         message: 'Eliminando "${t.title}"',
         onConfirmed: () => _txService.deleteTransaction(t),
+        duration: const Duration(seconds: 3),
       );
     } else {
       await _txService.deleteTransaction(t);

@@ -346,6 +346,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
       context,
       message: 'Eliminando "${t.title}"',
       onConfirmed: () => _txService.deleteTransaction(t),
+      duration: const Duration(seconds: 3),
     );
     Navigator.pop(context);
   }

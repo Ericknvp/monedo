@@ -213,6 +213,7 @@ class _TransactionsDetailScreenState extends State<TransactionsDetailScreen> {
             setState(() => _items.insert(index.clamp(0, _items.length), t));
           }
         },
+        duration: const Duration(seconds: 3),
       );
     } else {
       await _txService.deleteTransaction(t);
