@@ -1058,11 +1058,18 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                   ),
                 ),
               ),
-              InkWell(
-                borderRadius: BorderRadius.circular(100),
-                onTap: () => setState(() => _showRecurring = false),
-                child: Icon(Icons.close_rounded,
-                    size: 18, color: AppTheme.onSurfaceVariant),
+              Text(
+                'Activado',
+                style: GoogleFonts.beVietnamPro(
+                  color: AppTheme.successFixed,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              Switch(
+                value: _showRecurring,
+                activeThumbColor: AppTheme.successFixed,
+                onChanged: (v) => setState(() => _showRecurring = v),
               ),
             ],
           ),
