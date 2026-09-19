@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/services.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../services/auth_service.dart';
 import '../services/notification_service.dart';
@@ -469,18 +470,18 @@ class AboutScreen extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   InkWell(
-                    onTap: () => openExternalUrl('https://github.com/Ericknvp/monedo'),
+                    onTap: () => openExternalUrl('https://instagram.com/ericknvp'),
                     borderRadius: BorderRadius.circular(8),
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.code_rounded,
+                          FaIcon(FontAwesomeIcons.instagram,
                               color: AppTheme.onSurfaceVariant, size: 14),
                           const SizedBox(width: 6),
                           Text(
-                            'Ver repositorio en GitHub',
+                            'Contacto con el desarrollador: @ericknvp',
                             style: GoogleFonts.beVietnamPro(
                               color: AppTheme.onSurfaceVariant,
                               fontSize: 12,

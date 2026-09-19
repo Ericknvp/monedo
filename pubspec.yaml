@@ -22,6 +22,7 @@ dependencies:
   crypto: ^3.0.3
   # Iconos
   cupertino_icons: ^1.0.2
+  font_awesome_flutter: ^11.0.0
   excel: ^4.0.6
   pdf: ^3.11.1
   share_plus: ^10.1.2
