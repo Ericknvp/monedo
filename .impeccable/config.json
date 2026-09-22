@@ -74,6 +74,15 @@
         ],
         "createdAt": "2026-09-18T21:39:07.483Z",
         "reason": "Claude reviewed: the two phone-mock screenshots crossfade via a CSS keyframe animation (phone-slide-fade) that alternates each image to opacity 1 for ~40% of a 9s loop - the detector's static analysis reads the base/mid-cycle opacity:0 state as permanently hidden, but it's an intentional alternating slideshow the user explicitly requested, not a buried asset."
+      },
+      {
+        "rule": "overused-font",
+        "value": "plus jakarta sans",
+        "files": [
+          "web/privacy.html"
+        ],
+        "createdAt": "2026-09-22T13:58:32.417Z",
+        "reason": "user confirmed: Monedo's brand display typeface, documented in DESIGN.md section 3 and used identically in web/landing.html; this task explicitly asked to match the existing brand"
       }
     ]
   }
