@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="es" class="light">
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>Monedo — Política de privacidad</title>
+  <meta name="description" content="Política de privacidad de Monedo: qué información recopilamos, cómo la usamos, dónde se almacena y cómo puedes ejercer tus derechos sobre tus datos."/>
+  <meta name="robots" content="index, follow"/>
+  <link rel="icon" type="image/png" href="favicon.png"/>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Be+Vietnam+Pro:wght@400;500;600&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+  <script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary":                  "#001f2d",
+            "on-primary":               "#ffffff",
+            "primary-container":        "#0c3547",
+            "on-primary-container":     "#7a9eb3",
+            "secondary":                "#006c4b",
+            "on-secondary":             "#ffffff",
+            "secondary-container":      "#96f6c8",
+            "on-secondary-container":   "#00734f",
+            "background":               "#fcf9f8",
+            "on-surface":               "#1c1b1b",
+            "on-surface-variant":       "#42484c",
+            "surface-container-lowest": "#ffffff",
+            "surface-container-low":    "#f6f3f2",
+            "surface-container":        "#f0edec",
+            "surface-container-high":   "#ebe7e7",
+            "outline-variant":          "#c1c7cc",
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    :root {
+      --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+    }
+    body {
+      font-family: 'Be Vietnam Pro', sans-serif;
+      background-color: #fcf9f8;
+      background-image: radial-gradient(rgba(0,31,45,0.13) 1px, transparent 1.2px);
+      background-size: 26px 26px;
+    }
+    .font-display { font-family: 'Plus Jakarta Sans', sans-serif; }
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      display: inline-block;
+      vertical-align: middle;
+    }
+    .dot-pattern {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      background-image: radial-gradient(currentColor 1px, transparent 1.3px);
+      background-size: 22px 22px;
+      -webkit-mask-image: radial-gradient(ellipse 70% 100% at 8% 0%, #000 30%, transparent 80%);
+      mask-image: radial-gradient(ellipse 70% 100% at 8% 0%, #000 30%, transparent 80%);
+    }
+    .brand-mark {
+      transition: transform 0.4s var(--ease-out);
+      display: inline-block;
+    }
+    .brand-mark:hover {
+      transform: rotate(-8deg) scale(1.06);
+    }
+    .nav-link { position: relative; }
+    .nav-link::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      right: 100%;
+      bottom: -3px;
+      height: 2px;
+      border-radius: 2px;
+      background: currentColor;
+      transition: right 0.25s var(--ease-out);
+    }
+    .nav-link:hover::after { right: 0; }
+
+    /* ── Contenido legal: entra suavemente una sola vez, sin efectos repetidos ── */
+    .reveal {
+      opacity: 0;
+      transform: translateY(14px);
+      transition: opacity 0.5s var(--ease-out), transform 0.5s var(--ease-out);
+    }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+    @media (prefers-reduced-motion: reduce) {
+      .reveal { opacity: 1 !important; transform: none !important; transition: none !important; }
+    }
+
+    /* ── Índice lateral: el enlace de la sección visible se resalta ── */
+    .toc-link {
+      color: var(--tw-color-on-surface-variant, #42484c);
+      transition: color 0.2s var(--ease-out), font-weight 0.2s var(--ease-out);
+      border-left: 2px solid transparent;
+      transition: color 0.2s var(--ease-out), border-color 0.2s var(--ease-out);
+    }
+    .toc-link.active {
+      color: #006c4b;
+      font-weight: 600;
+      border-left-color: #006c4b;
+    }
+
+    article :where(h2) { scroll-margin-top: 6.5rem; }
+
+    /* ── Selección de texto y foco visible, con la identidad de marca ── */
+    ::selection { background: #96f6c8; color: #001f2d; }
+    a:focus-visible, button:focus-visible, summary:focus-visible {
+      outline: 2px solid #006c4b;
+      outline-offset: 3px;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body class="text-on-surface">
+
+<!-- ═══════════ NAV ═══════════ -->
+<nav class="sticky top-0 z-50 bg-background/85 backdrop-blur-md border-b border-outline-variant/30">
+  <div class="max-w-5xl mx-auto px-6 md:px-10 h-16 flex justify-between items-center">
+    <a href="landing.html" class="flex items-center gap-2.5">
+      <img src="favicon.png" alt="Monedo" class="brand-mark h-8 w-8 rounded-xl object-cover"/>
+      <span class="font-display font-bold text-xl text-primary">Monedo</span>
+    </a>
+    <a href="landing.html" class="nav-link flex items-center gap-1.5 text-sm font-semibold text-on-surface-variant hover:text-primary transition-colors">
+      <span class="material-symbols-outlined text-[18px]">arrow_back</span>
+      Volver al inicio
+    </a>
+  </div>
+</nav>
+
+<!-- ═══════════ ENCABEZADO ═══════════ -->
+<header class="relative overflow-hidden">
+  <div class="dot-pattern text-primary/[0.06]"></div>
+  <div class="max-w-5xl mx-auto px-6 md:px-10 pt-16 pb-12 md:pt-20 md:pb-14 relative z-10">
+    <h1 class="font-display text-4xl md:text-5xl font-extrabold text-primary leading-[1.1] tracking-tight mb-4">
+      Política de privacidad
+    </h1>
+    <p class="text-on-surface-variant text-base md:text-lg leading-relaxed max-w-2xl">
+      Esta página explica, en lenguaje simple, qué información recopila Monedo, para qué la usa, dónde se guarda y cómo puedes controlarla o pedir que se elimine.
+    </p>
+    <p class="text-on-surface-variant/70 text-sm mt-4">Última actualización: 22 de septiembre de 2026</p>
+  </div>
+</header>
+
+<!-- ═══════════ CONTENIDO ═══════════ -->
+<main class="max-w-5xl mx-auto px-6 md:px-10 pb-28">
+  <div class="lg:grid lg:grid-cols-[220px_1fr] lg:gap-16">
+
+    <!-- Índice (sticky en escritorio) -->
+    <nav aria-label="Contenido de la página" class="hidden lg:block">
+      <div class="sticky top-24 space-y-1 text-sm">
+        <a href="#resumen" class="toc-link block pl-3 py-1.5">Resumen</a>
+        <a href="#responsable" class="toc-link block pl-3 py-1.5">Responsable del tratamiento</a>
+        <a href="#que-recopilamos" class="toc-link block pl-3 py-1.5">Qué información recopilamos</a>
+        <a href="#como-la-usamos" class="toc-link block pl-3 py-1.5">Cómo la usamos</a>
+        <a href="#con-quien-compartimos" class="toc-link block pl-3 py-1.5">Con quién la compartimos</a>
+        <a href="#donde-se-guarda" class="toc-link block pl-3 py-1.5">Dónde se guarda</a>
+        <a href="#seguridad" class="toc-link block pl-3 py-1.5">Seguridad</a>
+        <a href="#notificaciones" class="toc-link block pl-3 py-1.5">Notificaciones</a>
+        <a href="#cookies" class="toc-link block pl-3 py-1.5">Cookies y almacenamiento</a>
+        <a href="#tus-derechos" class="toc-link block pl-3 py-1.5">Tus derechos</a>
+        <a href="#menores" class="toc-link block pl-3 py-1.5">Menores de edad</a>
+        <a href="#cambios" class="toc-link block pl-3 py-1.5">Cambios a esta política</a>
+        <a href="#contacto" class="toc-link block pl-3 py-1.5">Contacto</a>
+      </div>
+    </nav>
+
+    <!-- Índice plegable (móvil) -->
+    <details class="lg:hidden mb-10 bg-surface-container-lowest border border-outline-variant/40 rounded-2xl">
+      <summary class="font-display font-semibold text-primary px-5 py-4 cursor-pointer select-none">
+        Contenido de la página
+      </summary>
+      <div class="px-5 pb-5 grid grid-cols-2 gap-x-4 gap-y-2 text-sm text-on-surface-variant">
+        <a href="#resumen" class="hover:text-secondary">Resumen</a>
+        <a href="#responsable" class="hover:text-secondary">Responsable</a>
+        <a href="#que-recopilamos" class="hover:text-secondary">Qué recopilamos</a>
+        <a href="#como-la-usamos" class="hover:text-secondary">Cómo la usamos</a>
+        <a href="#con-quien-compartimos" class="hover:text-secondary">Con quién compartimos</a>
+        <a href="#donde-se-guarda" class="hover:text-secondary">Dónde se guarda</a>
+        <a href="#seguridad" class="hover:text-secondary">Seguridad</a>
+        <a href="#notificaciones" class="hover:text-secondary">Notificaciones</a>
+        <a href="#cookies" class="hover:text-secondary">Cookies</a>
+        <a href="#tus-derechos" class="hover:text-secondary">Tus derechos</a>
+        <a href="#menores" class="hover:text-secondary">Menores de edad</a>
+        <a href="#cambios" class="hover:text-secondary">Cambios</a>
+        <a href="#contacto" class="hover:text-secondary">Contacto</a>
+      </div>
+    </details>
+
+    <!-- Artículo -->
+    <article class="max-w-[68ch] space-y-14 text-on-surface-variant leading-relaxed text-sm">
+
+      <section id="resumen" class="reveal scroll-mt-24">
+        <h2 class="font-display text-2xl font-bold text-primary mb-4">Resumen</h2>
+        <p>
+          Monedo es una app de finanzas personales hecha y mantenida por una sola persona. Guarda tus bolsillos, movimientos, presupuestos y metas en la nube para que los veas desde cualquier dispositivo. No mostramos publicidad, no usamos servicios de analítica o rastreo de terceros y no vendemos tu información a nadie. Lo único que compartimos con proveedores externos es lo estrictamente necesario para que la app funcione: autenticación y base de datos con Firebase (Google), y el alojamiento de una imagen si decides subirle una foto a una meta de ahorro.
+        </p>
+      </section>
+
+      <section id="responsable" class="reveal scroll-mt-24">
+        <h2 class="font-display text-2xl font-bold text-primary mb-4">Responsable del tratamiento</h2>
+        <p>
+          Monedo es desarrollada de forma independiente por Erick Narváez, con sede en Pereira, Colombia. Para cualquier solicitud relacionada con tus datos personales, puedes escribir a <a href="mailto:appmonedo@gmail.com" class="text-secondary font-semibold hover:underline">appmonedo@gmail.com</a>.
+        </p>
+      </section>
+
+      <section id="que-recopilamos" class="reveal scroll-mt-24">
+        <h2 class="font-display text-2xl font-bold text-primary mb-4">Qué información recopilamos</h2>
+        <p class="mb-5">Solo recopilamos lo que necesitamos para que la app funcione. Concretamente:</p>
+        <div class="space-y-5">
+          <div>
+            <h3 class="font-display text-lg font-bold text-primary mb-1">Datos de tu cuenta</h3>
+            <p>Correo electrónico y, si inicias sesión con Google, tu nombre y foto de perfil de Google. Si te registras con correo y contraseña, la contraseña la gestiona directamente Firebase Authentication: Monedo nunca la ve ni la almacena en texto plano.</p>
+          </div>
+          <div>
+            <h3 class="font-display text-lg font-bold text-primary mb-1">Datos financieros que tú registras</h3>
+            <p>Los bolsillos, movimientos, categorías, presupuestos y metas de ahorro que creas dentro de la app. Esta es la información principal que Monedo almacena, y solo existe porque tú la ingresaste.</p>
+          </div>
+          <div>
+            <h3 class="font-display text-lg font-bold text-primary mb-1">Imágenes de metas</h3>
+            <p>Si eliges subir una foto a una meta de ahorro, esa imagen se envía a Cloudinary, un servicio externo de alojamiento de imágenes. Es la única imagen que la app sube a un tercero, y solo ocurre si tú decides agregarla.</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="como-la-usamos" class="reveal scroll-mt-24">
+        <h2 class="font-display text-2xl font-bold text-primary mb-4">Cómo la usamos</h2>
+        <p>
+          Usamos tu información únicamente para operar Monedo: identificarte al iniciar sesión, sincronizar tus bolsillos y movimientos entre dispositivos, calcular tus estadísticas y el progreso de tus presupuestos y metas, y responder tus solicitudes de soporte. No la usamos para publicidad, no la usamos para entrenar modelos de terceros y no elaboramos perfiles de tu comportamiento fuera de la app.
+        </p>
+      </section>
+
+      <section id="con-quien-compartimos" class="reveal scroll-mt-24">
+        <h2 class="font-display text-2xl font-bold text-primary mb-4">Con quién la compartimos</h2>
+        <p class="mb-4">No vendemos ni alquilamos tus datos. Los únicos proveedores que procesan información en nombre de Monedo son:</p>
+        <ul class="space-y-3 list-disc pl-5 marker:text-secondary">
+          <li><span class="font-semibold text-primary">Firebase (Google):</span> autenticación de cuentas y almacenamiento de tus bolsillos, movimientos, presupuestos y metas, en Cloud Firestore.</li>
+          <li><span class="font-semibold text-primary">Cloudinary:</span> alojamiento de la imagen de una meta, únicamente si decides subir una.</li>
+        </ul>
+        <p class="mt-4">Monedo no integra redes de publicidad ni herramientas de analítica o rastreo de terceros.</p>
+      </section>
+
+      <section id="donde-se-guarda" class="reveal scroll-mt-24">
+        <h2 class="font-display text-2xl font-bold text-primary mb-4">Dónde se guarda</h2>
+        <p>
+          Tus datos de cuenta y financieros se almacenan en la infraestructura de Google Cloud que usa Firebase. Las imágenes de metas, cuando las subes, se almacenan en la infraestructura de Cloudinary. Ambos proveedores operan bajo sus propias políticas de seguridad y privacidad, que puedes consultar en sus sitios oficiales.
+        </p>
+      </section>
+
+      <section id="seguridad" class="reveal scroll-mt-24">
+        <h2 class="font-display text-2xl font-bold text-primary mb-4">Seguridad</h2>
+        <p>
+          Todas las conexiones entre la app y nuestros servidores usan HTTPS cifrado. Las reglas de acceso de la base de datos están configuradas para que cada cuenta solo pueda leer y escribir su propia información, nunca la de otro usuario. Ningún sistema es infalible, pero tomamos medidas razonables para proteger tu información contra accesos no autorizados.
+        </p>
+      </section>
+
+      <section id="notificaciones" class="reveal scroll-mt-24">
+        <h2 class="font-display text-2xl font-bold text-primary mb-4">Notificaciones</h2>
+        <p>
+          Los recordatorios y alertas de presupuesto o metas se generan y se muestran de forma local en tu propio dispositivo. No se envían a través de un servidor externo ni se comparten con terceros. Puedes desactivarlas en cualquier momento desde los ajustes del sistema operativo o de la app.
+        </p>
+      </section>
+
+      <section id="cookies" class="reveal scroll-mt-24">
+        <h2 class="font-display text-2xl font-bold text-primary mb-4">Cookies y almacenamiento local</h2>
+        <p>
+          La web de Monedo no usa cookies de rastreo ni de publicidad, y no tiene instalado ningún servicio de analítica de terceros. El único dato que guarda en tu navegador es una preferencia local (<code class="text-sm bg-surface-container px-1.5 py-0.5 rounded">localStorage</code>) para recordar si ya cerraste el aviso de "descarga la app": no identifica quién eres ni sale de tu dispositivo. Dentro de la app, Firebase Authentication guarda tu sesión iniciada usando almacenamiento local del dispositivo, estrictamente necesario para que no tengas que iniciar sesión cada vez. Por no ser rastreo ni publicidad, esto no requiere un banner de consentimiento de cookies.
+        </p>
+      </section>
+
+      <section id="tus-derechos" class="reveal scroll-mt-24">
+        <h2 class="font-display text-2xl font-bold text-primary mb-4">Tus derechos</h2>
+        <p class="mb-4">Sobre tu información puedes, en cualquier momento:</p>
+        <ul class="space-y-2 list-disc pl-5 marker:text-secondary">
+          <li><span class="font-semibold text-primary">Acceder y corregir</span> tus bolsillos, movimientos, categorías y metas directamente desde la app.</li>
+          <li><span class="font-semibold text-primary">Eliminar</span> cualquier movimiento, bolsillo o meta individual desde la propia app, cuando quieras.</li>
+          <li><span class="font-semibold text-primary">Solicitar la eliminación completa</span> de tu cuenta y de todos tus datos, escribiendo a <a href="mailto:appmonedo@gmail.com" class="text-secondary font-semibold hover:underline">appmonedo@gmail.com</a>. Atenderemos tu solicitud en un plazo razonable.</li>
+          <li><span class="font-semibold text-primary">Exportar</span> tus movimientos a Excel o PDF en cualquier momento desde la sección de estadísticas.</li>
+        </ul>
+      </section>
+
+      <section id="menores" class="reveal scroll-mt-24">
+        <h2 class="font-display text-2xl font-bold text-primary mb-4">Menores de edad</h2>
+        <p>
+          Monedo no está dirigida a menores de 13 años y no recopilamos intencionalmente información de niños. Si crees que un menor nos ha proporcionado datos personales, contáctanos y los eliminaremos.
+        </p>
+      </section>
+
+      <section id="cambios" class="reveal scroll-mt-24">
+        <h2 class="font-display text-2xl font-bold text-primary mb-4">Cambios a esta política</h2>
+        <p>
+          Si actualizamos esta política, publicaremos la nueva versión en esta misma página y actualizaremos la fecha que aparece al inicio. Si el cambio es significativo, te avisaremos también dentro de la app.
+        </p>
+      </section>
+
+      <section id="contacto" class="reveal scroll-mt-24">
+        <h2 class="font-display text-2xl font-bold text-primary mb-4">Contacto</h2>
+        <p>
+          ¿Preguntas sobre esta política o sobre tus datos? Escríbenos a <a href="mailto:appmonedo@gmail.com" class="text-secondary font-semibold hover:underline">appmonedo@gmail.com</a>.
+        </p>
+      </section>
+
+    </article>
+  </div>
+</main>
+
+<!-- ═══════════ FOOTER ═══════════ -->
+<footer class="bg-primary text-on-primary py-8 px-6 md:px-10">
+  <div class="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-on-primary/50">
+    <div class="flex items-center gap-2.5">
+      <img src="favicon.png" alt="Monedo" class="h-6 w-6 rounded-lg object-cover"/>
+      <span class="font-display font-semibold text-on-primary/80">Monedo</span>
+      <span>© 2026 · Pereira, Colombia</span>
+    </div>
+    <a href="landing.html" class="nav-link text-on-primary/70 hover:text-secondary-fixed transition-colors font-semibold">
+      Volver al inicio
+    </a>
+  </div>
+</footer>
+
+<script>
+  // Revelado suave del contenido, una sola vez, sin repetirse por sección
+  const revealObserver = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.classList.add('visible');
+        revealObserver.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.08 });
+  document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+
+  // Índice: resalta la sección visible mientras se hace scroll
+  const tocLinks = Array.from(document.querySelectorAll('.toc-link'));
+  const sections = Array.from(document.querySelectorAll('article section[id]'));
+  if (tocLinks.length && sections.length) {
+    const tocObserver = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        const link = tocLinks.find(a => a.getAttribute('href') === '#' + entry.target.id);
+        if (!link) return;
+        if (entry.isIntersecting) {
+          tocLinks.forEach(a => a.classList.remove('active'));
+          link.classList.add('active');
+        }
+      });
+    }, { rootMargin: '-40% 0px -50% 0px', threshold: 0 });
+    sections.forEach(s => tocObserver.observe(s));
+  }
+</script>
+
+</body>
+</html>
