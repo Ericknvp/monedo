@@ -82,11 +82,9 @@ class TelegramLinkService {
       throw const TelegramLinkException('No hay una sesión activa');
     }
 
-    try {
-      await invalidatePendingPins(uid);
-    } on FirebaseException catch (e) {
-      throw TelegramLinkException(_describeFirebaseError(e));
-    }
+    // La limpieza de PINs previos es best-effort: si falla, el PIN
+    // nuevo se genera igual.
+    await invalidatePendingPins(uid);
 
     final now = DateTime.now();
     final expiresAt = now.add(pinLifetime);
@@ -169,20 +167,30 @@ class TelegramLinkService {
   /// simple, sin depender del merge de índices, y la regla de seguridad
   /// se puede comprobar sin ambigüedad. Un usuario tiene como mucho un
   /// PIN vivo, así que filtrar por `used` en Dart no cuesta nada.
+  ///
+  /// Es una limpieza de cortesía, no parte del flujo: si la consulta
+  /// falla (por ejemplo, porque las reglas de seguridad aún no
+  /// permiten `telegram_pins`), el PIN se genera igual. Los PINs viejos
+  /// sobrantes los rechaza el bot por expiration y una politica de TTL
+  /// los acaba limpiando.
   Future<void> invalidatePendingPins(String uid) async {
-    final pending = await _firestore
-        .collection(pinsCollection)
-        .where('uid', isEqualTo: uid)
-        .get();
+    try {
+      final pending = await _firestore
+          .collection(pinsCollection)
+          .where('uid', isEqualTo: uid)
+          .get();
 
-    final stale = pending.docs.where((doc) => doc.get('used') != true);
-    if (stale.isEmpty) return;
+      final stale = pending.docs.where((doc) => doc.get('used') != true);
+      if (stale.isEmpty) return;
 
-    final batch = _firestore.batch();
-    for (final doc in stale) {
-      batch.delete(doc.reference);
+      final batch = _firestore.batch();
+      for (final doc in stale) {
+        batch.delete(doc.reference);
+      }
+      await batch.commit();
+    } on FirebaseException {
+      // Sin penalizacion: seguimos con el PIN nuevo.
     }
-    await batch.commit();
   }
 
   /// Elimina un PIN concreto (por ejemplo cuando expira sin usarse).
