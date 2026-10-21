@@ -135,17 +135,23 @@ class TelegramLinkService {
   }
 
   /// Borra los PINs pendientes del usuario que ya no sirven.
+  ///
+  /// Se filtra solo por `uid` (un único filtro de igualdad) en vez de
+  /// por `uid` + `used`: con un solo campo basta el índice de campo
+  /// simple, sin depender del merge de índices, y la regla de seguridad
+  /// se puede comprobar sin ambigüedad. Un usuario tiene como mucho un
+  /// PIN vivo, así que filtrar por `used` en Dart no cuesta nada.
   Future<void> invalidatePendingPins(String uid) async {
     final pending = await _firestore
         .collection(pinsCollection)
         .where('uid', isEqualTo: uid)
-        .where('used', isEqualTo: false)
         .get();
 
-    if (pending.docs.isEmpty) return;
+    final stale = pending.docs.where((doc) => doc.get('used') != true);
+    if (stale.isEmpty) return;
 
     final batch = _firestore.batch();
-    for (final doc in pending.docs) {
+    for (final doc in stale) {
       batch.delete(doc.reference);
     }
     await batch.commit();
