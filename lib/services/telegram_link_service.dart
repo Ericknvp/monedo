@@ -89,7 +89,7 @@ class TelegramLinkService {
 
     // La limpieza de PINs previos es best-effort: si falla, el PIN
     // nuevo se genera igual.
-    await invalidatePendingPins(uid);
+    await purgeUserPins(uid);
 
     final now = DateTime.now();
     final expiresAt = now.add(pinLifetime);
@@ -177,31 +177,27 @@ class TelegramLinkService {
     }
   }
 
-  /// Borra los PINs pendientes del usuario que ya no sirven.
+  /// Borra los documentos de PIN que dejó el usuario en Firestore.
   ///
-  /// Se filtra solo por `uid` (un único filtro de igualdad) en vez de
-  /// por `uid` + `used`: con un solo campo basta el índice de campo
-  /// simple, sin depender del merge de índices, y la regla de seguridad
-  /// se puede comprobar sin ambigüedad. Un usuario tiene como mucho un
-  /// PIN vivo, así que filtrar por `used` en Dart no cuesta nada.
+  /// Se borran los dos tipos: los pendientes (quedan obsoletos en
+  /// cuanto se genera otro) y los ya canjeados (el bot ya los consumio y
+  /// son peso muerto). Un PIN canjeado que se queda en Firestore
+  /// acabaria siendo un registro permanente de que PIN uso cada
+  /// usuario, y no hay ninguna politica de TTL que lo limpie.
   ///
   /// Es una limpieza de cortesía, no parte del flujo: si la consulta
-  /// falla (por ejemplo, porque las reglas de seguridad aún no
-  /// permiten `telegram_pins`), el PIN se genera igual. Los PINs viejos
-  /// sobrantes los rechaza el bot por expiration y una politica de TTL
-  /// los acaba limpiando.
-  Future<void> invalidatePendingPins(String uid) async {
+  /// falla, el PIN se genera igual.
+  Future<void> purgeUserPins(String uid) async {
     try {
-      final pending = await _firestore
+      final docs = await _firestore
           .collection(pinsCollection)
           .where('uid', isEqualTo: uid)
           .get();
 
-      final stale = pending.docs.where((doc) => doc.get('used') != true);
-      if (stale.isEmpty) return;
+      if (docs.docs.isEmpty) return;
 
       final batch = _firestore.batch();
-      for (final doc in stale) {
+      for (final doc in docs.docs) {
         batch.delete(doc.reference);
       }
       await batch.commit();
@@ -223,16 +219,23 @@ class TelegramLinkService {
   Stream<TelegramUserState> watchState(String uid) {
     return Stream.multi((controller) {
       var cancelled = false;
-      bool? linked;
+      bool? linkedFromUser;
+      bool linkExists = false;
       String? chatId;
       String? monedoUsername;
       String? telegramUsername;
 
       void emit() {
-        if (cancelled || linked == null) return;
+        if (cancelled || linkedFromUser == null) return;
         controller.add(TelegramUserState(
           uid: uid,
-          linked: linked!,
+          // El vinculo cuenta si lo dice el documento del usuario O si
+          // existe el registro del chat. Asi el estado no depende de
+          // que el bot escriba los dos: con que escriba uno, la app
+          // muestra la verdad. Si solo escribiera el registro del chat,
+          // la app creeria que la cuenta sigue sin vincular y dejaria
+          // que el usuario enchufara un segundo Telegram.
+          linked: linkedFromUser! || linkExists,
           chatId: chatId,
           monedoUsername: monedoUsername,
           telegramUsername: telegramUsername,
@@ -245,7 +248,7 @@ class TelegramLinkService {
           .snapshots()
           .listen((snapshot) {
         final data = snapshot.data() ?? const <String, dynamic>{};
-        linked = data[linkedField] as bool? ?? false;
+        linkedFromUser = data[linkedField] as bool? ?? false;
         chatId = data[chatIdField]?.toString();
         monedoUsername = data['username'] as String?;
         emit();
@@ -257,6 +260,7 @@ class TelegramLinkService {
           .snapshots()
           .listen((snapshot) {
         final data = snapshot.data();
+        linkExists = data != null;
         telegramUsername = (data?['username'] as String?)?.trim();
         emit();
       });

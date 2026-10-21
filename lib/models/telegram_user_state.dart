@@ -13,8 +13,11 @@ class TelegramUserState {
   /// UID de Firebase Auth del usuario.
   final String uid;
 
-  /// Campo `telegramLinked` del documento del usuario. Si el campo no
-  /// existe se trata como `false` (la cuenta nunca se vinculó).
+  /// Si la cuenta está vinculada a un chat de Telegram.
+  ///
+  /// Es `true` si el documento del usuario dice `telegramLinked` o si
+  /// existe el registro del chat: cualquiera de las dos fuentes basta,
+  /// así el estado es correcto aunque el bot escriba solo una.
   final bool linked;
 
   /// Campo `telegramChatId` del documento del usuario. Es el `chat.id`
