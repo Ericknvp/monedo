@@ -38,12 +38,22 @@ class TransactionService {
         .where('userId', isEqualTo: userId)
         .snapshots()
         .map((snapshot) {
-      final list = snapshot.docs.map((doc) {
-        return TransactionModel.fromMap(
-          doc.data() as Map<String, dynamic>,
-          doc.id,
-        );
-      }).toList();
+      // Un movimiento malformado no puede dejar el listado en blanco:
+      // se salta ese documento y se muestran los demas. Antes, un solo
+      // documento con un campo raro (por ejemplo, una fecha que no se
+      // puede parsear) hacia fallar el stream entero y el usuario se
+      // quedaba sin ver ni un solo movimiento.
+      final list = <TransactionModel>[];
+      for (final doc in snapshot.docs) {
+        try {
+          list.add(TransactionModel.fromMap(
+            doc.data() as Map<String, dynamic>,
+            doc.id,
+          ));
+        } catch (_) {
+          // Documento ilegible: se ignora en lugar de romper la lista.
+        }
+      }
       list.sort((a, b) => b.date.compareTo(a.date));
       return list;
     });
