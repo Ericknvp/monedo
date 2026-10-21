@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -102,7 +103,11 @@ class TelegramLinkService {
     // movimiento. Se publican justo aquí, en el momento en que el
     // usuario va a necesitarlo, y así se actualizan también para las
     // cuentas que ya existian antes de que existiera el campo.
-    await EnabledCategoriesService().publish(uid);
+    //
+    // Va en paralelo y sin esperar: son tres idas a Firestore y el PIN
+    // no depende de ellas. El usuario tarda mas en copiar el comando y
+    // abrir Telegram que lo que tarda en publicarse la lista.
+    unawaited(EnabledCategoriesService().publish(uid));
 
     final now = DateTime.now();
     final expiresAt = now.add(pinLifetime);
