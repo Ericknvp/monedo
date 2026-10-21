@@ -162,7 +162,10 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
       showUndoToast(
         context,
         message: 'Eliminando "${category.name}"',
-        onConfirmed: () => _categoryService.deleteCategory(category.id),
+        onConfirmed: () => _categoryService.deleteCategory(
+          id: category.id,
+          userId: _userId,
+        ),
       );
     }
   }

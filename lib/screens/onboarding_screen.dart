@@ -9,6 +9,7 @@ import '../services/account_service.dart';
 import '../services/auth_service.dart';
 import '../services/category_service.dart';
 import '../services/category_visibility_service.dart';
+import '../services/enabled_categories_service.dart';
 import '../theme/app_theme.dart';
 import '../utils/category_icons.dart';
 import '../utils/currency_formatter.dart';
@@ -148,6 +149,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     if (widget.showWelcome) {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setBool('has_seen_onboarding', true);
+    }
+    // Publica las categorías que quedaron habilitadas para que el bot de
+    // Telegram sepa dónde encajar un movimiento.
+    final uid = FirebaseAuth.instance.currentUser?.uid ?? '';
+    if (uid.isNotEmpty) {
+      await EnabledCategoriesService().publish(uid);
     }
     widget.onFinish();
   }

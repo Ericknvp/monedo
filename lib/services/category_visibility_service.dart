@@ -1,5 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+import 'enabled_categories_service.dart';
+
 /// Guarda qué categorías predeterminadas el usuario decidió ocultar (para
 /// que no le estorben en el formulario de movimientos), sin eliminarlas de
 /// verdad — a diferencia de las categorías propias, que sí se eliminan.
@@ -38,5 +40,9 @@ class CategoryVisibilityService {
         await doc.reference.delete();
       }
     }
+
+    // La lista de categorías habilitadas cambió: se publica para que el
+    // bot de Telegram sepa en qué categorías puede encajar un movimiento.
+    await EnabledCategoriesService().publish(userId);
   }
 }

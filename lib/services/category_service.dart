@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/category.dart';
+import 'enabled_categories_service.dart';
 
 class CategoryService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -34,6 +35,8 @@ class CategoryService {
       iconCodePoint: iconCodePoint,
       createdAt: DateTime.now(),
     ).toMap());
+
+    await EnabledCategoriesService().publish(userId);
   }
 
   // ---- Edita una categoría personalizada existente ----
@@ -84,10 +87,16 @@ class CategoryService {
     for (final doc in budgetSnap.docs) {
       await doc.reference.update({'category': newName});
     }
+
+    await EnabledCategoriesService().publish(userId);
   }
 
   // ---- Elimina una categoría personalizada ----
-  Future<void> deleteCategory(String id) async {
+  Future<void> deleteCategory({
+    required String id,
+    required String userId,
+  }) async {
     await _categories.doc(id).delete();
+    await EnabledCategoriesService().publish(userId);
   }
 }
