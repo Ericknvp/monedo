@@ -568,6 +568,103 @@
         z-index: 2;
       }
     }
+
+    /* ── La secuencia ──
+       Un unico ciclo de 8 segundos para todos los elementos: asi el
+       guion queda sincronizado sin depender de retardos sueltos que
+       se desincronizan en cuanto se toca una duracion.
+       Fuera de pantalla la animacion esta en pausa: no gasta CPU y
+       no parpadea. */
+    .ai-voice-msg,
+    .ai-transcript-msg,
+    .ai-confirm-msg,
+    .ai-result,
+    .ai-icon-play,
+    .ai-icon-pause {
+      animation-duration: 8s;
+      animation-iteration-count: infinite;
+      animation-timing-function: var(--ease-out);
+      animation-play-state: paused;
+    }
+    .ai-wave i { animation-play-state: paused; }
+
+    .ai-stage.in-view .ai-voice-msg,
+    .ai-stage.in-view .ai-transcript-msg,
+    .ai-stage.in-view .ai-confirm-msg,
+    .ai-stage.in-view .ai-result,
+    .ai-stage.in-view .ai-icon-play,
+    .ai-stage.in-view .ai-icon-pause {
+      animation-play-state: running;
+    }
+    .ai-stage.in-view .ai-wave i { animation-play-state: running; }
+
+    /* La nota de voz entra y se queda: en un chat de verdad el audio
+       enviado no desaparece cuando lo transcriben. Ademas asi el
+       telefono nunca se queda vacio, que parece un fallo. */
+    @keyframes ai-voice-seq {
+      0%        { opacity: 0; transform: translateY(16px) scale(0.95); }
+      4%        { opacity: 1; transform: translateY(0) scale(1); }
+      86%       { opacity: 1; transform: translateY(0) scale(1); }
+      94%, 100% { opacity: 0; transform: translateY(-10px) scale(0.97); }
+    }
+    /* Lo que la IA entendio. */
+    @keyframes ai-transcript-seq {
+      0%, 28%   { opacity: 0; transform: translateY(12px); }
+      36%       { opacity: 1; transform: translateY(0); }
+      86%       { opacity: 1; transform: translateY(0); }
+      94%, 100% { opacity: 0; transform: translateY(-8px); }
+    }
+    /* El bot confirma. */
+    @keyframes ai-confirm-seq {
+      0%, 38%   { opacity: 0; transform: translateY(12px); }
+      46%       { opacity: 1; transform: translateY(0); }
+      86%       { opacity: 1; transform: translateY(0); }
+      94%, 100% { opacity: 0; transform: translateY(-8px); }
+    }
+    /* La tarjeta sale del telefono hacia el espectador: entra desde
+       arriba-izquierda y se asienta con un rebote sutil. */
+    @keyframes ai-result-seq {
+      0%, 50%   { opacity: 0; transform: translate(-18px, 18px) scale(0.94); }
+      60%       { opacity: 1; transform: translate(0, 0) scale(1.02); }
+      65%       { opacity: 1; transform: translate(0, 0) scale(1); }
+      86%       { opacity: 1; transform: translate(0, 0) scale(1); }
+      94%, 100% { opacity: 0; transform: translate(-8px, 8px) scale(0.96); }
+    }
+    /* El boton de la nota de voz alterna reproducir y pausar mientras
+       la onda se mueve. */
+    @keyframes ai-play-seq {
+      0%, 4%    { opacity: 1; }
+      7%, 24%   { opacity: 0; }
+      28%, 100% { opacity: 1; }
+    }
+    @keyframes ai-pause-seq {
+      0%, 4%    { opacity: 0; }
+      7%, 24%   { opacity: 1; }
+      28%, 100% { opacity: 0; }
+    }
+
+    .ai-voice-msg   { animation-name: ai-voice-seq; }
+    .ai-transcript-msg { animation-name: ai-transcript-seq; }
+    .ai-confirm-msg { animation-name: ai-confirm-seq; }
+    .ai-result      { animation-name: ai-result-seq; }
+    .ai-icon-play   { animation-name: ai-play-seq; }
+    .ai-icon-pause  { animation-name: ai-pause-seq; }
+
+    /* Con movimiento reducido no hay animacion: se muestra el estado
+       final, que es el que explica la funcion (todo visible). */
+    @media (prefers-reduced-motion: reduce) {
+      .ai-voice-msg, .ai-transcript-msg, .ai-confirm-msg, .ai-result,
+      .ai-icon-play, .ai-icon-pause, .ai-wave i {
+        animation: none !important;
+      }
+      .ai-voice-msg, .ai-transcript-msg, .ai-confirm-msg, .ai-result {
+        opacity: 1 !important;
+        transform: none !important;
+      }
+      .ai-icon-play  { opacity: 1 !important; }
+      .ai-icon-pause { opacity: 0 !important; }
+      .ai-badge      { animation: none !important; }
+    }
     .progress-grow {
       transform: scaleX(0);
       transform-origin: left;
@@ -1149,22 +1246,22 @@
           <li class="ai-step">
             <span class="ai-step-num">1</span>
             <div>
-              <p class="font-display font-bold text-primary text-[15px]">Conecta Telegram</p>
-              <p class="text-sm text-on-surface-variant mt-1.5 leading-relaxed">Un PIN de 6 dígitos y tu cuenta queda enlazada.</p>
+              <p class="font-display font-bold text-primary text-[15px]">Graba un audio</p>
+              <p class="text-sm text-on-surface-variant mt-1.5 leading-relaxed">«Gasté 17.000 en productos de aseo en efectivo», con la voz que uses siempre.</p>
             </div>
           </li>
           <li class="ai-step">
             <span class="ai-step-num">2</span>
             <div>
-              <p class="font-display font-bold text-primary text-[15px]">Graba un audio</p>
-              <p class="text-sm text-on-surface-variant mt-1.5 leading-relaxed">«Gasté 12 en un café», con la voz que uses siempre.</p>
+              <p class="font-display font-bold text-primary text-[15px]">La IA lo interpreta</p>
+              <p class="text-sm text-on-surface-variant mt-1.5 leading-relaxed">Rellena sola la categoría, la descripción y el monto del movimiento.</p>
             </div>
           </li>
           <li class="ai-step">
             <span class="ai-step-num">3</span>
             <div>
               <p class="font-display font-bold text-primary text-[15px]">Monedo lo anota</p>
-              <p class="text-sm text-on-surface-variant mt-1.5 leading-relaxed">Con el monto, la categoría y el bolsillo correctos.</p>
+              <p class="text-sm text-on-surface-variant mt-1.5 leading-relaxed">Queda guardado en tu app, en el bolsillo correcto.</p>
             </div>
           </li>
         </ol>
@@ -1208,7 +1305,7 @@
                 <div class="ai-chat-day">Hoy</div>
 
                 <!-- 1 · La nota de voz que el usuario manda al bot -->
-                <div class="ai-msg ai-msg-out">
+                <div class="ai-msg ai-msg-out ai-voice-msg">
                   <div class="ai-voice">
                     <span class="ai-playbtn">
                       <span class="ai-icon-play material-symbols-outlined text-[18px]">play_arrow</span>
@@ -1225,9 +1322,9 @@
                 </div>
 
                 <!-- 2 · Lo que la IA entendió -->
-                <div class="ai-msg ai-msg-in">
+                <div class="ai-msg ai-msg-in ai-transcript-msg">
                   <div class="ai-bubble">
-                    <p class="ai-transcript">gasté 12 en un café</p>
+                    <p class="ai-transcript">gasté 17000 en productos de aseo en efectivo</p>
                     <span class="ai-tag">
                       <span class="material-symbols-outlined text-[12px]">auto_awesome</span>
                       transcrito por IA
@@ -1236,9 +1333,9 @@
                 </div>
 
                 <!-- 3 · El bot confirma desde Telegram -->
-                <div class="ai-msg ai-msg-in">
+                <div class="ai-msg ai-msg-in ai-confirm-msg">
                   <div class="ai-bubble ai-bubble-plain">
-                    <p class="ai-transcript">¡Listo! Ya quedó anotado en Monedo ✨</p>
+                    <p class="ai-transcript">¡Listo! Anotado en Limpieza y en efectivo ✨</p>
                   </div>
                 </div>
 
@@ -1260,12 +1357,12 @@
               <span class="ai-result-live">ahora</span>
             </div>
             <div class="ai-result-row">
-              <span class="ai-txn-icon material-symbols-outlined text-[18px]">local_cafe</span>
+              <span class="ai-txn-icon material-symbols-outlined text-[18px]">cleaning_services</span>
               <div class="leading-tight">
-                <p class="font-display font-bold text-[13px] text-primary">Café</p>
-                <p class="text-[11px] text-on-surface-variant">Bolsillo principal</p>
+                <p class="font-display font-bold text-[13px] text-primary">Productos de aseo</p>
+                <p class="text-[11px] text-on-surface-variant">Limpieza · Bolsillo principal</p>
               </div>
-              <span class="font-display font-bold text-[14px] text-primary ml-auto">-$12.00</span>
+              <span class="font-display font-bold text-[14px] text-primary ml-auto">-$17.000</span>
             </div>
             <div class="ai-result-ok">
               <span class="material-symbols-outlined text-[14px]">check_circle</span>
@@ -1275,7 +1372,7 @@
         </div>
 
         <p class="ai-caption">
-          <span class="material-symbols-outlined text-[15px]">swap_horiz</span>
+          <span class="material-symbols-outlined text-[15px]">south_east</span>
           Del chat de Telegram a tu app, sin tocar nada.
         </p>
       </div>
@@ -1798,6 +1895,18 @@
   }, { threshold: 0.08 });
 
   document.querySelectorAll('.reveal, .step-split, .split-heading').forEach(el => revealObserver.observe(el));
+
+  // La demo del asistente solo se reproduce cuando esta a la vista.
+  // Fuera de pantalla se pausa: no gasta CPU y no parpadea.
+  const aiStage = document.querySelector('.ai-stage');
+  if (aiStage) {
+    const aiObserver = new IntersectionObserver(entries => {
+      entries.forEach(e => {
+        aiStage.classList.toggle('in-view', e.isIntersecting);
+      });
+    }, { threshold: 0.2 });
+    aiObserver.observe(aiStage);
+  }
 
   // Encabezados: separa el texto en palabras para que entren en cascada
   document.querySelectorAll('.split-heading').forEach(heading => {
