@@ -390,10 +390,6 @@ class AppTheme {
       dialogTheme: DialogThemeData(
         backgroundColor: surfaceLowest,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        // Sin un ancho maximo, el parrafo de un dialogo se estira a todo
-        // el ancho de la pantalla en escritorio y deja de leerse como un
-        // dialogo. Este es el tope para los 18 AlertDialog de la app.
-        constraints: const BoxConstraints(minWidth: 280, maxWidth: 480),
       ),
       snackBarTheme: const SnackBarThemeData(
         behavior: SnackBarBehavior.floating,
