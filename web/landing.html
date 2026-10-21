@@ -244,6 +244,261 @@
     .bar-grow.grown {
       transform: scaleY(1);
     }
+    /* ══════════════════════════════════════════════════════════════
+       ASISTENTE DE IA (TELEGRAM)
+       Sección nueva: marketing explicativo. Aquí el objetivo de la
+       animación no es decorar, es EXPLICAR cómo funciona el flujo
+       (nota de voz → transcripción → movimiento registrado).
+       ══════════════════════════════════════════════════════════════ */
+    .ai-aura {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      background:
+        radial-gradient(620px 420px at 78% 42%, rgba(0,108,75,0.10), transparent 68%),
+        radial-gradient(480px 340px at 12% 68%, rgba(34,158,217,0.09), transparent 70%);
+    }
+    .ai-glow {
+      position: absolute;
+      inset: 8% -6% -6% -6%;
+      z-index: 0;
+      pointer-events: none;
+      border-radius: 50%;
+      background: radial-gradient(closest-side, rgba(0,108,75,0.22), transparent 72%);
+      filter: blur(26px);
+    }
+    .ai-badge {
+      box-shadow: 0 0 0 0 rgba(0,108,75,0);
+      animation: ai-badge-pulse 3.4s var(--ease-in-out) infinite;
+    }
+    @keyframes ai-badge-pulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(0,108,75,0); }
+      50%      { box-shadow: 0 0 0 7px rgba(0,108,75,0.08); }
+    }
+
+    /* Pasos numerados: el numero es texto, no un adorno. */
+    .ai-step {
+      display: flex;
+      gap: 14px;
+      align-items: flex-start;
+    }
+    .ai-step-num {
+      flex: none;
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 999px;
+      background: #001f2d;
+      color: #96f6c8;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    /* ── Teléfono ── */
+    .ai-phone {
+      position: relative;
+      z-index: 1;
+      background: #001f2d;
+      padding: 9px;
+      border-radius: 44px;
+      box-shadow:
+        0 40px 90px -32px rgba(0,31,45,0.5),
+        0 8px 24px -12px rgba(0,31,45,0.3),
+        inset 0 0 0 1px rgba(255,255,255,0.07);
+      transform: rotate(-1.4deg);
+      transition: transform 0.5s var(--ease-out);
+    }
+    .ai-phone:hover {
+      transform: rotate(0deg) translateY(-4px);
+    }
+    .ai-screen {
+      background: #f6f3f2;
+      border-radius: 36px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      height: 540px;
+    }
+
+    /* ── Cabecera del chat ── */
+    .ai-chat-head {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 14px;
+      background: #ffffff;
+      border-bottom: 1px solid rgba(0,31,45,0.07);
+      flex: none;
+    }
+    .ai-avatar {
+      width: 34px;
+      height: 34px;
+      flex: none;
+      border-radius: 999px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #006c4b, #0c3547);
+      color: #96f6c8;
+    }
+
+    /* ── Cuerpo del chat ── */
+    .ai-chat-body {
+      flex: 1;
+      padding: 16px 12px 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      justify-content: flex-end;
+      overflow: hidden;
+      background-image: radial-gradient(rgba(0,31,45,0.045) 1px, transparent 1.2px);
+      background-size: 18px 18px;
+    }
+    .ai-msg { display: flex; }
+    .ai-msg-out { justify-content: flex-end; }
+    .ai-msg-in { justify-content: flex-start; }
+    .ai-msg-end { margin-top: 2px; }
+
+    /* ── Nota de voz ── */
+    .ai-voice {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 12px;
+      border-radius: 16px 16px 4px 16px;
+      background: #96f6c8;
+      color: #002114;
+      max-width: 88%;
+      box-shadow: 0 6px 16px -10px rgba(0,108,75,0.7);
+    }
+    .ai-playbtn {
+      position: relative;
+      width: 26px;
+      height: 26px;
+      flex: none;
+      border-radius: 999px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,33,20,0.10);
+    }
+    .ai-icon-play, .ai-icon-pause {
+      position: absolute;
+      display: flex;
+    }
+    .ai-wave {
+      display: flex;
+      align-items: center;
+      gap: 2.5px;
+      height: 22px;
+      flex: 1;
+      min-width: 0;
+    }
+    .ai-wave i {
+      flex: 1;
+      min-width: 2px;
+      height: var(--h, 50%);
+      border-radius: 2px;
+      background: currentColor;
+      opacity: 0.55;
+      transform-origin: center;
+      animation: ai-wave 0.72s ease-in-out infinite alternate;
+      animation-delay: calc(var(--i, 0) * -68ms);
+    }
+    .ai-dur {
+      font-size: 11px;
+      font-weight: 600;
+      opacity: 0.65;
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* ── Burbuja con la transcripción ── */
+    .ai-bubble {
+      background: #ffffff;
+      border-radius: 4px 16px 16px 16px;
+      padding: 10px 13px;
+      max-width: 82%;
+      box-shadow: 0 4px 14px -8px rgba(0,31,45,0.4);
+    }
+    .ai-transcript {
+      font-size: 13.5px;
+      color: #1c1b1b;
+      line-height: 1.35;
+      font-weight: 500;
+    }
+    .ai-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      margin-top: 7px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: rgba(0,108,75,0.10);
+      color: #00734f;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+
+    /* ── Tarjeta del movimiento ── */
+    .ai-txn {
+      background: #ffffff;
+      border-radius: 4px 16px 16px 16px;
+      padding: 11px 13px;
+      width: 92%;
+      box-shadow: 0 8px 20px -12px rgba(0,31,45,0.5);
+      border-left: 3px solid #006c4b;
+    }
+    .ai-txn-row { display: flex; align-items: center; gap: 10px; }
+    .ai-txn-icon {
+      width: 32px;
+      height: 32px;
+      flex: none;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,108,75,0.10);
+      color: #006c4b;
+    }
+    .ai-txn-ok {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      margin-top: 9px;
+      padding-top: 8px;
+      border-top: 1px solid rgba(0,31,45,0.07);
+      font-size: 11px;
+      font-weight: 700;
+      color: #006c4b;
+    }
+
+    /* ── Barra de escritura ── */
+    .ai-chat-input {
+      flex: none;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 12px;
+      background: #ffffff;
+      border-top: 1px solid rgba(0,31,45,0.07);
+    }
+    .ai-send {
+      margin-left: auto;
+      width: 30px;
+      height: 30px;
+      border-radius: 999px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #006c4b;
+      color: #ffffff;
+    }
+
     .progress-grow {
       transform: scaleX(0);
       transform-origin: left;
@@ -793,6 +1048,149 @@
           <span class="material-symbols-outlined text-on-surface-variant text-[16px]">download</span>
         </div>
       </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ ASISTENTE DE IA: TELEGRAM ═══════════ -->
+<section id="asistente-ia" class="py-24 px-6 md:px-10 relative overflow-hidden">
+  <div class="ai-aura" aria-hidden="true"></div>
+
+  <div class="max-w-6xl mx-auto relative">
+    <div class="grid lg:grid-cols-[1fr_360px] gap-16 lg:gap-20 items-center">
+
+      <!-- ── Columna de texto ── -->
+      <div class="reveal">
+        <h2 class="font-display text-3xl md:text-[46px] font-extrabold text-primary leading-[1.08] tracking-tight">
+          <span class="ai-badge inline-flex items-center gap-1.5 align-middle bg-secondary-container text-on-secondary-container px-3 py-1 rounded-full text-[11px] font-bold tracking-widest uppercase mr-3 mb-2">
+            <span class="material-symbols-outlined text-[14px]" style="font-variation-settings:'FILL' 1;">auto_awesome</span>
+            IA
+          </span>
+          Habla.<br/>
+          <span class="text-secondary">Monedo anota.</span>
+        </h2>
+
+        <p class="text-on-surface-variant text-lg leading-relaxed mt-6 max-w-lg">
+          Conecta tu Telegram y graba un audio. La IA de Monedo escucha, descifra el
+          monto y la categoría, y registra el movimiento por ti. Sin abrir la app,
+          sin buscar el bolsillo, sin escribir una sola cifra.
+        </p>
+
+        <ol class="ai-steps mt-9 space-y-6">
+          <li class="ai-step">
+            <span class="ai-step-num">1</span>
+            <div>
+              <p class="font-display font-bold text-primary text-[15px]">Conecta Telegram</p>
+              <p class="text-sm text-on-surface-variant mt-1.5 leading-relaxed">Un PIN de 6 dígitos y tu cuenta queda enlazada.</p>
+            </div>
+          </li>
+          <li class="ai-step">
+            <span class="ai-step-num">2</span>
+            <div>
+              <p class="font-display font-bold text-primary text-[15px]">Graba un audio</p>
+              <p class="text-sm text-on-surface-variant mt-1.5 leading-relaxed">«Gasté 12 en un café», con la voz que uses siempre.</p>
+            </div>
+          </li>
+          <li class="ai-step">
+            <span class="ai-step-num">3</span>
+            <div>
+              <p class="font-display font-bold text-primary text-[15px]">Monedo lo anota</p>
+              <p class="text-sm text-on-surface-variant mt-1.5 leading-relaxed">Con el monto, la categoría y el bolsillo correctos.</p>
+            </div>
+          </li>
+        </ol>
+
+        <div class="flex flex-wrap gap-4 mt-10">
+          <a href="/?view=register"
+             class="btn-glow bg-secondary text-on-secondary h-12 px-8 rounded-full font-semibold flex items-center gap-2 hover:scale-105 active:scale-95 transition-transform text-sm">
+            Probar el asistente
+            <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+          </a>
+          <a href="https://t.me/MonedoApp_bot" target="_blank" rel="noopener noreferrer"
+             class="border-2 border-primary/20 text-primary h-12 px-7 rounded-full font-semibold flex items-center gap-2 hover:bg-primary/5 active:scale-95 transition-[background-color,transform] text-sm">
+            <span class="material-symbols-outlined text-[18px]">send</span>
+            Ver el bot
+          </a>
+        </div>
+      </div>
+
+      <!-- ── Columna de la demostración ── -->
+      <div class="reveal relative">
+        <div class="ai-glow" aria-hidden="true"></div>
+
+        <div class="ai-phone" role="img" aria-label="Demostración: una nota de voz en Telegram se transcribe y Monedo registra el movimiento automáticamente.">
+          <div class="ai-screen">
+
+            <div class="ai-chat-head">
+              <span class="material-symbols-outlined text-[20px] text-on-surface-variant">arrow_back</span>
+              <span class="ai-avatar">
+                <span class="material-symbols-outlined text-[18px]">auto_awesome</span>
+              </span>
+              <div class="leading-tight">
+                <p class="font-display font-bold text-[13px] text-primary">Monedo Bot</p>
+                <p class="text-[11px] text-secondary font-semibold">en línea</p>
+              </div>
+            </div>
+
+            <div class="ai-chat-body">
+
+              <!-- 1 · La nota de voz que el usuario manda -->
+              <div class="ai-msg ai-msg-out">
+                <div class="ai-voice">
+                  <span class="ai-playbtn">
+                    <span class="ai-icon-play material-symbols-outlined text-[18px]">play_arrow</span>
+                    <span class="ai-icon-pause material-symbols-outlined text-[16px]">pause</span>
+                  </span>
+                  <span class="ai-wave" aria-hidden="true">
+                    <i style="--h:38%;--i:0"></i><i style="--h:70%;--i:1"></i><i style="--h:48%;--i:2"></i>
+                    <i style="--h:88%;--i:3"></i><i style="--h:56%;--i:4"></i><i style="--h:34%;--i:5"></i>
+                    <i style="--h:76%;--i:6"></i><i style="--h:44%;--i:7"></i><i style="--h:64%;--i:8"></i>
+                    <i style="--h:30%;--i:9"></i><i style="--h:52%;--i:10"></i><i style="--h:40%;--i:11"></i>
+                  </span>
+                  <span class="ai-dur">0:07</span>
+                </div>
+              </div>
+
+              <!-- 2 · Lo que la IA entendió -->
+              <div class="ai-msg ai-msg-in">
+                <div class="ai-bubble">
+                  <p class="ai-transcript">gasté 12 en un café</p>
+                  <span class="ai-tag">
+                    <span class="material-symbols-outlined text-[12px]">auto_awesome</span>
+                    transcrito por IA
+                  </span>
+                </div>
+              </div>
+
+              <!-- 3 · El movimiento ya registrado en Monedo -->
+              <div class="ai-msg ai-msg-out ai-msg-end">
+                <div class="ai-txn">
+                  <div class="ai-txn-row">
+                    <span class="ai-txn-icon material-symbols-outlined text-[18px]">local_cafe</span>
+                    <div class="leading-tight">
+                      <p class="font-display font-bold text-[13px] text-primary">Café</p>
+                      <p class="text-[11px] text-on-surface-variant">Bolsillo principal</p>
+                    </div>
+                    <span class="font-display font-bold text-[14px] text-primary ml-auto">-$12.00</span>
+                  </div>
+                  <div class="ai-txn-ok">
+                    <span class="material-symbols-outlined text-[14px]">check_circle</span>
+                    Registrado en Monedo
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+            <div class="ai-chat-input">
+              <span class="text-on-surface-variant/60 text-[13px]">Escribe un mensaje…</span>
+              <span class="ai-send material-symbols-outlined text-[16px]">send</span>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
     </div>
   </div>
 </section>
