@@ -341,21 +341,54 @@ class AccountPickerField extends StatelessWidget {
   }
 }
 
+/// Estilo efectivo del nombre de una categoría dentro de una tarjeta.
+///
+/// El `Text` de verdad no usa solo `GoogleFonts`: hereda del `DefaultTextStyle`
+/// ambiente (el tema de la app deja un `letterSpacing` de 0.25), así que
+/// medir con la fuente "pura" da un texto más corto que el real —0.25 px por
+/// carácter— y el chip se desborda hacia la derecha. Aquí se fusiona el
+/// estilo ambiente igual que hace el `Text`, y se usa **el mismo estilo** para
+/// medir y para pintar, así que la medida nunca difiere del dibujo.
+TextStyle _categoryLabelStyle(
+  BuildContext context, {
+  required bool compact,
+  required bool isSelected,
+}) {
+  return DefaultTextStyle.of(context).style.merge(
+        GoogleFonts.beVietnamPro(
+          fontSize: compact ? 12 : 11,
+          fontWeight: isSelected
+              ? FontWeight.w700
+              : (compact ? FontWeight.w600 : FontWeight.w500),
+          color: compact
+              ? (isSelected ? Colors.white : AppTheme.onSurfaceVariant)
+              : (isSelected ? AppTheme.primary : AppTheme.onSurfaceVariant),
+        ),
+      );
+}
+
 /// Tamaño de una tarjeta/chip de categoría fuera del árbol de widgets, para
 /// poder posicionarla nosotros mismos (ver [_AnimatedCategoryWrap]) en vez
 /// de dejar que un `Wrap` la mida. Debe reflejar exactamente las medidas de
 /// `tile`/`compactTile` en [CategoryPickerField._CategoryPickerFieldState].
-Size _categoryTileSize(String label, {required bool compact}) {
+Size _categoryTileSize(
+  BuildContext context,
+  String label, {
+  required bool compact,
+  required bool isSelected,
+}) {
   final painter = TextPainter(
     text: TextSpan(
       text: label,
-      style: GoogleFonts.beVietnamPro(
-        fontSize: compact ? 12 : 11,
-        fontWeight: FontWeight.w700,
+      style: _categoryLabelStyle(
+        context,
+        compact: compact,
+        isSelected: isSelected,
       ),
     ),
     maxLines: 1,
-    textDirection: TextDirection.ltr,
+    textDirection: Directionality.of(context),
+    textScaler: MediaQuery.textScalerOf(context),
   )..layout();
   // +2 de holgura: la medida de TextPainter no siempre coincide al pixel
   // con la línea real que pinta el widget Text (hinting/redondeo de fuente),
@@ -364,8 +397,10 @@ Size _categoryTileSize(String label, {required bool compact}) {
   if (compact) {
     const iconWidth = 22.0;
     const iconTextGap = 7.0;
-    const horizontalPadding = 6.0 + 11.0;
-    const verticalPadding = 6.0 + 6.0;
+    // El chip lleva borde de 1 px: `Container` suma el borde al padding, así
+    // que sin contarlo el `Row` de dentro se desborda 2 px hacia la derecha.
+    const horizontalPadding = 6.0 + 11.0 + 1.0 + 1.0;
+    const verticalPadding = 6.0 + 6.0 + 1.0 + 1.0;
     return Size(
       horizontalPadding + iconWidth + iconTextGap + painter.width,
       verticalPadding +
@@ -567,15 +602,19 @@ class _CategoryPickerFieldState extends State<CategoryPickerField> {
                           child: icon,
                         ),
                         const SizedBox(width: 7),
-                        Text(
-                          label,
-                          style: GoogleFonts.beVietnamPro(
-                            color: isSelected
-                                ? Colors.white
-                                : AppTheme.onSurfaceVariant,
-                            fontSize: 12,
-                            fontWeight:
-                                isSelected ? FontWeight.w700 : FontWeight.w600,
+                        // `Flexible` + ellipsis: si la medida quedara un pelo
+                        // corta, el nombre se recorta en vez de desbordar el
+                        // chip (y marcarlo con las rayas de Flutter).
+                        Flexible(
+                          child: Text(
+                            label,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: _categoryLabelStyle(
+                              context,
+                              compact: true,
+                              isSelected: isSelected,
+                            ),
                           ),
                         ),
                       ],
@@ -628,13 +667,10 @@ class _CategoryPickerFieldState extends State<CategoryPickerField> {
                         textAlign: TextAlign.center,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: GoogleFonts.beVietnamPro(
-                          color: isSelected
-                              ? AppTheme.primary
-                              : AppTheme.onSurfaceVariant,
-                          fontSize: 11,
-                          fontWeight:
-                              isSelected ? FontWeight.w700 : FontWeight.w500,
+                        style: _categoryLabelStyle(
+                          context,
+                          compact: false,
+                          isSelected: isSelected,
                         ),
                       ),
                     ],
@@ -668,7 +704,12 @@ class _CategoryPickerFieldState extends State<CategoryPickerField> {
                       for (final name in visibleNames)
                         _CategoryWrapItem(
                           key: ValueKey(name),
-                          size: _categoryTileSize(name, compact: compact),
+                          size: _categoryTileSize(
+                            context,
+                            name,
+                            compact: compact,
+                            isSelected: widget.selectedCategory == name,
+                          ),
                           child: tile(
                             // En compacto el fondo del ícono siempre es un
                             // color sólido, así que el ícono va blanco encima
@@ -691,8 +732,10 @@ class _CategoryPickerFieldState extends State<CategoryPickerField> {
                         _CategoryWrapItem(
                           key: const ValueKey('__toggle_ver_todas__'),
                           size: _categoryTileSize(
+                            context,
                             _showAll ? 'Ver menos' : 'Ver todas',
                             compact: compact,
+                            isSelected: false,
                           ),
                           child: tile(
                             icon: AnimatedRotation(
