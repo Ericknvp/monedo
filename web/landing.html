@@ -36,6 +36,8 @@
             "surface-container":        "#f0edec",
             "surface-container-high":   "#ebe7e7",
             "outline-variant":          "#c1c7cc",
+            // Azul de Telegram: solo para el chat del bot en la landing.
+            "tg-blue":                  "#3390ec",
           }
         }
       }
@@ -247,8 +249,10 @@
     /* ══════════════════════════════════════════════════════════════
        ASISTENTE DE IA (TELEGRAM)
        Sección nueva: marketing explicativo. Aquí el objetivo de la
-       animación no es decorar, es EXPLICAR cómo funciona el flujo
-       (nota de voz → transcripción → movimiento registrado).
+       animación no es decorar, es EXPLICAR el flujo: el audio sale de
+       Telegram y el movimiento aterriza en la app de Monedo.
+       Por eso el chat usa el lenguaje visual de Telegram y solo la
+       tarjeta de resultado usa el de Monedo.
        ══════════════════════════════════════════════════════════════ */
     .ai-aura {
       position: absolute;
@@ -257,7 +261,7 @@
       pointer-events: none;
       background:
         radial-gradient(620px 420px at 78% 42%, rgba(0,108,75,0.10), transparent 68%),
-        radial-gradient(480px 340px at 12% 68%, rgba(34,158,217,0.09), transparent 70%);
+        radial-gradient(480px 340px at 12% 68%, rgba(51,144,236,0.09), transparent 70%);
     }
     .ai-glow {
       position: absolute;
@@ -265,7 +269,7 @@
       z-index: 0;
       pointer-events: none;
       border-radius: 50%;
-      background: radial-gradient(closest-side, rgba(0,108,75,0.22), transparent 72%);
+      background: radial-gradient(closest-side, rgba(0,108,75,0.20), transparent 72%);
       filter: blur(26px);
     }
     .ai-badge {
@@ -278,11 +282,7 @@
     }
 
     /* Pasos numerados: el numero es texto, no un adorno. */
-    .ai-step {
-      display: flex;
-      gap: 14px;
-      align-items: flex-start;
-    }
+    .ai-step { display: flex; gap: 14px; align-items: flex-start; }
     .ai-step-num {
       flex: none;
       width: 28px;
@@ -298,10 +298,14 @@
       font-weight: 800;
     }
 
-    /* ── Teléfono ── */
+    /* ── Escenario ── */
+    .ai-stage { position: relative; }
     .ai-phone {
       position: relative;
       z-index: 1;
+      width: 100%;
+      max-width: 300px;
+      margin-inline: auto;
       background: #001f2d;
       padding: 9px;
       border-radius: 44px;
@@ -312,29 +316,27 @@
       transform: rotate(-1.4deg);
       transition: transform 0.5s var(--ease-out);
     }
-    .ai-phone:hover {
-      transform: rotate(0deg) translateY(-4px);
-    }
+    .ai-phone:hover { transform: rotate(0deg) translateY(-4px); }
     .ai-screen {
-      background: #f6f3f2;
+      background: #f1f3f5;
       border-radius: 36px;
       overflow: hidden;
       display: flex;
       flex-direction: column;
-      height: 540px;
+      height: 500px;
     }
 
-    /* ── Cabecera del chat ── */
-    .ai-chat-head {
+    /* ── Cabecera del chat, al estilo Telegram ── */
+    .tg-head {
       display: flex;
       align-items: center;
       gap: 10px;
-      padding: 12px 14px;
+      padding: 11px 14px;
       background: #ffffff;
-      border-bottom: 1px solid rgba(0,31,45,0.07);
+      border-bottom: 1px solid rgba(0,31,45,0.08);
       flex: none;
     }
-    .ai-avatar {
+    .tg-avatar {
       width: 34px;
       height: 34px;
       flex: none;
@@ -342,38 +344,52 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      background: linear-gradient(135deg, #006c4b, #0c3547);
-      color: #96f6c8;
+      background: #3390ec;
+      color: #ffffff;
     }
+    .tg-name {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      color: #3390ec;
+    }
+    .tg-tag { font-size: 11px; color: #707579; }
 
-    /* ── Cuerpo del chat ── */
-    .ai-chat-body {
+    /* ── Conversación ── */
+    .tg-body {
       flex: 1;
-      padding: 16px 12px 10px;
+      padding: 14px 12px 12px;
       display: flex;
       flex-direction: column;
-      gap: 12px;
-      justify-content: flex-end;
+      gap: 10px;
+      justify-content: flex-start;
       overflow: hidden;
-      background-image: radial-gradient(rgba(0,31,45,0.045) 1px, transparent 1.2px);
-      background-size: 18px 18px;
     }
     .ai-msg { display: flex; }
     .ai-msg-out { justify-content: flex-end; }
     .ai-msg-in { justify-content: flex-start; }
-    .ai-msg-end { margin-top: 2px; }
+    .ai-chat-day {
+      align-self: center;
+      padding: 3px 11px;
+      border-radius: 999px;
+      background: rgba(0,31,45,0.07);
+      color: #707579;
+      font-size: 10.5px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+    }
 
-    /* ── Nota de voz ── */
+    /* ── Nota de voz: burbuja saliente de Telegram ── */
     .ai-voice {
       display: flex;
       align-items: center;
       gap: 10px;
       padding: 9px 12px;
       border-radius: 16px 16px 4px 16px;
-      background: #96f6c8;
-      color: #002114;
-      max-width: 88%;
-      box-shadow: 0 6px 16px -10px rgba(0,108,75,0.7);
+      background: #eeffde;
+      color: #202020;
+      max-width: 90%;
+      box-shadow: 0 4px 12px -8px rgba(0,0,0,0.28);
     }
     .ai-playbtn {
       position: relative;
@@ -384,12 +400,11 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      background: rgba(0,33,20,0.10);
+      background: rgba(0,0,0,0.07);
     }
-    .ai-icon-play, .ai-icon-pause {
-      position: absolute;
-      display: flex;
-    }
+    .ai-icon-play, .ai-icon-pause { position: absolute; display: flex; }
+    .ai-icon-play { opacity: 1; }
+    .ai-icon-pause { opacity: 0; }
     .ai-wave {
       display: flex;
       align-items: center;
@@ -404,7 +419,7 @@
       height: var(--h, 50%);
       border-radius: 2px;
       background: currentColor;
-      opacity: 0.55;
+      opacity: 0.5;
       transform-origin: center;
       animation: ai-wave 0.72s ease-in-out infinite alternate;
       animation-delay: calc(var(--i, 0) * -68ms);
@@ -412,21 +427,21 @@
     .ai-dur {
       font-size: 11px;
       font-weight: 600;
-      opacity: 0.65;
+      opacity: 0.6;
       font-variant-numeric: tabular-nums;
     }
 
-    /* ── Burbuja con la transcripción ── */
+    /* ── Burbujas entrantes: responde el bot ── */
     .ai-bubble {
       background: #ffffff;
       border-radius: 4px 16px 16px 16px;
       padding: 10px 13px;
-      max-width: 82%;
-      box-shadow: 0 4px 14px -8px rgba(0,31,45,0.4);
+      max-width: 86%;
+      box-shadow: 0 3px 10px -7px rgba(0,0,0,0.32);
     }
     .ai-transcript {
       font-size: 13.5px;
-      color: #1c1b1b;
+      color: #202020;
       line-height: 1.35;
       font-weight: 500;
     }
@@ -441,19 +456,72 @@
       color: #00734f;
       font-size: 10px;
       font-weight: 700;
-      letter-spacing: 0.02em;
     }
 
-    /* ── Tarjeta del movimiento ── */
-    .ai-txn {
+    /* ── Barra de escritura de Telegram ── */
+    .tg-input {
+      flex: none;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 12px;
       background: #ffffff;
-      border-radius: 4px 16px 16px 16px;
-      padding: 11px 13px;
-      width: 92%;
-      box-shadow: 0 8px 20px -12px rgba(0,31,45,0.5);
-      border-left: 3px solid #006c4b;
+      border-top: 1px solid rgba(0,31,45,0.08);
     }
-    .ai-txn-row { display: flex; align-items: center; gap: 10px; }
+    .tg-send {
+      margin-left: auto;
+      width: 30px;
+      height: 30px;
+      border-radius: 999px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #3390ec;
+      color: #ffffff;
+    }
+
+    /* ── La tarjeta del resultado: esto ya es la app de Monedo ── */
+    .ai-result {
+      position: absolute;
+      right: -8px;
+      bottom: 46px;
+      z-index: 2;
+      width: 214px;
+      background: #ffffff;
+      border-radius: 18px;
+      padding: 12px 13px;
+      box-shadow:
+        0 24px 50px -20px rgba(0,31,45,0.42),
+        0 0 0 1px rgba(0,31,45,0.06);
+    }
+    .ai-result-bar {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      padding-bottom: 9px;
+      margin-bottom: 9px;
+      border-bottom: 1px solid rgba(0,31,45,0.08);
+    }
+    .ai-result-logo {
+      width: 22px;
+      height: 22px;
+      border-radius: 7px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #001f2d;
+      color: #96f6c8;
+    }
+    .ai-result-live {
+      margin-left: auto;
+      font-size: 10px;
+      font-weight: 700;
+      color: #006c4b;
+      background: rgba(0,108,75,0.10);
+      padding: 2px 7px;
+      border-radius: 999px;
+    }
+    .ai-result-row { display: flex; align-items: center; gap: 10px; }
     .ai-txn-icon {
       width: 32px;
       height: 32px;
@@ -465,7 +533,7 @@
       background: rgba(0,108,75,0.10);
       color: #006c4b;
     }
-    .ai-txn-ok {
+    .ai-result-ok {
       display: flex;
       align-items: center;
       gap: 5px;
@@ -477,28 +545,29 @@
       color: #006c4b;
     }
 
-    /* ── Barra de escritura ── */
-    .ai-chat-input {
-      flex: none;
+    .ai-caption {
       display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 10px 12px;
-      background: #ffffff;
-      border-top: 1px solid rgba(0,31,45,0.07);
+      align-items: flex-start;
+      gap: 7px;
+      margin-top: 26px;
+      font-size: 12.5px;
+      font-weight: 600;
+      line-height: 1.45;
+      color: #42484c;
     }
-    .ai-send {
-      margin-left: auto;
-      width: 30px;
-      height: 30px;
-      border-radius: 999px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: #006c4b;
-      color: #ffffff;
-    }
+    .ai-caption .material-symbols-outlined { margin-top: 1px; }
 
+    /* En pantallas estrechas la tarjeta baja y se apila: no hay hueco
+       a la derecha para que flote encima. */
+    @media (max-width: 1023px) {
+      .ai-result {
+        position: static;
+        width: auto;
+        max-width: 300px;
+        margin: -84px auto 0;
+        z-index: 2;
+      }
+    }
     .progress-grow {
       transform: scaleX(0);
       transform-origin: left;
@@ -1057,7 +1126,7 @@
   <div class="ai-aura" aria-hidden="true"></div>
 
   <div class="max-w-6xl mx-auto relative">
-    <div class="grid lg:grid-cols-[1fr_360px] gap-16 lg:gap-20 items-center">
+    <div class="grid lg:grid-cols-[1fr_400px] gap-16 lg:gap-14 items-center">
 
       <!-- ── Columna de texto ── -->
       <div class="reveal">
@@ -1118,77 +1187,97 @@
       <div class="reveal relative">
         <div class="ai-glow" aria-hidden="true"></div>
 
-        <div class="ai-phone" role="img" aria-label="Demostración: una nota de voz en Telegram se transcribe y Monedo registra el movimiento automáticamente.">
-          <div class="ai-screen">
+        <div class="ai-stage">
+          <div class="ai-phone" role="img" aria-label="Demostración: dentro de Telegram, una nota de voz se transcribe y el movimiento aparece registrado en la app Monedo.">
+            <div class="ai-screen">
 
-            <div class="ai-chat-head">
-              <span class="material-symbols-outlined text-[20px] text-on-surface-variant">arrow_back</span>
-              <span class="ai-avatar">
-                <span class="material-symbols-outlined text-[18px]">auto_awesome</span>
-              </span>
+              <!-- Cabecera al estilo Telegram: bot con su etiqueta -->
+              <div class="tg-head">
+                <span class="material-symbols-outlined text-[20px] text-tg-blue">arrow_back</span>
+                <span class="tg-avatar">
+                  <span class="material-symbols-outlined text-[18px]">smart_toy</span>
+                </span>
+                <div class="leading-tight">
+                  <p class="tg-name">Monedo Bot</p>
+                  <p class="tg-tag">bot</p>
+                </div>
+              </div>
+
+              <div class="tg-body">
+
+                <div class="ai-chat-day">Hoy</div>
+
+                <!-- 1 · La nota de voz que el usuario manda al bot -->
+                <div class="ai-msg ai-msg-out">
+                  <div class="ai-voice">
+                    <span class="ai-playbtn">
+                      <span class="ai-icon-play material-symbols-outlined text-[18px]">play_arrow</span>
+                      <span class="ai-icon-pause material-symbols-outlined text-[16px]">pause</span>
+                    </span>
+                    <span class="ai-wave" aria-hidden="true">
+                      <i style="--h:38%;--i:0"></i><i style="--h:70%;--i:1"></i><i style="--h:48%;--i:2"></i>
+                      <i style="--h:88%;--i:3"></i><i style="--h:56%;--i:4"></i><i style="--h:34%;--i:5"></i>
+                      <i style="--h:76%;--i:6"></i><i style="--h:44%;--i:7"></i><i style="--h:64%;--i:8"></i>
+                      <i style="--h:30%;--i:9"></i><i style="--h:52%;--i:10"></i><i style="--h:40%;--i:11"></i>
+                    </span>
+                    <span class="ai-dur">0:07</span>
+                  </div>
+                </div>
+
+                <!-- 2 · Lo que la IA entendió -->
+                <div class="ai-msg ai-msg-in">
+                  <div class="ai-bubble">
+                    <p class="ai-transcript">gasté 12 en un café</p>
+                    <span class="ai-tag">
+                      <span class="material-symbols-outlined text-[12px]">auto_awesome</span>
+                      transcrito por IA
+                    </span>
+                  </div>
+                </div>
+
+                <!-- 3 · El bot confirma desde Telegram -->
+                <div class="ai-msg ai-msg-in">
+                  <div class="ai-bubble ai-bubble-plain">
+                    <p class="ai-transcript">¡Listo! Ya quedó anotado en Monedo ✨</p>
+                  </div>
+                </div>
+
+              </div>
+
+              <div class="tg-input">
+                <span class="text-on-surface-variant/60 text-[13px]">Escribe un mensaje…</span>
+                <span class="tg-send material-symbols-outlined text-[16px]">send</span>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- El resultado, ya dentro de la app -->
+          <div class="ai-result">
+            <div class="ai-result-bar">
+              <span class="ai-result-logo material-symbols-outlined text-[15px]">account_balance_wallet</span>
+              <span class="font-display font-bold text-[12px] text-primary">Monedo</span>
+              <span class="ai-result-live">ahora</span>
+            </div>
+            <div class="ai-result-row">
+              <span class="ai-txn-icon material-symbols-outlined text-[18px]">local_cafe</span>
               <div class="leading-tight">
-                <p class="font-display font-bold text-[13px] text-primary">Monedo Bot</p>
-                <p class="text-[11px] text-secondary font-semibold">en línea</p>
+                <p class="font-display font-bold text-[13px] text-primary">Café</p>
+                <p class="text-[11px] text-on-surface-variant">Bolsillo principal</p>
               </div>
+              <span class="font-display font-bold text-[14px] text-primary ml-auto">-$12.00</span>
             </div>
-
-            <div class="ai-chat-body">
-
-              <!-- 1 · La nota de voz que el usuario manda -->
-              <div class="ai-msg ai-msg-out">
-                <div class="ai-voice">
-                  <span class="ai-playbtn">
-                    <span class="ai-icon-play material-symbols-outlined text-[18px]">play_arrow</span>
-                    <span class="ai-icon-pause material-symbols-outlined text-[16px]">pause</span>
-                  </span>
-                  <span class="ai-wave" aria-hidden="true">
-                    <i style="--h:38%;--i:0"></i><i style="--h:70%;--i:1"></i><i style="--h:48%;--i:2"></i>
-                    <i style="--h:88%;--i:3"></i><i style="--h:56%;--i:4"></i><i style="--h:34%;--i:5"></i>
-                    <i style="--h:76%;--i:6"></i><i style="--h:44%;--i:7"></i><i style="--h:64%;--i:8"></i>
-                    <i style="--h:30%;--i:9"></i><i style="--h:52%;--i:10"></i><i style="--h:40%;--i:11"></i>
-                  </span>
-                  <span class="ai-dur">0:07</span>
-                </div>
-              </div>
-
-              <!-- 2 · Lo que la IA entendió -->
-              <div class="ai-msg ai-msg-in">
-                <div class="ai-bubble">
-                  <p class="ai-transcript">gasté 12 en un café</p>
-                  <span class="ai-tag">
-                    <span class="material-symbols-outlined text-[12px]">auto_awesome</span>
-                    transcrito por IA
-                  </span>
-                </div>
-              </div>
-
-              <!-- 3 · El movimiento ya registrado en Monedo -->
-              <div class="ai-msg ai-msg-out ai-msg-end">
-                <div class="ai-txn">
-                  <div class="ai-txn-row">
-                    <span class="ai-txn-icon material-symbols-outlined text-[18px]">local_cafe</span>
-                    <div class="leading-tight">
-                      <p class="font-display font-bold text-[13px] text-primary">Café</p>
-                      <p class="text-[11px] text-on-surface-variant">Bolsillo principal</p>
-                    </div>
-                    <span class="font-display font-bold text-[14px] text-primary ml-auto">-$12.00</span>
-                  </div>
-                  <div class="ai-txn-ok">
-                    <span class="material-symbols-outlined text-[14px]">check_circle</span>
-                    Registrado en Monedo
-                  </div>
-                </div>
-              </div>
-
+            <div class="ai-result-ok">
+              <span class="material-symbols-outlined text-[14px]">check_circle</span>
+              Registrado
             </div>
-
-            <div class="ai-chat-input">
-              <span class="text-on-surface-variant/60 text-[13px]">Escribe un mensaje…</span>
-              <span class="ai-send material-symbols-outlined text-[16px]">send</span>
-            </div>
-
           </div>
         </div>
+
+        <p class="ai-caption">
+          <span class="material-symbols-outlined text-[15px]">swap_horiz</span>
+          Del chat de Telegram a tu app, sin tocar nada.
+        </p>
       </div>
 
     </div>
