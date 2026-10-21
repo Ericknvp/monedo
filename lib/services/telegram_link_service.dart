@@ -63,6 +63,11 @@ class TelegramLinkService {
   /// Longitud del PIN.
   static const int pinLength = 6;
 
+  /// Intentos de generación antes de rendirse. Diez colisiones seguidas
+  /// sobre un espacio de un millón de combinaciones no son una
+  /// colisión: son un problema de permisos.
+  static const int maxPinAttempts = 10;
+
   /// Usuario del bot de Telegram.
   static const String botUsername = 'MonedoApp_bot';
 
@@ -89,29 +94,28 @@ class TelegramLinkService {
     final now = DateTime.now();
     final expiresAt = now.add(pinLifetime);
 
-    // El ID del documento es el propio PIN: si el ID ya existe, ese
-    // PIN está tomado por otro usuario y hay que generar otro. Con un
-    // espacio de 6 dígitos (1 millón de combinaciones) el choque es
-    // rarísimo, pero se comprueba dentro de una transacción para que
-    // dos usuarios que consigan el mismo PIN al mismo tiempo no puedan
-    // pisarse: la escritura solo se confirma si el documento seguía
-    // sin existir.
-    for (var attempt = 0; attempt < 10; attempt++) {
+    // La escritura va directa con `set()`, sin transaccion.
+    //
+    // La version con transaccion no funcionaba: la transaccion empieza
+    // LEYENDO el documento para comprobar que el identificador sigue
+    // libre, y Firestore deniega la lectura de un documento que aun no
+    // existe. El error era de permisos, no de conexion.
+    //
+    // Sin transaccion no hace falta: las reglas de seguridad ya
+    // impiden que un PIN se sobrescriba (`allow update: if false`) y
+    // que se cree en nombre de otro usuario. Si el identificador esta
+    // ocupado, la escritura se deniega y basta con probar otro PIN.
+    var denegados = 0;
+    for (var attempt = 0; attempt < maxPinAttempts; attempt++) {
       final pin = _generatePin();
       final docRef = _firestore.collection(pinsCollection).doc(pin);
       try {
-        await _firestore.runTransaction((txn) async {
-          final snapshot = await txn.get(docRef);
-          if (snapshot.exists) {
-            throw const _PinTakenException();
-          }
-          txn.set(docRef, {
-            'pin': pin,
-            'uid': uid,
-            'createdAt': FieldValue.serverTimestamp(),
-            'expiresAt': Timestamp.fromDate(expiresAt),
-            'used': false,
-          });
+        await docRef.set({
+          'pin': pin,
+          'uid': uid,
+          'createdAt': FieldValue.serverTimestamp(),
+          'expiresAt': Timestamp.fromDate(expiresAt),
+          'used': false,
         });
 
         return TelegramPin(
@@ -121,12 +125,25 @@ class TelegramLinkService {
           expiresAt: expiresAt,
           used: false,
         );
-      } on _PinTakenException {
-        // Ese PIN ya existe: probamos con otro.
-        continue;
       } on FirebaseException catch (e) {
+        if (e.code == 'permission-denied') {
+          // El identificador ya esta ocupado: probamos con otro.
+          denegados++;
+          continue;
+        }
         throw TelegramLinkException(_describeFirebaseError(e));
       }
+    }
+
+    // Diez denegaciones seguidas casi nunca son una colision real: el
+    // espacio es de un millon de combinaciones. Lo probable es que las
+    // reglas de seguridad no permitan crear el PIN, y conviene decirlo
+    // en vez de pedir que se reintente sin sentido.
+    if (denegados == maxPinAttempts) {
+      throw const TelegramLinkException(
+        'Tu cuenta no tiene permiso para crear el PIN. Revisa las reglas '
+        'de seguridad de Firestore.',
+      );
     }
 
     throw const TelegramLinkException(
@@ -278,10 +295,4 @@ class TelegramLinkService {
   String _generatePin() {
     return List.generate(pinLength, (_) => _random.nextInt(10)).join();
   }
-}
-
-/// Señal interna: el PIN generado ya existe en Firestore y hay que
-/// probar con otro. No sale del servicio.
-class _PinTakenException implements Exception {
-  const _PinTakenException();
 }
