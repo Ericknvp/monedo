@@ -23,11 +23,38 @@ telegram_links/{chatId}      lo escribe el bot
 users/{uid}                  lo escribe el bot (parcial)
   telegramLinked: bool      true
   telegramChatId: string    "123456789"
+
+categories que puede elegir el usuario:
+  enabledCategories: string[]   en users/{uid}, lo publica la app
 ```
 
-`users/{uid}` ya lo crea la app con `username`, `email`, `createdAt` y
-`currency`: el bot solo tiene que **añadir** los dos campos de
-Telegram, nunca reescribir el documento entero.
+`users/{uid}` ya lo crea la app con `username`, `email`, `createdAt`,
+`currency` y `enabledCategories`: el bot solo tiene que **añadir** los
+dos campos de Telegram, nunca reescribir el documento entero.
+
+### `enabledCategories`: las categorías de este usuario
+
+La app publica en `users/{uid}.enabledCategories` la lista de
+categorías que el usuario puede elegir en ese momento: las
+predeterminadas que no ha desactivado, más sus propias. Se refresca
+sola cada vez que el usuario activa o desactiva una categoría, crea,
+renombra o borra una propia, o termina la configuración inicial.
+
+El bot la usa para el prompt de Gemini. **No mantiene una lista
+propia**: las predeterminadas de la app viven en su código, no en
+Firestore, así que duplicarlas se desincroniza en cuanto la app
+cambia una categoría.
+
+Si el campo no existe (usuarios creados antes de esto), el bot usa
+como respaldo las predeterminadas menos `Transferencia`:
+
+```
+Alimentación, Transporte, Entretenimiento, Salud, Educación, Ropa,
+Hogar, Niños, Mascotas, Gasolina, Trabajo, Inversión, Ahorro, Otros
+```
+
+`Transferencia` nunca entra en la lista: es de sistema y la asigna la
+app al mover dinero entre bolsillos propios.
 
 ### Por qué la clave de `telegram_links` es el chat y no la cuenta
 
