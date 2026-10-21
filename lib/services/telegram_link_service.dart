@@ -191,6 +191,11 @@ class TelegramLinkService {
   /// acabaria siendo un registro permanente de que PIN uso cada
   /// usuario, y no hay ninguna politica de TTL que lo limpie.
   ///
+  /// Excepcion: un PIN canjeado que ademas guarde el `chatId` de
+  /// Telegram esta sirviendo de indice de "este chat es de esta
+  /// cuenta" para el bot, asi que no se toca. Los PINs que solo
+  /// guardan `used` ya no sirven para nada y se pueden borrar.
+  ///
   /// Es una limpieza de cortesía, no parte del flujo: si la consulta
   /// falla, el PIN se genera igual.
   Future<void> purgeUserPins(String uid) async {
@@ -200,10 +205,11 @@ class TelegramLinkService {
           .where('uid', isEqualTo: uid)
           .get();
 
-      if (docs.docs.isEmpty) return;
+      final dead = docs.docs.where((doc) => doc.get('telegramChatId') == null);
+      if (dead.isEmpty) return;
 
       final batch = _firestore.batch();
-      for (final doc in docs.docs) {
+      for (final doc in dead) {
         batch.delete(doc.reference);
       }
       await batch.commit();
