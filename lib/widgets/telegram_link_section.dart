@@ -117,7 +117,7 @@ class _TelegramLinkSectionState extends State<TelegramLinkSection> {
 
     setState(() => _unlinking = true);
     try {
-      await _service.unlink(uid);
+      await _service.unlink(uid, _state?.chatId);
     } catch (_) {
       if (!mounted) return;
       setState(() => _unlinking = false);

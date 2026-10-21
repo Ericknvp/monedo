@@ -44,7 +44,13 @@ class TelegramLinkService {
   static const String pinsCollection = 'telegram_pins';
 
   /// Colección con la relación chat_id <-> uid. El ID del documento es
-  /// el `uid` del usuario.
+  /// el `chat.id` de Telegram, NO el uid.
+  ///
+  /// Keying por chat y no por uid porque la relación es 1 a 1 en las dos
+  /// direcciones: una cuenta no puede tener dos chats y un chat no puede
+  /// pertenecer a dos cuentas. Con la clave por chat el segundo vinculo
+  /// es estructuralmente imposible, y el bot resuelve "de que cuenta es
+  /// este chat" con una lectura directa por ID en vez de una consulta.
   static const String linksCollection = 'telegram_links';
 
   /// Colección de usuarios de Monedo (la misma que usa `AuthService`).
@@ -215,15 +221,18 @@ class TelegramLinkService {
   ///
   /// Combina el documento del usuario (`users/{uid}`), que es la fuente
   /// de verdad de `telegramLinked`, con el registro del chat
-  /// (`telegram_links/{uid}`), que aporta el @usuario de Telegram.
+  /// (`telegram_links/{chatId}`), que aporta el @usuario de Telegram.
+  ///
+  /// El registro del chat se busca por `uid` porque es lo que la app
+  /// conoce; el bot lo busca por `chatId`, que es su clave.
   Stream<TelegramUserState> watchState(String uid) {
     return Stream.multi((controller) {
       var cancelled = false;
       bool? linkedFromUser;
-      bool linkExists = false;
       String? chatId;
       String? monedoUsername;
       String? telegramUsername;
+      bool linkExists = false;
 
       void emit() {
         if (cancelled || linkedFromUser == null) return;
@@ -254,12 +263,18 @@ class TelegramLinkService {
         emit();
       });
 
+      // El vinculo del chat se busca por el uid del usuario: la app
+      // conoce el suyo, pero no conoce el chat hasta que el bot escribe
+      // el documento del usuario.
       final linkSub = _firestore
           .collection(linksCollection)
-          .doc(uid)
+          .where('uid', isEqualTo: uid)
           .snapshots()
           .listen((snapshot) {
-        final data = snapshot.data();
+        // El bot garantiza 1 a 1, pero si algun dia hubiera mas de uno
+        // se muestra el primero en lugar de romperse.
+        final docs = snapshot.docs;
+        final data = docs.isEmpty ? null : docs.first.data();
         linkExists = data != null;
         telegramUsername = (data?['username'] as String?)?.trim();
         emit();
@@ -285,9 +300,16 @@ class TelegramLinkService {
   /// Borra la relación chat_id <-> uid y deja el documento del usuario
   /// con `telegramLinked: false` y `telegramChatId: null`, todo en un
   /// único lote para que no quede un estado intermedio.
-  Future<void> unlink(String uid) async {
+  ///
+  /// [chatId] es el chat que se está desconectando. Puede ser `null`
+  /// si el documento del usuario todavía no lo tiene: en ese caso solo
+  /// se limpia el estado del usuario.
+  Future<void> unlink(String uid, String? chatId) async {
     final batch = _firestore.batch();
-    batch.delete(_firestore.collection(linksCollection).doc(uid));
+    final chat = chatId?.trim();
+    if (chat != null && chat.isNotEmpty) {
+      batch.delete(_firestore.collection(linksCollection).doc(chat));
+    }
     batch.update(_firestore.collection(usersCollection).doc(uid), {
       linkedField: false,
       chatIdField: null,

@@ -93,13 +93,20 @@ service cloud.firestore {
                     && resource.data.uid == request.auth.uid;
     }
 
-    // Relacion chat_id <-> uid. La app solo la lee y la borra al
-    // desvincular; crearla y modificarla es tarea del bot.
-    match /telegram_links/{uid} {
-      allow read: if request.auth != null && request.auth.uid == uid;
+    // Relacion chat_id <-> uid. La clave del documento es el chat.id
+    // de Telegram, no el uid: asi un chat no puede quedar vinculado a
+    // dos cuentas (el segundo vinculo es estructuralmente imposible) y
+    // el bot resuelve de que cuenta es un chat con una lectura directa.
+    match /telegram_links/{chatId} {
+      // El cliente solo lee y borra los vinculos cuya cuenta es la suya.
+      // Para listar, la consulta se filtra por `uid` y la condicion de
+      // la regla se puede comprobar con ese filtro.
+      allow read: if request.auth != null
+                  && resource.data.uid == request.auth.uid;
 
       // Desvincular: cada usuario borra su propio vinculo.
-      allow delete: if request.auth != null && request.auth.uid == uid;
+      allow delete: if request.auth != null
+                    && resource.data.uid == request.auth.uid;
 
       // Si el cliente pudiera escribir aqui, un usuario podria enlazar
       // un chat ajeno a su cuenta.
