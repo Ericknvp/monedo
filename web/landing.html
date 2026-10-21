@@ -486,7 +486,7 @@
       right: -8px;
       bottom: 46px;
       z-index: 2;
-      width: 214px;
+      width: 224px;
       background: #ffffff;
       border-radius: 18px;
       padding: 12px 13px;
@@ -522,6 +522,14 @@
       border-radius: 999px;
     }
     .ai-result-row { display: flex; align-items: center; gap: 10px; }
+    .ai-result-sub {
+      margin: 5px 0 0 42px;
+      font-size: 11px;
+      color: #42484c;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
     .ai-txn-icon {
       width: 32px;
       height: 32px;
@@ -537,12 +545,18 @@
       display: flex;
       align-items: center;
       gap: 5px;
-      margin-top: 9px;
-      padding-top: 8px;
-      border-top: 1px solid rgba(0,31,45,0.07);
       font-size: 11px;
       font-weight: 700;
       color: #006c4b;
+    }
+    .ai-result-foot {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-top: 10px;
+      padding-top: 9px;
+      border-top: 1px solid rgba(0,31,45,0.07);
     }
 
     .ai-caption {
@@ -1358,15 +1372,15 @@
             </div>
             <div class="ai-result-row">
               <span class="ai-txn-icon material-symbols-outlined text-[18px]">cleaning_services</span>
-              <div class="leading-tight">
-                <p class="font-display font-bold text-[13px] text-primary">Productos de aseo</p>
-                <p class="text-[11px] text-on-surface-variant">Limpieza · Bolsillo principal</p>
-              </div>
-              <span class="font-display font-bold text-[14px] text-primary ml-auto">-$17.000</span>
+              <p class="font-display font-bold text-[13px] text-primary">Productos de aseo</p>
             </div>
-            <div class="ai-result-ok">
-              <span class="material-symbols-outlined text-[14px]">check_circle</span>
-              Registrado
+            <p class="ai-result-sub">Limpieza · Bolsillo principal</p>
+            <div class="ai-result-foot">
+              <span class="font-display font-bold text-[15px] text-primary">-$17.000</span>
+              <span class="ai-result-ok">
+                <span class="material-symbols-outlined text-[14px]">check_circle</span>
+                Registrado
+              </span>
             </div>
           </div>
         </div>
