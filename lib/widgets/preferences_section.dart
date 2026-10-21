@@ -15,6 +15,7 @@ import 'currency_picker.dart';
 import 'app_text_field.dart';
 import 'app_toast.dart';
 import 'change_password_dialog.dart';
+import 'telegram_link_section.dart';
 
 /// Contenido de preferencias del usuario: moneda activa y acceso a sus
 /// categorías personalizadas. Se reutiliza tanto dentro de "Ajustes"
@@ -264,6 +265,8 @@ class _PreferencesSectionState extends State<PreferencesSection> {
             ),
           ),
         ],
+        const SizedBox(height: 10),
+        const TelegramLinkSection(),
         const SizedBox(height: 20),
         _appearanceSection(),
         if (!kIsWeb) ...[
