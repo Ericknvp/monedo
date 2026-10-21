@@ -205,7 +205,12 @@ class TelegramLinkService {
           .where('uid', isEqualTo: uid)
           .get();
 
-      final dead = docs.docs.where((doc) => doc.get('telegramChatId') == null);
+      // Ojo: `DocumentSnapshot.get('campo')` LANZA un StateError si el
+      // campo no existe, y en Dart no devuelve null como hace el SDK de
+      // JavaScript. Hay que leer del mapa del documento, que si tolera
+      // que falte la clave.
+      final dead = docs.docs
+          .where((doc) => doc.data()['telegramChatId'] == null);
       if (dead.isEmpty) return;
 
       final batch = _firestore.batch();
@@ -213,8 +218,9 @@ class TelegramLinkService {
         batch.delete(doc.reference);
       }
       await batch.commit();
-    } on FirebaseException {
-      // Sin penalizacion: seguimos con el PIN nuevo.
+    } catch (_) {
+      // Sin penalizacion: seguimos con el PIN nuevo. La limpieza es
+      // best-effort y no puede impedir generar un PIN.
     }
   }
 

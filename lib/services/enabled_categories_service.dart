@@ -32,7 +32,7 @@ class EnabledCategoriesService {
         .where('userId', isEqualTo: userId)
         .get();
     final disabledNames = disabled.docs
-        .map((d) => d.get('category') as String?)
+        .map((d) => d.data()['category'] as String?)
         .whereType<String>()
         .toSet();
 
@@ -41,7 +41,7 @@ class EnabledCategoriesService {
         .where('userId', isEqualTo: userId)
         .get();
     final customNames = custom.docs
-        .map((d) => d.get('name') as String?)
+        .map((d) => d.data()['name'] as String?)
         .whereType<String>()
         .where((n) => n.isNotEmpty)
         .toList();
