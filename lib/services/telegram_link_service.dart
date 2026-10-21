@@ -63,8 +63,8 @@ class TelegramLinkService {
   /// Longitud del PIN.
   static const int pinLength = 6;
 
-  /// Usuario del bot de Telegram. Cámbialo por el de tu bot real.
-  static const String botUsername = 'MonedoBot_bot';
+  /// Usuario del bot de Telegram.
+  static const String botUsername = 'MonedoApp_bot';
 
   /// Enlace directo al chat del bot.
   static String get botUrl => 'https://t.me/$botUsername';
