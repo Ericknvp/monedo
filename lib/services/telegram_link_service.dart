@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 
 import '../models/telegram_pin.dart';
 import '../models/telegram_user_state.dart';
+import 'enabled_categories_service.dart';
 
 /// Error de negocio del flujo de vinculación con Telegram.
 class TelegramLinkException implements Exception {
@@ -96,6 +97,12 @@ class TelegramLinkService {
     // La limpieza de PINs previos es best-effort: si falla, el PIN
     // nuevo se genera igual.
     await purgeUserPins(uid);
+
+    // El bot necesita saber en qué categorías puede encajar un
+    // movimiento. Se publican justo aquí, en el momento en que el
+    // usuario va a necesitarlo, y así se actualizan también para las
+    // cuentas que ya existian antes de que existiera el campo.
+    await EnabledCategoriesService().publish(uid);
 
     final now = DateTime.now();
     final expiresAt = now.add(pinLifetime);
