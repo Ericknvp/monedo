@@ -74,6 +74,12 @@ class _TelegramLinkSectionState extends State<TelegramLinkSection> {
       builder: (ctx) => AlertDialog(
         backgroundColor: AppTheme.surfaceContainerLowest,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        // Sin un tope de ancho, el parrafo se estira a todo el ancho de
+        // la pantalla en escritorio y deja de leerse como un dialogo.
+        // Va aqui y no en el tema del dialogo porque hay varios
+        // formularios (el de registrar movimiento, entre otros) que
+        // necesitan el ancho que piden.
+        constraints: const BoxConstraints(minWidth: 280, maxWidth: 420),
         title: Text(
           'Desvincular Telegram',
           style: GoogleFonts.plusJakartaSans(
