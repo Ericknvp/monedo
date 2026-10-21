@@ -339,13 +339,43 @@ class TelegramLinkDialogContent extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                'Vincular Telegram',
-                style: GoogleFonts.plusJakartaSans(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w700,
-                  color: AppTheme.primary,
-                ),
+              Row(
+                children: [
+                  Flexible(
+                    child: Text(
+                      'Vincular Telegram',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                        color: AppTheme.primary,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  // Distintivo de la función: pill menta con las
+                  // iniciales, como los chips de estado del resto de la app.
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 3,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppTheme.secondaryContainer,
+                      borderRadius: BorderRadius.circular(100),
+                    ),
+                    child: Text(
+                      'IA',
+                      style: GoogleFonts.beVietnamPro(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 0.5,
+                        color: AppTheme.onSecondaryContainer,
+                      ),
+                    ),
+                  ),
+                ],
               ),
               const SizedBox(height: 6),
               // La explicación de la función va ARRIBA, antes del PIN:
@@ -362,7 +392,7 @@ class TelegramLinkDialogContent extends StatelessWidget {
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      'Graba un audio en Telegram y Monedo registra el '
+                      'Graba un audio y la IA de Monedo registra el '
                       'movimiento por ti.',
                       style: GoogleFonts.beVietnamPro(
                         fontSize: 13,
