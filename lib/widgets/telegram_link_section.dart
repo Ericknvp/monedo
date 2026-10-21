@@ -61,7 +61,7 @@ class _TelegramLinkSectionState extends State<TelegramLinkSection> {
     if (linked == true && mounted) {
       showAppToast(
         context,
-        message: 'Telegram vinculado. Ya puedes enviar tus audios',
+        message: 'Asistente de IA activado. Ya puedes enviar tus audios',
         icon: Icons.check_circle_rounded,
         accentColor: AppTheme.secondary,
       );
@@ -159,7 +159,7 @@ class _TelegramLinkSectionState extends State<TelegramLinkSection> {
 ///
 /// Recibe el estado ya resuelto y los callbacks, de modo que se puede
 /// renderizar y revisar aislada sin depender de Firebase.
-class TelegramLinkCard extends StatelessWidget {
+class TelegramLinkCard extends StatefulWidget {
   /// Si la cuenta ya está vinculada a un chat de Telegram.
   final bool linked;
 
@@ -185,31 +185,67 @@ class TelegramLinkCard extends StatelessWidget {
   });
 
   @override
+  State<TelegramLinkCard> createState() => _TelegramLinkCardState();
+}
+
+class _TelegramLinkCardState extends State<TelegramLinkCard> {
+  bool _hovered = false;
+
+  @override
   Widget build(BuildContext context) {
-    final card = Container(
+    final card = AnimatedContainer(
+      duration: const Duration(milliseconds: 200),
+      curve: Curves.easeOut,
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
       decoration: BoxDecoration(
-        color: AppTheme.surfaceContainerLow,
+        // En reposo la tarjeta es plana; al pasar el raton sube de
+        // superficie y gana borde y sombra, como los tiles de lista.
+        color: _hovered && !widget.linked
+            ? AppTheme.surfaceContainerLowest
+            : AppTheme.surfaceContainerLow,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppTheme.outlineVariant),
+        border: Border.all(
+          color: _hovered && !widget.linked
+              ? AppTheme.outline
+              : AppTheme.outlineVariant,
+        ),
+        boxShadow: _hovered && !widget.linked
+            ? [
+                BoxShadow(
+                  color: AppTheme.primary.withValues(alpha: 0.08),
+                  blurRadius: 16,
+                  offset: const Offset(0, 6),
+                ),
+              ]
+            : null,
       ),
-      child: linked ? _connected(context) : _notConnected(context),
+      child: widget.linked
+          ? _connected(context)
+          : _notConnected(context),
     );
 
-    // Sin vínculo la tarjeta es una acción (abrir el generador de PIN);
-    // con vínculo es un estado con una acción secundaria propia.
-    if (linked) return card;
+    // Sin vinculo la tarjeta es una accion (abrir el generador de PIN);
+    // con vinculo es un estado con una accion secundaria propia.
+    if (widget.linked) return card;
 
-    return InkWell(
-      borderRadius: BorderRadius.circular(16),
-      onTap: onTap,
-      child: card,
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      onEnter: (_) => setState(() => _hovered = true),
+      onExit: (_) => setState(() => _hovered = false),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(16),
+        onTap: widget.onTap,
+        child: card,
+      ),
     );
   }
 
   /// Estado sin vincular: la tarjeta es una acción.
   Widget _notConnected(BuildContext context) {
     return Row(
+      // Alineado arriba: el ícono debe leerse en la misma línea que el
+      // título, no flotar en el centro de la fila.
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Icon(
           Icons.send_rounded,
@@ -221,17 +257,10 @@ class TelegramLinkCard extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                'Vincular Telegram',
-                style: GoogleFonts.beVietnamPro(
-                  color: AppTheme.primary,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
+              const _AiTitle(),
               const SizedBox(height: 2),
               Text(
-                'Registra tus movimientos con un audio',
+                'Graba un audio y se anota solo',
                 style: GoogleFonts.beVietnamPro(
                   color: AppTheme.onSurfaceVariant,
                   fontSize: 12,
@@ -256,6 +285,7 @@ class TelegramLinkCard extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Icon(
               Icons.send_rounded,
@@ -277,11 +307,11 @@ class TelegramLinkCard extends StatelessWidget {
                       const SizedBox(width: 5),
                       Flexible(
                         child: Text(
-                          'Telegram conectado',
+                          'Asistente de IA',
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: GoogleFonts.beVietnamPro(
-                            color: AppTheme.secondary,
+                            color: AppTheme.primary,
                             fontSize: 14,
                             fontWeight: FontWeight.w600,
                           ),
@@ -289,10 +319,10 @@ class TelegramLinkCard extends StatelessWidget {
                       ),
                     ],
                   ),
-                  if (connectedName != null) ...[
+                  if (widget.connectedName != null) ...[
                     const SizedBox(height: 4),
                     Text(
-                      connectedName!,
+                      '${widget.connectedName} · Conectado',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: GoogleFonts.beVietnamPro(
@@ -310,7 +340,7 @@ class TelegramLinkCard extends StatelessWidget {
         Align(
           alignment: Alignment.centerRight,
           child: TextButton(
-            onPressed: busy ? null : onUnlink,
+            onPressed: widget.busy ? null : widget.onUnlink,
             style: TextButton.styleFrom(
               foregroundColor: AppTheme.errorRed,
               disabledForegroundColor: AppTheme.onSurfaceVariant,
@@ -322,7 +352,7 @@ class TelegramLinkCard extends StatelessWidget {
                 fontWeight: FontWeight.w600,
               ),
             ),
-            child: busy
+            child: widget.busy
                 ? SizedBox(
                     height: 14,
                     width: 14,
@@ -332,6 +362,40 @@ class TelegramLinkCard extends StatelessWidget {
                     ),
                   )
                 : const Text('Desvincular Telegram'),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// Título "Asistente de IA" de la tarjeta.
+///
+/// El icono de destello va acompañado de las palabras: el color nunca
+/// es el único portador de significado.
+class _AiTitle extends StatelessWidget {
+  const _AiTitle();
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Icon(
+          Icons.auto_awesome_rounded,
+          size: 14,
+          color: AppTheme.secondary,
+        ),
+        const SizedBox(width: 6),
+        Flexible(
+          child: Text(
+            'Asistente de IA',
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: GoogleFonts.beVietnamPro(
+              color: AppTheme.primary,
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+            ),
           ),
         ),
       ],
