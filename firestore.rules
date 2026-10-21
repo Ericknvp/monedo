@@ -1,24 +1,82 @@
 rules_version = '2';
 
-// Reglas de seguridad de Firestore para Monedo.
-//
-// Este archivo cubre SOLO las colecciones del módulo de Telegram y el
-// documento del usuario. Si ya tienes reglas desplegadas en la consola
-// de Firebase, AÑADE estos bloques a las tuyas en lugar de reemplazar
-// el archivo completo: el resto de la app (movimientos, metas,
-// presupuestos, categorías…) necesita reglas que aquí no están.
-//
-// El bot de Telegram debe usar credenciales de ADMINISTRADOR (o el
-// SDK de servidor), que ignora estas reglas: es el único que puede
-// escribir `telegram_links` y marcar los PINs como usados.
-
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // ── PINs temporales de vinculación ──────────────────────────────
-    // El cliente crea su propio PIN y lo borra cuando caduca. Solo
-    // puede operar sobre los PINs que le pertenecen.
+    function isAdmin() {
+      return request.auth != null && request.auth.uid == "BuTIPNKeBYTkDNeKku5mIpgWol03";
+    }
+
+    match /app_config/{doc} {
+      allow read: if request.auth != null;
+      allow write: if false;
+    }
+
+    match /users/{userId} {
+      allow get: if request.auth != null && (request.auth.uid == userId || isAdmin());
+      allow update, delete: if request.auth != null && request.auth.uid == userId;
+      allow list: if request.auth != null;
+      allow create: if request.auth != null && request.auth.uid == userId;
+    }
+
+    match /accounts/{docId} {
+      allow read: if request.auth != null && (request.auth.uid == resource.data.userId || isAdmin());
+      allow update, delete: if request.auth != null && request.auth.uid == resource.data.userId;
+      allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
+    }
+
+    match /budgets/{docId} {
+      allow read: if request.auth != null && (request.auth.uid == resource.data.userId || isAdmin());
+      allow update, delete: if request.auth != null && request.auth.uid == resource.data.userId;
+      allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
+    }
+
+    match /categories/{docId} {
+      allow read: if request.auth != null && (request.auth.uid == resource.data.userId || isAdmin());
+      allow update, delete: if request.auth != null && request.auth.uid == resource.data.userId;
+      allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
+    }
+
+    match /categoryColors/{docId} {
+      allow read, update, delete: if request.auth != null && request.auth.uid == resource.data.userId;
+      allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
+    }
+
+    match /disabledCategories/{docId} {
+      allow read, update, delete: if request.auth != null && request.auth.uid == resource.data.userId;
+      allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
+    }
+
+    match /goals/{docId} {
+      allow read: if request.auth != null && (request.auth.uid == resource.data.userId || isAdmin());
+      allow update, delete: if request.auth != null && request.auth.uid == resource.data.userId;
+      allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
+    }
+
+    match /transactions/{docId} {
+      allow read: if request.auth != null && (request.auth.uid == resource.data.userId || isAdmin());
+      allow update, delete: if request.auth != null && request.auth.uid == resource.data.userId;
+      allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
+    }
+
+    match /recurringTransactions/{docId} {
+      allow read: if request.auth != null && (request.auth.uid == resource.data.userId || isAdmin());
+      allow update, delete: if request.auth != null && request.auth.uid == resource.data.userId;
+      allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
+    }
+
+    // ── Módulo de Telegram ─────────────────────────────────────────
+    // Lo que sigue es lo unico que se agrego a las reglas anteriores;
+    // todo lo de arriba se mantiene igual.
+
+    // PINs temporales de vinculacion. El ID del documento ES el PIN.
+    //
+    // El cliente crea el suyo y lo borra cuando caduca, asi que solo
+    // puede operar sobre los PINs que le pertenecen. El bot lo canjea
+    // con credenciales de administrador, que ignoran estas reglas.
     match /telegram_pins/{pin} {
+      // El filtro por `uid` de la consulta de limpieza permite que
+      // Firestore demuestre que solo devuelve PINs del propio usuario.
       allow read: if request.auth != null
                   && resource.data.uid == request.auth.uid;
 
@@ -28,51 +86,24 @@ service cloud.firestore {
                     && request.resource.data.used == false
                     && request.resource.data.expiresAt is timestamp;
 
-      // El cliente solo borra; nunca edita un PIN ya emitido.
+      // Un PIN emitido no se edita desde el cliente.
       allow update: if false;
 
       allow delete: if request.auth != null
                     && resource.data.uid == request.auth.uid;
     }
 
-    // ── Relación chat_id <-> uid ───────────────────────────────────
-    // El cliente solo LEE (para mostrar la cuenta conectada). La
-    // escritura y el borrado los hace el bot (admin SDK) o la
-    // desvinculación desde el propio usuario.
+    // Relacion chat_id <-> uid. La app solo la lee y la borra al
+    // desvincular; crearla y modificarla es tarea del bot.
     match /telegram_links/{uid} {
       allow read: if request.auth != null && request.auth.uid == uid;
 
-      // Desvincular: cualquiera puede borrar su propio vínculo...
+      // Desvincular: cada usuario borra su propio vinculo.
       allow delete: if request.auth != null && request.auth.uid == uid;
 
-      // ...pero nadie puede crearlo ni modificarlo desde el cliente:
-      // si no, un usuario podría vincular un chat ajeno a su cuenta.
+      // Si el cliente pudiera escribir aqui, un usuario podria enlazar
+      // un chat ajeno a su cuenta.
       allow create, update: if false;
-    }
-
-    // ── Documento del usuario ──────────────────────────────────────
-    // El usuario puede leer su propio documento y actualizar SOLO los
-    // campos que la app le escribe: `username` y `currency`
-    // (`AuthService`) más `telegramLinked` y `telegramChatId`
-    // (desvinculación).
-    match /users/{uid} {
-      allow read: if request.auth != null && request.auth.uid == uid;
-
-      allow update: if request.auth != null
-                    && request.auth.uid == uid
-                    && request.resource.data.diff(resource.data).affectedKeys()
-                       .hasOnly(['username', 'currency',
-                                 'telegramLinked', 'telegramChatId']);
-
-      // Registro: se crea el documento con los datos del modelo.
-      allow create: if request.auth != null
-                    && request.auth.uid == uid
-                    && request.resource.data.keys().hasOnly([
-                         'username', 'email', 'createdAt', 'currency',
-                         'telegramLinked', 'telegramChatId',
-                       ]);
-
-      allow delete: if false;
     }
   }
 }
