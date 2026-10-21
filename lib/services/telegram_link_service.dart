@@ -82,7 +82,11 @@ class TelegramLinkService {
       throw const TelegramLinkException('No hay una sesión activa');
     }
 
-    await invalidatePendingPins(uid);
+    try {
+      await invalidatePendingPins(uid);
+    } on FirebaseException catch (e) {
+      throw TelegramLinkException(_describeFirebaseError(e));
+    }
 
     final now = DateTime.now();
     final expiresAt = now.add(pinLifetime);
@@ -122,16 +126,40 @@ class TelegramLinkService {
       } on _PinTakenException {
         // Ese PIN ya existe: probamos con otro.
         continue;
-      } on FirebaseException {
-        throw const TelegramLinkException(
-          'No se pudo generar el PIN. Revisa tu conexión e inténtalo de nuevo',
-        );
+      } on FirebaseException catch (e) {
+        throw TelegramLinkException(_describeFirebaseError(e));
       }
     }
 
     throw const TelegramLinkException(
-      'No se pudo generar el PIN. Revisa tu conexión e inténtalo de nuevo',
+      'No se pudo generar el PIN. Inténtalo de nuevo',
     );
+  }
+
+  /// Traduce un error de Firestore a un mensaje que le diga al usuario
+  /// qué pasó y qué puede hacer al respecto.
+  ///
+  /// Sin esto, cualquier fallo (permisos, red, sesión caducada) llegaba
+  /// al diálogo como el mismo "revisa tu conexión", que además era
+  /// falso: el error más habitual era un permiso denegado por las
+  /// reglas de seguridad.
+  String _describeFirebaseError(FirebaseException e) {
+    switch (e.code) {
+      case 'permission-denied':
+        return 'Tu cuenta no tiene permiso para crear el PIN. Revisa las '
+            'reglas de seguridad de Firestore.';
+      case 'unavailable':
+      case 'deadline-exceeded':
+        return 'No pudimos conectar con el servidor. Revisa tu conexión e '
+            'inténtalo de nuevo.';
+      case 'unauthenticated':
+        return 'Tu sesión caducó. Vuelve a iniciar sesión e inténtalo de nuevo.';
+      case 'failed-precondition':
+        return 'El servicio no está disponible en este momento. Inténtalo de '
+            'nuevo.';
+      default:
+        return 'No se pudo generar el PIN. Inténtalo de nuevo.';
+    }
   }
 
   /// Borra los PINs pendientes del usuario que ya no sirven.

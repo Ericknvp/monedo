@@ -145,8 +145,9 @@ class _TelegramLinkDialogState extends State<TelegramLinkDialog> {
     } catch (_) {
       if (!mounted) return;
       setState(() {
-        _error =
-            'No se pudo generar el PIN. Revisa tu conexión e inténtalo de nuevo';
+        // Último recurso: el servicio ya traduce los errores de
+        // Firestore, así que llegar aquí es algo inesperado.
+        _error = 'No se pudo generar el PIN. Inténtalo de nuevo';
         _loading = false;
       });
     }
