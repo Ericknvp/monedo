@@ -407,7 +407,8 @@ class TelegramLinkDialogContent extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.only(left: 24),
                 child: Text(
-                  'Por ejemplo: «gasté 12 en un café» y queda registrado.',
+                  'Por ejemplo: «gasté 17.000 en productos de aseo en efectivo» y '
+                  'queda registrado.',
                   style: GoogleFonts.beVietnamPro(
                     fontSize: 12,
                     height: 1.4,
