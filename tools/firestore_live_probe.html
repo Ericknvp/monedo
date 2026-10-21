@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Sonda de Firestore (Telegram)</title>
+</head>
+<body>
+<pre id="out">ejecutando...</pre>
+<script type="module">
+// Sonda que prueba contra el Firestore REAL las operaciones que hace la
+// app al vincular Telegram. Es la unica forma fiable de comprobar el
+// comportamiento de las reglas: el harness projects.test de la API de
+// Rules no modela documentos inexistentes ni las funciones de Firestore.
+//
+// Se ejecuta con:  node tools/run_firestore_live_probe.js
+//
+// Crea un usuario de prueba desechable en el proyecto y borra lo que
+// crea. NO usar la cuenta real de nadie.
+//
+// OJO: la config de abajo debe coincidir con lib/firebase_options.dart
+// (bloque web). Si cambian las credenciales del proyecto, actualiza esto.
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {
+  getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword,
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import {
+  getFirestore, collection, doc, getDoc, setDoc, deleteDoc, getDocs,
+  query, where, runTransaction, serverTimestamp, Timestamp,
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const cfg = {
+  apiKey: "AIzaSyBZp1zl_eUGa6JsPIYXHi8ku7e9oIryA30",
+  appId: "1:1059318428832:web:48805c718b2202ac4805c5",
+  messagingSenderId: "1059318428832",
+  projectId: "monedo-e7849",
+  authDomain: "monedo-e7849.firebaseapp.com",
+  storageBucket: "monedo-e7849.firebasestorage.app",
+};
+
+const out = document.getElementById("out");
+const log = (...a) => { out.textContent += a.join(" ") + "\n"; console.log(...a); };
+
+let pass = 0, fail = 0;
+const resultados = [];
+
+async function check(nombre, fn, debeFallar) {
+  let fallo = null;
+  try {
+    await fn();
+    fallo = null;
+  } catch (e) {
+    fallo = e;
+  }
+  const ok = debeFallar ? fallo !== null : fallo === null;
+  ok ? pass++ : fail++;
+  resultados.push({ nombre, ok });
+  const detalle = fallo ? "[" + fallo.code + "] " + fallo.message : "permitido";
+  log((ok ? "OK   " : "FALLA") + " " + nombre.padEnd(52) + detalle);
+}
+
+(async () => {
+  const app = initializeApp(cfg);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+
+  const email = "probe-" + Date.now() + "@monedo-probe.test";
+  const pass1 = "Pr0b3-" + Math.random().toString(36).slice(2, 10);
+  let user;
+  try {
+    user = (await createUserWithEmailAndPassword(auth, email, pass1)).user;
+  } catch (e) {
+    try {
+      user = (await signInWithEmailAndPassword(auth, email, pass1)).user;
+    } catch (e2) {
+      log("No se pudo crear el usuario de prueba:", e2.code, e2.message);
+      window.__done = true;
+      return;
+    }
+  }
+  const uid = user.uid;
+  log("usuario de prueba:", uid, "\n");
+
+  const pinLibre = () => String(Math.floor(100000 + Math.random() * 900000));
+  const pinData = (pin, owner) => ({
+    pin,
+    uid: owner,
+    createdAt: serverTimestamp(),
+    expiresAt: Timestamp.fromDate(new Date(Date.now() + 5 * 60 * 1000)),
+    used: false,
+  });
+
+  await check("listar PINs propios (query de limpieza)", async () => {
+    await getDocs(query(collection(db, "telegram_pins"), where("uid", "==", uid)));
+  }, false);
+
+  await check("listar PINs sin filtro (debe denegarse)", async () => {
+    await getDocs(collection(db, "telegram_pins"));
+  }, true);
+
+  let pinCreado = null;
+  await check("set() de un PIN libre (crear)", async () => {
+    pinCreado = pinLibre();
+    await setDoc(doc(db, "telegram_pins", pinCreado), pinData(pinCreado, uid));
+  }, false);
+
+  await check("get del PIN recien creado", async () => {
+    const s = await getDoc(doc(db, "telegram_pins", pinCreado));
+    if (!s.exists()) throw new Error("no existe");
+  }, false);
+
+  await check("set() sobre un PIN ya existente (debe denegarse)", async () => {
+    await setDoc(doc(db, "telegram_pins", pinCreado), pinData(pinCreado, "OTRO-UID"));
+  }, true);
+
+  await check("set() en nombre de otro usuario (debe denegarse)", async () => {
+    const p = pinLibre();
+    await setDoc(doc(db, "telegram_pins", p), pinData(p, "OTRO-UID"));
+  }, true);
+
+  await check("get de un PIN inexistente (debe denegarse)", async () => {
+    await getDoc(doc(db, "telegram_pins", "000000"));
+  }, true);
+
+  await check("TRANSACCION get+set (debe denegarse: no se usa)", async () => {
+    const p = pinLibre();
+    await runTransaction(db, async (txn) => {
+      const s = await txn.get(doc(db, "telegram_pins", p));
+      if (s.exists()) throw new Error("ya existe");
+      txn.set(doc(db, "telegram_pins", p), pinData(p, uid));
+    });
+  }, true);
+
+  await check("delete del PIN propio", async () => {
+    await deleteDoc(doc(db, "telegram_pins", pinCreado));
+  }, false);
+
+  log("\n" + pass + " correctos, " + fail + " fallidos");
+  window.__done = true;
+  window.__summary = { pass, fail, resultados };
+})();
+</script>
+</body>
+</html>
