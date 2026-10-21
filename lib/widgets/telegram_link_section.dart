@@ -61,7 +61,7 @@ class _TelegramLinkSectionState extends State<TelegramLinkSection> {
     if (linked == true && mounted) {
       showAppToast(
         context,
-        message: 'Asistente de IA activado. Ya puedes enviar tus audios',
+        message: 'Asistente de IA activado',
         icon: Icons.check_circle_rounded,
         accentColor: AppTheme.secondary,
       );
@@ -81,16 +81,15 @@ class _TelegramLinkSectionState extends State<TelegramLinkSection> {
         // necesitan el ancho que piden.
         constraints: const BoxConstraints(minWidth: 280, maxWidth: 420),
         title: Text(
-          'Desvincular Telegram',
+          '¿Desvincular Telegram?',
           style: GoogleFonts.plusJakartaSans(
             fontWeight: FontWeight.w700,
             color: AppTheme.primary,
           ),
         ),
         content: Text(
-          '¿Seguro que deseas desvincular tu cuenta de Telegram? Dejarás de '
-          'recibir avisos y tus audios ya no se registrarán. Tu cuenta de '
-          'Monedo no se elimina y puedes volver a vincularla cuando quieras.',
+          'Tus audios dejarán de registrarse. Tu cuenta de Monedo no se '
+          'elimina y puedes volver a vincularla cuando quieras.',
           style: GoogleFonts.beVietnamPro(
             fontSize: 13,
             height: 1.4,
@@ -367,7 +366,7 @@ class _TelegramLinkCardState extends State<TelegramLinkCard> {
                       color: AppTheme.errorRed,
                     ),
                   )
-                : const Text('Desvincular Telegram'),
+                : const Text('Desvincular'),
           ),
         ),
       ],

@@ -380,7 +380,7 @@ class TelegramLinkDialogContent extends StatelessWidget {
               const SizedBox(height: 6),
               // La explicación de la función va ARRIBA, antes del PIN:
               // el usuario tiene que entender qué gana por vincular la
-              // cuenta antes de ver un código.
+              // cuenta antes de ver un código. Una línea, sin rodeos.
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -392,8 +392,7 @@ class TelegramLinkDialogContent extends StatelessWidget {
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      'Graba un audio y la IA de Monedo registra el '
-                      'movimiento por ti.',
+                      'Graba un audio y se anota solo.',
                       style: GoogleFonts.beVietnamPro(
                         fontSize: 13,
                         height: 1.4,
@@ -407,8 +406,7 @@ class TelegramLinkDialogContent extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.only(left: 24),
                 child: Text(
-                  'Por ejemplo: «gasté 17.000 en productos de aseo en efectivo» y '
-                  'queda registrado.',
+                  'Ejemplo: «gasté 17.000 en aseo»',
                   style: GoogleFonts.beVietnamPro(
                     fontSize: 12,
                     height: 1.4,
@@ -598,7 +596,7 @@ class TelegramLinkDialogContent extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Abre el bot en Telegram y envía el comando:',
+          'Abre el bot y envía el comando:',
           style: GoogleFonts.beVietnamPro(
             fontSize: 13,
             height: 1.4,
@@ -663,7 +661,7 @@ class TelegramLinkDialogContent extends StatelessWidget {
       return Column(
         children: [
           _primaryButton(
-            label: 'Generar un PIN nuevo',
+            label: 'Generar otro PIN',
             icon: Icons.refresh_rounded,
             onPressed: onRegenerate,
           ),
