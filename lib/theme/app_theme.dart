@@ -83,6 +83,15 @@ class AppTheme {
   // -- Rojo (error) — relleno fijo para botones destructivos --
   static const Color dangerFixed = Color(0xFFBA1A1A);
 
+  // -- Telegram (marca de terceros) --
+  // Color oficial de Telegram. Se usa SOLO como acento de identidad en el
+  // ícono de la integración (para que se reconozca de un vistazo que
+  // hablamos con Telegram y no con otro canal). Los botones de acción
+  // siguen siendo verdes de marca: el azul nunca actúa como color de
+  // acción ni reemplaza a `secondary`.
+  // Fixo en ambos modos: funciona sobre superficies claras y oscuras.
+  static const Color telegramBlue = Color(0xFF229ED9);
+
   // -- Texto/superficie — dinámico (claro / oscuro) --
   static const Color _primaryLight = Color(0xFF001F2D);
   static const Color _primaryDark = Color(0xFFE7EEF2);
@@ -171,6 +180,16 @@ class AppTheme {
   static const Color _warningAmberDark = Color(0xFFD29922);
   static Color get warningAmber =>
       _isDark ? _warningAmberDark : _warningAmberLight;
+
+  // Variante de `warningAmber` con contraste suficiente para TEXTO
+  // pequeño sobre superficies claras (≥4.5:1). El ámbar de arriba da
+  // 2.8:1 sobre `surfaceContainerLow`, así que sirve para rellenos y
+  // barras, pero no para letra. Este tono más profundo mantiene la
+  // lectura de "aviso" y se usa con texto y con la barra de progreso.
+  static const Color _warningAmberTextLight = Color(0xFF8F5E00);
+  static const Color _warningAmberTextDark = Color(0xFFE3B341);
+  static Color get warningAmberText =>
+      _isDark ? _warningAmberTextDark : _warningAmberTextLight;
 
   // Insignias verdes (avatar de moneda, iconos de categoría, etc.): en
   // claro, menta clarito + texto verde oscuro; en oscuro se invierte a
