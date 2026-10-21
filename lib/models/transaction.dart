@@ -4,6 +4,8 @@
 // Se renombra como TransactionModel para evitar conflicto con Firestore.
 // ============================================================
 
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class TransactionModel {
   final String id;           // ID único del movimiento
   final String userId;       // ID del usuario dueño del movimiento
@@ -35,6 +37,26 @@ class TransactionModel {
     this.recurringId,
   });
 
+  /// Convierte el valor de `date` a una fecha local.
+  ///
+  /// No siempre llega igual: la app escribe la fecha como texto ISO en
+  /// hora local, pero el bot de Telegram la escribe como timestamp de
+  /// Firestore, que el SDK entrega como objeto `Timestamp`. Con
+  /// `DateTime.parse` a secas, un movimiento del bot hacia el mismo
+  /// error al parsear y tumbaba el listado entero.
+  ///
+  /// Todo se pasa a hora local para que los filtros por día y por mes
+  /// (que comparan contra fechas locales) traten igual lo que escribe
+  /// la app y lo que escribe el bot.
+  static DateTime _parseDate(dynamic value) {
+    if (value is Timestamp) return value.toDate().toLocal();
+    if (value is DateTime) return value.toLocal();
+    if (value is String) {
+      return DateTime.tryParse(value)?.toLocal() ?? DateTime.now();
+    }
+    return DateTime.now();
+  }
+
   // ---- Convierte un documento de Firestore a TransactionModel ----
   factory TransactionModel.fromMap(Map<String, dynamic> map, String id) {
     return TransactionModel(
@@ -44,7 +66,7 @@ class TransactionModel {
       amount: (map['amount'] ?? 0).toDouble(),
       category: map['category'] ?? '',
       isIncome: map['isIncome'] ?? false,
-      date: DateTime.parse(map['date']),
+      date: _parseDate(map['date']),
       note: map['note'],
       accountId: map['accountId'],
       goalId: map['goalId'],
